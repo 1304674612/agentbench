@@ -1,0 +1,81 @@
+{
+  "name": "@agentbench/core",
+  "version": "0.1.0",
+  "description": "AgentBench Core Engine — Runner, Tracer, Evaluator, Assertion, Snapshot, Diff, Coverage, Reporter",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./runner": {
+      "import": "./dist/runner/index.js",
+      "types": "./dist/runner/index.d.ts"
+    },
+    "./tracer": {
+      "import": "./dist/tracer/index.js",
+      "types": "./dist/tracer/index.d.ts"
+    },
+    "./evaluator": {
+      "import": "./dist/evaluator/index.js",
+      "types": "./dist/evaluator/index.d.ts"
+    },
+    "./assertion": {
+      "import": "./dist/assertion/index.js",
+      "types": "./dist/assertion/index.d.ts"
+    },
+    "./snapshot": {
+      "import": "./dist/snapshot/index.js",
+      "types": "./dist/snapshot/index.d.ts"
+    },
+    "./diff": {
+      "import": "./dist/diff/index.js",
+      "types": "./dist/diff/index.d.ts"
+    },
+    "./replay": {
+      "import": "./dist/replay/index.js",
+      "types": "./dist/replay/index.d.ts"
+    },
+    "./coverage": {
+      "import": "./dist/coverage/index.js",
+      "types": "./dist/coverage/index.d.ts"
+    },
+    "./experiment": {
+      "import": "./dist/experiment/index.js",
+      "types": "./dist/experiment/index.d.ts"
+    },
+    "./reporter": {
+      "import": "./dist/reporter/index.js",
+      "types": "./dist/reporter/index.d.ts"
+    },
+    "./storage": {
+      "import": "./dist/storage/index.js",
+      "types": "./dist/storage/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@agentbench/typescript-config": "workspace:*",
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "zod": "^3.24.0"
+  }
+}

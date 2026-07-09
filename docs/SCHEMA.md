@@ -1,0 +1,773 @@
+// ===================================================================
+// AgentBench — Prisma Schema
+// The Regression Testing Framework for AI Agents
+// ===================================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgcrypto, pg_trgm, uuid_ossp]
+}
+
+// ===================================================================
+// Enums
+// ===================================================================
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum ProjectPlan {
+  COMMUNITY
+  PRO
+  ENTERPRISE
+}
+
+enum TestCaseStatus {
+  ACTIVE
+  DRAFT
+  ARCHIVED
+}
+
+enum RunStatus {
+  PENDING
+  RUNNING
+  PASSED
+  FAILED
+  ERROR
+  TIMEOUT
+  CANCELLED
+}
+
+enum TraceStepType {
+  LLM_CALL
+  TOOL_CALL
+  RESPONSE
+  ERROR
+}
+
+enum StepStatus {
+  SUCCESS
+  ERROR
+  TIMEOUT
+}
+
+enum EvaluatorType {
+  RULE_BASED
+  LLM_JUDGE
+  HYBRID
+}
+
+enum AssertionStatus {
+  PASSED
+  FAILED
+  ERROR
+  SKIPPED
+}
+
+enum ExperimentStatus {
+  DRAFT
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum ExperimentConclusion {
+  WINNER_A
+  WINNER_B
+  INCONCLUSIVE
+  TIE
+}
+
+enum DatasetFormat {
+  CSV
+  JSON
+  JSONL
+  MARKDOWN
+  CONVERSATION
+  CUSTOM
+}
+
+enum DatasetSplitType {
+  TRAIN
+  TEST
+  VALIDATION
+}
+
+enum SnapshotType {
+  MANUAL
+  AUTO
+  CI
+}
+
+enum APIScope {
+  READ
+  WRITE
+  ADMIN
+}
+
+enum NotificationType {
+  SYSTEM
+  BILLING
+  SECURITY
+  RUN_COMPLETED
+  REGRESSION_DETECTED
+  USAGE_ALERT
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  EXECUTE
+  EXPORT
+  LOGIN
+  LOGOUT
+}
+
+enum BillingPlan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  TRIALING
+  EXPIRED
+}
+
+// ===================================================================
+// Auth & User
+// ===================================================================
+
+model User {
+  id             String        @id @default(cuid())
+  name           String?
+  email          String        @unique
+  emailVerified  DateTime?
+  image          String?
+  passwordHash   String?
+  status         UserStatus    @default(ACTIVE)
+  plan           BillingPlan   @default(FREE)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // Relations
+  accounts       Account[]
+  sessions       Session[]
+  memberships    TeamMember[]
+  apiKeys        ApiKey[]
+  projects       Project[]
+  runs           Run[]
+  notifications  Notification[]
+  subscription   Subscription?
+
+  // Audit
+  auditLogs      AuditLog[]
+
+  @@index([email])
+  @@index([status])
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ===================================================================
+// Organization & Team (Pro/Enterprise)
+// ===================================================================
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logo      String?
+  plan      BillingPlan @default(FREE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members   TeamMember[]
+  projects  Project[]
+
+  @@map("organizations")
+}
+
+model TeamMember {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  role           String   @default("member") // owner, admin, member, viewer
+  joinedAt       DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+  @@map("team_members")
+}
+
+// ===================================================================
+// Project
+// ===================================================================
+
+model Project {
+  id             String      @id @default(cuid())
+  name           String
+  slug           String
+  description    String?
+  plan           ProjectPlan @default(COMMUNITY)
+  ownerId        String
+  organizationId String?
+  settings       Json?       @default("{}")
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  // Relations
+  owner        User          @relation(fields: [ownerId], references: [id])
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  
+  testSuites   TestSuite[]
+  runs         Run[]
+  snapshots    Snapshot[]
+  experiments  Experiment[]
+  datasets     Dataset[]
+  apiKeys      ApiKey[]
+
+  @@unique([slug, ownerId])
+  @@index([ownerId])
+  @@index([organizationId])
+  @@map("projects")
+}
+
+// ===================================================================
+// Test Suite & Test Case
+// ===================================================================
+
+model TestSuite {
+  id          String   @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project  Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  cases    TestCase[]
+
+  @@index([projectId])
+  @@map("test_suites")
+}
+
+model TestCase {
+  id          String       @id @default(cuid())
+  suiteId     String
+  name        String
+  description String?
+  status      TestCaseStatus @default(ACTIVE)
+  
+  // Agent configuration
+  agentConfig Json          @default("{}")
+  
+  // Input
+  input       Json          @default("{}")
+  
+  // Execution options
+  options     Json          @default("{}")
+  
+  // Tags
+  tags        String[]      @default([])
+  
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  suite      TestSuite        @relation(fields: [suiteId], references: [id], onDelete: Cascade)
+  assertions TestAssertion[]
+  evaluators TestEvaluator[]
+  runs       Run[]
+
+  @@index([suiteId])
+  @@index([status])
+  @@map("test_cases")
+}
+
+model TestAssertion {
+  id         String   @id @default(cuid())
+  testCaseId String
+  type       String   // tool_called, tokens_lt, latency_lt, contains, etc.
+  params     Json     @default("{}")
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  testCase TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+
+  @@index([testCaseId])
+  @@map("test_assertions")
+}
+
+model TestEvaluator {
+  id         String        @id @default(cuid())
+  testCaseId String
+  type       EvaluatorType @default(RULE_BASED)
+  config     Json          @default("{}")
+  sortOrder  Int           @default(0)
+  createdAt  DateTime      @default(now())
+
+  testCase TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+
+  @@index([testCaseId])
+  @@map("test_evaluators")
+}
+
+// ===================================================================
+// Run & Execution Trace
+// ===================================================================
+
+model Run {
+  id         String    @id @default(cuid())
+  projectId  String
+  testCaseId String?
+  userId     String?
+  name       String
+  status     RunStatus @default(PENDING)
+  
+  // Configuration snapshot
+  config     Json      @default("{}")
+  
+  // Summary metrics
+  metrics    Json?     // RunMetrics as JSON
+  
+  // Timing
+  startedAt  DateTime?
+  endedAt    DateTime?
+  duration   Int?      // milliseconds
+  
+  // Summary
+  summary    String?
+  error      String?   @db.Text
+  
+  // Tags & Metadata
+  tags       String[]  @default([])
+  metadata   Json?     @default("{}")
+  
+  createdAt  DateTime  @default(now())
+
+  // Relations
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  testCase         TestCase?         @relation(fields: [testCaseId], references: [id], onDelete: SetNull)
+  user             User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  traceSteps       TraceStep[]
+  assertionResults AssertionResult[]
+  scores           Score[]
+  experimentRuns   ExperimentRun[]
+
+  @@index([projectId])
+  @@index([testCaseId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("runs")
+}
+
+model TraceStep {
+  id        String        @id @default(cuid())
+  runId     String
+  sequence  Int
+  type      TraceStepType
+  
+  // Timing
+  startedAt DateTime
+  endedAt   DateTime?
+  duration  Int?          // milliseconds
+  
+  // LLM Call data
+  llmProvider   String?
+  llmModel      String?
+  llmRequest    Json?     // Full request payload
+  llmResponse   Json?     // Full response payload
+  
+  // Tool Call data
+  toolName      String?
+  toolRequest   Json?
+  toolResponse  Json?
+  
+  // Usage
+  promptTokens     Int?
+  completionTokens Int?
+  totalTokens      Int?
+  cost             Float?  @default(0)
+  
+  // Status
+  status       StepStatus @default(SUCCESS)
+  error        String?    @db.Text
+  
+  // Metadata
+  metadata     Json?      @default("{}")
+
+  run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@index([runId, sequence])
+  @@index([type])
+  @@map("trace_steps")
+}
+
+model AssertionResult {
+  id          String         @id @default(cuid())
+  runId       String
+  assertionId String?
+  type        String
+  status      AssertionStatus
+  expected    Json?
+  actual      Json?
+  message     String?
+  duration    Int?           // evaluation time in ms
+  createdAt   DateTime       @default(now())
+
+  run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@map("assertion_results")
+}
+
+model Score {
+  id        String   @id @default(cuid())
+  runId     String
+  evaluator String   // correctness, faithfulness, safety, etc.
+  score     Float
+  maxScore  Float    @default(10.0)
+  reason    String?  @db.Text
+  judgeModel String? // which LLM judged this
+  duration  Int?     // evaluation time in ms
+  metadata  Json?    @default("{}")
+  createdAt DateTime @default(now())
+
+  run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@index([evaluator])
+  @@map("scores")
+}
+
+// ===================================================================
+// Snapshot
+// ===================================================================
+
+model Snapshot {
+  id          String       @id @default(cuid())
+  projectId   String
+  runId       String?
+  name        String
+  description String?
+  type        SnapshotType @default(MANUAL)
+  
+  // Full snapshot data
+  data        Json         // SnapshotData
+  
+  // Metadata
+  tags        String[]     @default([])
+  createdAt   DateTime     @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  run     Run?    @relation(fields: [runId], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([runId])
+  @@index([type])
+  @@map("snapshots")
+}
+
+// ===================================================================
+// Experiment
+// ===================================================================
+
+model Experiment {
+  id          String           @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+  status      ExperimentStatus @default(DRAFT)
+  
+  // Configuration
+  config      Json             // ExperimentConfig
+  
+  // Results
+  conclusion  ExperimentConclusion?
+  results     Json?            // ExperimentResults as JSON
+  
+  // Timing
+  startedAt   DateTime?
+  endedAt     DateTime?
+  
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  project   Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  variants  ExperimentVariant[]
+  runs      ExperimentRun[]
+
+  @@index([projectId])
+  @@index([status])
+  @@map("experiments")
+}
+
+model ExperimentVariant {
+  id           String   @id @default(cuid())
+  experimentId String
+  name         String   // "A" or "B"
+  config       Json     // VariantConfig (prompt, model, temperature, etc.)
+  createdAt    DateTime @default(now())
+
+  experiment Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+
+  @@index([experimentId])
+  @@map("experiment_variants")
+}
+
+model ExperimentRun {
+  id           String   @id @default(cuid())
+  experimentId String
+  variantId    String
+  runId        String
+  createdAt    DateTime @default(now())
+
+  experiment Experiment        @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  variant    ExperimentVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  run        Run               @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([experimentId])
+  @@index([variantId])
+  @@index([runId])
+  @@map("experiment_runs")
+}
+
+// ===================================================================
+// Dataset
+// ===================================================================
+
+model Dataset {
+  id          String   @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+  format      DatasetFormat @default(JSON)
+  tags        String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  items   DatasetItem[]
+
+  @@index([projectId])
+  @@map("datasets")
+}
+
+model DatasetItem {
+  id        String          @id @default(cuid())
+  datasetId String
+  split     DatasetSplitType @default(TEST)
+  
+  // Content
+  input     Json            // Input messages/variables
+  expected  Json?           // Expected output (optional)
+  labels    String[]        @default([])
+  
+  // Metadata
+  metadata  Json?           @default("{}")
+  sortOrder Int             @default(0)
+  createdAt DateTime        @default(now())
+
+  dataset Dataset @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+
+  @@index([datasetId])
+  @@index([split])
+  @@map("dataset_items")
+}
+
+// ===================================================================
+// API Keys
+// ===================================================================
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  userId     String?
+  projectId  String?
+  name       String
+  key        String    @unique  // hashed
+  prefix     String              // first 8 chars for display
+  scopes     APIScope[] @default([READ])
+  expiresAt  DateTime?
+  lastUsedAt DateTime?
+  isRevoked  Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+
+  user    User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([key])
+  @@index([userId])
+  @@index([projectId])
+  @@map("api_keys")
+}
+
+// ===================================================================
+// Notification
+// ===================================================================
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType @default(SYSTEM)
+  title     String
+  message   String           @db.Text
+  isRead    Boolean          @default(false)
+  link      String?          // Deep link (e.g., /runs/xxx)
+  metadata  Json?            @default("{}")
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+// ===================================================================
+// Audit Log (Enterprise)
+// ===================================================================
+
+model AuditLog {
+  id         String     @id @default(cuid())
+  userId     String?
+  projectId  String?
+  action     AuditAction
+  resource   String     // e.g., "run", "test_case", "api_key"
+  resourceId String?
+  details    Json?      @default("{}")
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime   @default(now())
+
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ===================================================================
+// Billing (Pro/Enterprise)
+// ===================================================================
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  plan                 BillingPlan        @default(FREE)
+  status               SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  billingRecords  BillingRecord[]
+
+  @@index([userId])
+  @@index([stripeCustomerId])
+  @@map("subscriptions")
+}
+
+model BillingRecord {
+  id             String   @id @default(cuid())
+  subscriptionId String
+  amount         Float
+  currency       String   @default("usd")
+  status         String   @default("succeeded") // succeeded, failed, refunded
+  stripeInvoiceId String?
+  invoiceUrl     String?
+  periodStart    DateTime
+  periodEnd      DateTime
+  createdAt      DateTime @default(now())
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+  @@index([createdAt])
+  @@map("billing_records")
+}
+
+// ===================================================================
+// System Settings
+// ===================================================================
+
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  group     String   @default("general") // general, security, notification, storage
+  updatedAt DateTime @updatedAt
+
+  @@index([group])
+  @@map("system_settings")
+}
