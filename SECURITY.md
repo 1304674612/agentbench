@@ -11,7 +11,7 @@
 
 **Please do NOT report security vulnerabilities through public GitHub Issues.**
 
-Instead, email: **security@agentbench.dev**
+Instead, email: **zhoujiankai1014@gmail.com**
 
 We will respond within 48 hours with:
 - Confirmation of receipt
