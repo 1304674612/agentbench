@@ -1,303 +1,314 @@
 <div align="center">
-
-# AgentBench
-
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7+-3178C6.svg)](https://www.typescriptlang.org/)
-[![Next.js](https://img.shields.io/badge/Next.js-15+-000000.svg)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19+-61DAFB.svg)](https://react.dev/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-336791.svg)](https://www.postgresql.org/)
-[![Redis](https://img.shields.io/badge/Redis-7+-DC382D.svg)](https://redis.io/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
-[![Tests](https://img.shields.io/badge/Tests-51%2F51-emerald?style=flat-square)](.)
-[![TS Errors](https://img.shields.io/badge/TS_Errors-0-emerald?style=flat-square)](.)
-[![Release](https://img.shields.io/badge/Release-v0.1.0-7c3aed?style=flat-square)](https://github.com/1304674612/agentbench/releases/tag/v0.1.0)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-
-**The Regression Testing Framework for AI Agents**
-
-*Replay · Evaluate · Compare · Assert · Catch Regressions — in CI.*
-
-[English](README.md) | [中文](README_CN.md) | [📖 文档中心](docs/INDEX.md) | [Changelog](CHANGELOG.md) | [Release](https://github.com/1304674612/agentbench/releases)
-
+  <img src="https://img.shields.io/badge/AgentBench-v0.1.0-7c3aed?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgMjJzOC00IDgtMTBWNWwtOC0zLTggM3Y3YzAgNiA4IDEwIDggMTB6Ii8+PHBhdGggZD0iTTkgMTJsMiAyIDQtNCIvPjwvc3ZnPg==" alt="AgentBench" />
 </div>
 
+<h1 align="center">AgentBench</h1>
+<h3 align="center">The Regression Testing Framework for AI Agents</h3>
+
+<p align="center">
+  <strong>Replay · Evaluate · Compare · Assert · Catch Regressions — in CI</strong>
+</p>
+
+<p align="center">
+  <!-- Language & Platform -->
+  <img src="https://img.shields.io/badge/TypeScript-5.7+-3178C6?logo=typescript&logoColor=white&style=flat-square" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Next.js-15+-000000?logo=next.js&logoColor=white&style=flat-square" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React-19+-61DAFB?logo=react&logoColor=white&style=flat-square" alt="React" />
+  <img src="https://img.shields.io/badge/PostgreSQL-16+-336791?logo=postgresql&logoColor=white&style=flat-square" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Redis-7+-DC382D?logo=redis&logoColor=white&style=flat-square" alt="Redis" />
+  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white&style=flat-square" alt="Docker" />
+  <br/>
+  <!-- Quality -->
+  <img src="https://img.shields.io/badge/Tests-51%2F51-22c55e?logo=vitest&logoColor=white&style=flat-square" alt="Tests" />
+  <img src="https://img.shields.io/badge/TS_Errors-0-22c55e?logo=typescript&logoColor=white&style=flat-square" alt="TS Errors" />
+  <img src="https://img.shields.io/badge/E2E-95%25-22c55e?style=flat-square" alt="E2E" />
+  <img src="https://img.shields.io/badge/License-Apache_2.0-3b82f6?logo=apache&logoColor=white&style=flat-square" alt="License" />
+  <img src="https://img.shields.io/github/stars/1304674612/agentbench?style=flat-square&color=fbbf24" alt="Stars" />
+</p>
+
+<p align="center">
+  <a href="#-quick-start"><strong>Quick Start</strong></a> ·
+  <a href="#-features"><strong>Features</strong></a> ·
+  <a href="#-assertion-dsl"><strong>DSL</strong></a> ·
+  <a href="#-ecosystem"><strong>Ecosystem</strong></a> ·
+  <a href="https://github.com/1304674612/agentbench/wiki"><strong>Documentation</strong></a> ·
+  <a href="https://github.com/1304674612/agentbench/releases"><strong>Releases</strong></a>
+</p>
+
+<hr/>
+
+## 📖 Why AgentBench?
+
+AI Agents are **unpredictable**. A prompt tweak, a model upgrade, or a tool swap can silently degrade your agent — and most teams discover this only when users complain.
+
+AgentBench gives you the same testing rigor for your AI agents that you expect for your software.
+
+<table>
+<tr>
+<td width="50%">
+
+> ❌ **Without AgentBench**
+
+- "I _think_ the new prompt is better"
+- Manual spot-checking — misses regressions
+- No idea if GPT → Claude breaks behavior
+- Can't reproduce or bisect failures
+- `console.log(agentResponse)` as your test suite
+
+</td>
+<td width="50%">
+
+> ✅ **With AgentBench**
+
+- **Score improved 7.2 → 9.1 (+26%)** ✓
+- Automated test suites with assertions
+- Cross-model replay catches drift instantly
+- Full trace — every call, every tool use
+- `agentbench test` in CI — ship with confidence
+
+</td>
+</tr>
+</table>
+
 ---
 
-## ⚠️ Important Notice
+## 🚀 Quick Start
 
-- **🧪 Alpha Status**: AgentBench is in active development (v0.1.0). APIs may change before v1.0.0. See [Roadmap](docs/ROADMAP.md) for planned features.
-- **🔑 LLM Costs**: Running evaluations and judges will consume API tokens and incur costs. Configure spending limits and choose cost-effective judge models.
-- **📊 Early Feedback**: We welcome issues, PRs, and discussions. Your feedback during alpha directly shapes the roadmap.
-
----
-
-## Overview
-
-AgentBench brings the rigor of software testing — **replay, evaluate, compare, assert, regression test** — to AI Agents. Think _Playwright + Jest + LangSmith_, purpose-built for AI agent developers.
-
-AI Agents are unpredictable. A prompt change, a model upgrade, or a tool swap can silently break your agent's behavior. Most teams validate agent quality by manually clicking around — that doesn't scale. AgentBench makes agent verification **repeatable, automatable, and CI-friendly**.
-
----
-
-## Features
-
-- **🔄 Agent Runner** — Execute agents and capture full, step-by-step execution traces
-- **⏱️ Execution Tracer** — Transparently intercept OpenAI, Anthropic, and MCP calls with timing and token data
-- **📊 Evaluation Engine** — Rule-based evaluators (14 rules) + LLM-as-Judge across 8 quality dimensions (correctness, faithfulness, safety, relevance, completeness, reasoning, conciseness, tool usage)
-- **✅ Assertion DSL** — Chained, Jest-like API: `expect(run).tool("search").toBeCalled().tokens().toBeLessThan(4096).run()`
-- **♻️ Replay Engine** — Deterministic and cross-model replay to catch regressions when models change
-- **📸 Snapshots** — Save complete agent state (prompt, model, tools, memory) for later comparison
-- **⚖️ Diff Engine** — Side-by-side comparison of outputs, tokens, cost, latency, and execution paths
-- **🧬 A/B Experiments** — Compare prompts, models, or workflows with statistical rigor (t-test, bootstrap)
-- **🛡️ Coverage Analysis** — Measure prompt variable, workflow path, tool call, and edge-case coverage
-- **📄 Report Generation** — Export results as JSON, Markdown, HTML, and JUnit XML for CI integration
-- **💻 CLI** — First-class command-line interface with colored output and structured formatting
-- **🖥️ Dashboard** — Modern dark-first web UI (Linear-inspired) for monitoring and management
-
----
-
-## Quick Start
+<table>
+<tr>
+<td width="50%">
 
 ### Prerequisites
-
 - **Node.js** ≥ 20
 - **pnpm** ≥ 9
-- **Docker** (for PostgreSQL + Redis)
+- **Docker** (PostgreSQL + Redis)
 
-### 1. Clone & Install
+</td>
+<td width="50%">
+
+### Install & Launch
 
 ```bash
 git clone git@github.com:1304674612/agentbench.git
-cd agentbench
-pnpm install
-```
-
-### 2. Start Infrastructure
-
-```bash
+cd agentbench && pnpm install
 docker compose up -d
-```
-
-### 3. Set Up Database
-
-```bash
-cp .env.example .env
-pnpm db:generate
-pnpm db:migrate
-```
-
-### 4. Launch
-
-```bash
+cp .env.example .env && pnpm db:push
 pnpm dev
 ```
 
-| Service | URL |
-|---------|-----|
-| 🖥️ Dashboard | http://localhost:3000 |
-| 💻 CLI | `pnpm --filter agentbench exec agentbench --help` |
+| | URL |
+|---|---|
+| Dashboard | http://localhost:3000/dashboard |
+| API | http://localhost:3000/api/v1 |
+
+</td>
+</tr>
+</table>
 
 ---
 
-## CLI Usage
+## ✨ Features
 
-```bash
-# Initialize AgentBench in your project
-agentbench init
+<table>
+<tr>
+<td>
 
-# Run an agent and capture its trace
-agentbench run \
-  --project <project-id> \
-  --name "GPT-4o baseline" \
-  --provider openai \
-  --model gpt-4o
+### 🔧 Core Engine
+- **Agent Runner** — Execute agents with timeout & concurrency control
+- **Execution Tracer** — Transparently intercept OpenAI, Anthropic, MCP calls
+- **Token & Cost** — Count tokens, calculate cost for 15+ models
 
-# Evaluate a run against rules
-agentbench evaluate <run-id> \
-  --tool "search" \
-  --contains "answer" \
-  --latency-lt 5000 \
-  --tokens-lt 4096 \
-  --verbose
+### 📊 Evaluation
+- **14 Rule Evaluators** — exact_match, contains, regex, json_schema, tool_called…
+- **LLM-as-Judge** — 8 quality dimensions: correctness, faithfulness, safety, relevance
+- **Hybrid Judge** — Combine rules + LLM with configurable voting strategies
 
-# Run a test suite
-agentbench test \
-  --project <project-id> \
-  --suite <suite-id> \
-  --grep "customer-support" \
-  --verbose
+### ♻️ Regression & Replay
+- **Snapshot Manager** — Save & restore complete agent state
+- **Replay Engine** — Deterministic / cross-model / batch replay
+- **Diff Engine** — Text, metric, trace, and score comparison
+- **Regression Detection** — Auto-flag token/cost/latency/score regressions
 
-# Compare two runs
-agentbench compare <run-a-id> <run-b-id> --format table
+</td>
+<td>
 
-# Replay a run with a different model
-agentbench replay <run-id> --model claude-sonnet-5
-
-# Generate a report
-agentbench report <run-id> --format markdown
+### ✅ Assertion DSL
+```typescript
+await expect(runResult)
+  .tool("search").toBeCalled()
+  .output().toContain("30 days")
+  .tokens().toBeLessThan(4096)
+  .score("correctness").toBeGreaterThan(7)
+  .run()
 ```
 
+### 🧬 Experiments & Coverage
+- **A/B Testing** — t-test, bootstrap CI, Cohen's d
+- **4D Coverage** — Prompt, workflow, tool, edge-case
+
+### 🖥️ Web & CLI
+- **Dashboard** — Dark-first Linear-inspired UI
+- **8 CLI Commands** — init, run, test, evaluate, replay, compare, snapshot, report
+- **CI-Ready** — GitHub Actions workflow, JUnit export
+
+### 🛡️ Platform
+- **4 Report Formats** — JSON, Markdown, HTML, JUnit XML
+- **Dataset Management** — CSV/JSON/JSONL import + train/test split
+- **Webhooks** — GitHub + GitLab CI triggers
+
+</td>
+</tr>
+</table>
+
 ---
 
-## Assertion DSL
+## 🔌 Assertion DSL
 
-Write assertions as naturally as you write tests. The chained API reads like English:
+The most fluent way to test an AI agent. Chainable, type-safe, reads like English.
 
 ```typescript
 import { expect } from '@agentbench/core'
 
 const result = await expect(runResult)
-  .status().toBeCompleted()                     // Agent finished successfully
-  .tool("search_docs").toBeCalled()             // Called the right tool
-  .tool("search_docs").toBeCalledWith({         // Called with correct args
+  .status().toBeCompleted()                     // ✅ Agent finished successfully
+  .tool("search_docs").toBeCalled()             // ✅ Called the right tool
+  .tool("search_docs").toBeCalledWith({         // ✅ Called with correct args
     query: "refund policy"
   })
-  .tool("hallucinate").not.toBeCalled()         // No forbidden tools
-  .output().toContain("30 days")                // Output has correct information
-  .output().toMatchRegex(/refund.*policy/i)     // Pattern validation
-  .tokens().toBeLessThan(4096)                  // Token budget respected
-  .latency().toBeLessThan(5000)                 // Under 5 seconds
-  .score("correctness").toBeGreaterThan(7)      // Quality threshold
-  .score("safety").toBeGreaterThan(8)           // Safety threshold
+  .tool("hallucinate").not.toBeCalled()         // ✅ No forbidden tools
+  .output().toContain("30 days")                // ✅ Output has correct info
+  .output().toMatchRegex(/refund.*policy/i)     // ✅ Pattern validation
+  .tokens().toBeLessThan(4096)                  // ✅ Token budget respected
+  .latency().toBeLessThan(5000)                 // ✅ Under 5 seconds
+  .score("correctness").toBeGreaterThan(7)       // ✅ Quality threshold met
+  .score("safety").toBeGreaterThan(8)            // ✅ Safety threshold met
   .run()
 
-if (!result.allPassed) {
-  console.error(`${result.failed} assertion(s) failed!`)
-  process.exit(1)
-}
+if (!result.allPassed) process.exit(1)
 ```
 
-### Available Matchers
+<details>
+<summary><strong>📋 All 22 Matchers</strong></summary>
 
 | Category | Matchers |
 |----------|----------|
-| **Tool** | `toBeCalled()`, `toBeCalledWith()`, `toBeCalledTimes()`, `not.toBeCalled()` |
-| **Tokens** | `toBeLessThan()`, `toBeGreaterThan()`, `toBeBetween()` |
-| **Latency** | `toBeLessThan()`, `toBeGreaterThan()`, `firstToken().toBeLessThan()` |
-| **Output** | `toContain()`, `not.toContain()`, `toEqual()`, `toMatchRegex()`, `toMatchSchema()`, `toMatchSnapshot()` |
-| **Score** | `toBeGreaterThan()`, `toBeLessThan()`, `toBeBetween()` |
-| **Status** | `toBeCompleted()`, `toBe("passed")` |
-| **Compound** | `all()`, `any()` |
+| **Tool** | `toBeCalled()` · `toBeCalledWith()` · `toBeCalledTimes()` · `not.toBeCalled()` |
+| **Tokens** | `toBeLessThan()` · `toBeGreaterThan()` · `toBeBetween()` |
+| **Latency** | `toBeLessThan()` · `toBeGreaterThan()` · `firstToken().toBeLessThan()` |
+| **Output** | `toContain()` · `not.toContain()` · `toEqual()` · `toMatchRegex()` · `toMatchSchema()` · `toMatchSnapshot()` |
+| **Score** | `toBeGreaterThan()` · `toBeLessThan()` · `toBeBetween()` |
+| **Status** | `toBeCompleted()` · `toBe("passed")` |
+| **Compound** | `all()` · `any()` |
+
+</details>
 
 ---
 
-## Evaluation System
+## 📦 Ecosystem
 
-### Rule-Based Evaluators (14 rules)
-
-`exact_match` · `contains` · `regex_match` · `json_schema` · `tool_called` · `tool_not_called` · `tool_called_with` · `tool_called_times` · `status_code` · `latency_lt` · `tokens_lt` · `tokens_gt` · `cost_lt` · `cost_gt`
-
-### LLM-as-Judge (8 dimensions)
-
-| Dimension | What It Measures |
-|-----------|-----------------|
-| `correctness` | Factual accuracy vs expected answer |
-| `faithfulness` | Grounding in source — no hallucinations |
-| `safety` | Harmful content, disclaimers, PII |
-| `relevance` | On-topic, answers the actual question |
-| `completeness` | Covers all aspects, no gaps |
-| `reasoning` | Logical flow, valid conclusions |
-| `conciseness` | No filler, no repetition |
-| `tool_usage` | Right tools, efficient calls |
-
-### Hybrid Judge
-
-Combine rules and LLM judges with configurable strategies: `rule_first` · `llm_first` · `parallel`. Multi-judge voting with `majority` / `unanimous` / `weighted` consensus.
+| Package | Description | Status |
+|---------|-------------|:--:|
+| `@agentbench/core` | Core engine — Runner, Tracer, Evaluator, Assertion, Storage | ✅ |
+| `@agentbench/openai` | OpenAI wrapper with auto-tracing, token counting, cost calc | ✅ |
+| `@agentbench/anthropic` | Anthropic Claude wrapper with streaming & tool use | ✅ |
+| `@agentbench/mcp` | MCP client for tool calls and resource access | ✅ |
+| `@agentbench/adapter` | Generic adapter for LangGraph, CrewAI, LlamaIndex, custom agents | ✅ |
 
 ---
 
-## Project Structure
+## 📊 Project Status
+
+| Metric | Value | | Metric | Value |
+|--------|-------|--|--------|-------|
+| TypeScript Files | **100+** | | Packages | **8** |
+| Lines of Code | **16,000+** | | API Endpoints | **18** |
+| CLI Commands | **8** | | Unit Tests | **51 / 51** |
+| TS Errors | **0** | | E2E Pass Rate | **95%** |
+
+| Phase | Milestone | |
+|:--:|-----------|:--:|
+| M0 | Foundation — Monorepo, DB, Scaffold | ✅ |
+| M1 | Core Engine — Runner, Tracer, Storage | ✅ |
+| M2 | Evaluation & Assertion — 14 rules + 8 judges + DSL | ✅ |
+| M3 | Regression & Replay — Snapshot, Replay, Diff | ✅ |
+| M4 | Experiments & Coverage — t-test, 4D coverage | ✅ |
+| M5 | SDK Ecosystem — OpenAI, Anthropic, MCP, Adapter | ✅ |
+| M6 | Platform — Reports, Datasets, CI/CD, Webhooks | ✅ |
+| M7 | Polish — Dashboard, Landing Page, Documentation | ✅ |
+| v1.0 | **Next** — Auth, Rate Limiting, Production Hardening | 🔜 |
+
+---
+
+## 🏗️ Architecture
 
 ```
 agentbench/
 ├── apps/
-│   ├── web/                 # Next.js Dashboard (App Router)
-│   └── cli/                 # CLI Tool (commander.js)
+│   ├── web/                    Next.js 15 Dashboard + REST API
+│   └── cli/                    Commander.js CLI (8 commands)
 ├── packages/
-│   ├── core/                # @agentbench/core — Engine
-│   │   ├── runner/          # Agent Runner
-│   │   ├── tracer/          # Execution Tracer + Interceptors
-│   │   ├── evaluator/       # Rule + LLM + Hybrid Judge
-│   │   ├── assertion/       # Chained Assertion DSL
-│   │   ├── storage/         # Storage Adapter Interface
-│   │   ├── types/           # Core TypeScript Types
-│   │   └── utils/           # Token & Cost Helpers
-│   └── typescript-config/   # Shared TS Config
-├── docs/                    # Architecture, Schema, Roadmap, Tasks
-├── docker-compose.yml       # PostgreSQL + Redis
-└── turbo.json               # Turborepo pipeline
+│   ├── core/                   @agentbench/core — Engine
+│   │   ├── runner/             Agent Runner
+│   │   ├── tracer/             Execution Tracer + LLM Interceptors
+│   │   ├── evaluator/          Rule + LLM + Hybrid Judge
+│   │   ├── assertion/          Chained Assertion DSL
+│   │   ├── snapshot/           Snapshot Manager
+│   │   ├── replay/             Replay Engine
+│   │   ├── diff/               Diff Engine
+│   │   ├── experiment/         A/B Testing Engine
+│   │   ├── coverage/           Coverage Analysis
+│   │   ├── reporter/           Report Generator (JSON/MD/HTML/JUnit)
+│   │   ├── storage/            Storage Abstraction (Postgres + Memory)
+│   │   ├── types/              TypeScript Type Definitions
+│   │   └── utils/              Token Counter + JSON Validator
+│   ├── openai/                 @agentbench/openai
+│   ├── anthropic/              @agentbench/anthropic
+│   ├── mcp/                    @agentbench/mcp
+│   ├── adapter/                @agentbench/adapter
+│   └── typescript-config/      Shared TSConfig
+├── docs/                       11 Wiki-synced documents
+├── docker-compose.yml          PostgreSQL 16 + Redis 7
+└── .github/workflows/          CI pipeline
 ```
 
 ---
 
-## Tech Stack
+## 📚 Documentation
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | Next.js 15 (App Router) · React 19 · Tailwind CSS v4 · Radix UI · Framer Motion · Recharts |
-| **Backend** | Next.js API Routes · Prisma · PostgreSQL 16 · Redis 7 |
-| **CLI** | Commander.js · Chalk · Ora |
-| **Language** | TypeScript 5.7+ (strict) |
-| **Monorepo** | pnpm workspaces · Turborepo |
-| **Quality** | Biome · Husky |
-| **Infra** | Docker Compose · GitHub Actions |
-
----
-
-## Roadmap
-
-| Milestone | Version | Status |
-|-----------|---------|:--:|
-| M0 — Foundation | v0.1.0 | ✅ |
-| M1 — Core Engine (Runner, Tracer, Storage) | v0.1.0 | ✅ |
-| M2 — Evaluation & Assertion | v0.1.0 | ✅ |
-| M3 — Regression & Replay (Snapshot, Diff) | v0.1.0 | ✅ |
-| M4 — Experiments & Coverage | v0.1.0 | ✅ |
-| M5 — SDK Ecosystem (OpenAI, Anthropic, MCP) | v0.1.0 | ✅ |
-| M6 — Platform (Reports, Datasets, CI/CD) | v0.1.0 | ✅ |
-| M7 — Polish & Landing Page | v0.1.0 | ✅ |
-| v1.0 — Auth, Tests, Production Hardening | v1.0.0 | 🔜 Next |
-
-→ [Full Roadmap](docs/ROADMAP.md) · [Task List](docs/TASKS.md) · [Architecture](docs/ARCHITECTURE.md) · [Deployment](docs/DEPLOYMENT.md)
+| Document | |
+|----------|--|
+| [📖 Documentation Hub](https://github.com/1304674612/agentbench/wiki) | Full Wiki with sidebar navigation |
+| [🚀 Getting Started](docs/GETTING_STARTED.md) | Step-by-step tutorial |
+| [📡 API Reference](docs/API_REFERENCE.md) | 18 endpoints with curl examples |
+| [💻 CLI Reference](docs/CLI_REFERENCE.md) | 8 commands with all options |
+| [📦 SDK Guide](docs/SDK_GUIDE.md) | Usage for OpenAI, Anthropic, MCP, Adapter |
+| [🏗️ Architecture](docs/ARCHITECTURE.md) | System design & data flow |
+| [🚢 Deployment](docs/DEPLOYMENT.md) | Docker, Vercel, self-hosted |
+| [❓ FAQ](docs/FAQ.md) | 20+ common questions |
+| [📋 Glossary](docs/GLOSSARY.md) | 50+ terminology definitions |
+| [🇨🇳 中文文档](README_CN.md) | Complete Chinese documentation |
 
 ---
 
-## Development
+## 🤝 Community
 
-```bash
-pnpm install          # Install dependencies
-pnpm dev              # Start all apps in development
-pnpm build            # Build all packages
-pnpm typecheck        # Type check all packages
-pnpm lint             # Lint all packages
-pnpm format           # Format with Biome
-pnpm db:generate      # Generate Prisma client
-pnpm db:migrate       # Run database migrations
-pnpm db:studio        # Open Prisma Studio
-```
+AgentBench is open source and community-driven. We welcome all contributions!
 
----
-
-## Contributing
-
-We welcome contributions! Check the [Roadmap](docs/ROADMAP.md) and [Task List](docs/TASKS.md) to find something to work on.
-
-```bash
-git clone git@github.com:1304674612/agentbench.git
-cd agentbench
-pnpm install
-pnpm dev              # Start hacking
-pnpm typecheck        # Verify your changes
-```
-
----
-
-## License
-
-[Apache 2.0](LICENSE) © AgentBench
+| | Link |
+|--|------|
+| 💬 **Discussions** | [github.com/1304674612/agentbench/discussions](https://github.com/1304674612/agentbench/discussions) |
+| 🐛 **Issue Tracker** | [github.com/1304674612/agentbench/issues](https://github.com/1304674612/agentbench/issues) |
+| 📝 **Contributing Guide** | [CONTRIBUTING.md](CONTRIBUTING.md) |
+| 🔒 **Security Policy** | [SECURITY.md](SECURITY.md) |
+| 📋 **Code of Conduct** | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) |
 
 ---
 
 <div align="center">
-  <sub>Built with ❤️ for the AI agent community. If AgentBench saves you from shipping a broken agent, give it a ⭐</sub>
+  <br/>
+  <strong>Built with ❤️ for the AI Agent community</strong>
+  <br/><br/>
+  <sub>Apache 2.0 License · © 2026 AgentBench Contributors</sub>
+  <br/>
+  <sub>If AgentBench saves you from shipping a broken agent, give it a ⭐</sub>
 </div>
