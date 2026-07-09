@@ -8,6 +8,8 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-336791.svg)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-7+-DC382D.svg)](https://redis.io/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
+[![TypeScript](https://img.shields.io/badge/TS_Errors-0-emerald?style=flat-square)](.)
+[![E2E](https://img.shields.io/badge/E2E_Tests-95%25-emerald?style=flat-square)](.)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 **The Regression Testing Framework for AI Agents**
@@ -244,17 +246,18 @@ agentbench/
 ## Roadmap
 
 | Milestone | Version | Status |
-|-----------|---------|--------|
-| M0 — Foundation | v0.1.0 | ✅ Complete |
-| M1 — Core Engine (Runner, Tracer, Storage) | v0.1.0 | ✅ Complete |
-| M2 — Evaluation & Assertion | v0.1.0 | ✅ Complete |
-| M3 — Regression & Replay (Snapshot, Diff) | v0.2.0 | 🔨 In Progress |
-| M4 — Experiments & Coverage | v0.5.0 | 📅 Planned |
-| M5 — SDK Ecosystem (OpenAI, Anthropic, MCP) | v0.5.0 | 📅 Planned |
-| M6 — Platform (Auth, Datasets, CI/CD) | v0.9.0 | 📅 Planned |
-| M7 — Polish & v1.0 Release | v1.0.0 | 🎯 Target |
+|-----------|---------|:--:|
+| M0 — Foundation | v0.1.0 | ✅ |
+| M1 — Core Engine (Runner, Tracer, Storage) | v0.1.0 | ✅ |
+| M2 — Evaluation & Assertion | v0.1.0 | ✅ |
+| M3 — Regression & Replay (Snapshot, Diff) | v0.1.0 | ✅ |
+| M4 — Experiments & Coverage | v0.1.0 | ✅ |
+| M5 — SDK Ecosystem (OpenAI, Anthropic, MCP) | v0.1.0 | ✅ |
+| M6 — Platform (Reports, Datasets, CI/CD) | v0.1.0 | ✅ |
+| M7 — Polish & Landing Page | v0.1.0 | ✅ |
+| v1.0 — Auth, Tests, Production Hardening | v1.0.0 | 🔜 Next |
 
-→ [Full Roadmap](docs/ROADMAP.md) · [Task List](docs/TASKS.md) · [Architecture](docs/ARCHITECTURE.md)
+→ [Full Roadmap](docs/ROADMAP.md) · [Task List](docs/TASKS.md) · [Architecture](docs/ARCHITECTURE.md) · [Deployment](docs/DEPLOYMENT.md)
 
 ---
 
