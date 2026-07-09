@@ -38,7 +38,9 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Test
-coverage/
+coverage/               # Test coverage reports (root only)
+!**/src/coverage/       # But not coverage source code
+!**/api/**/coverage/    # But not coverage API routes
 test-results/
 playwright-report/
 
