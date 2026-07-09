@@ -85,23 +85,174 @@ program
   .command('test')
   .description('Run all tests in a project')
   .requiredOption('-p, --project <id>', 'Project ID')
+  .option('-s, --suite <id>', 'Filter by test suite')
   .option('-g, --grep <pattern>', 'Filter tests by name pattern')
+  .option('--verbose', 'Show detailed results for each test case')
+  .option('--format <format>', 'Output format (table, json, junit)', 'table')
   .action(async (options) => {
     console.log(chalk.blue('⚡ Running tests...'))
 
     try {
-      const { runs } = await apiFetch(`/runs?projectId=${options.project}&limit=10`)
-      console.log(chalk.gray(`  Found ${runs.length} recent runs`))
+      // Fetch test suites and cases
+      const suitesUrl = options.suite
+        ? `/suites/${options.suite}`
+        : `/suites?projectId=${options.project}`
 
-      const passed = runs.filter((r: { status: string }) => r.status === 'passed').length
-      const failed = runs.filter((r: { status: string }) => r.status === 'failed' || r.status === 'error').length
+      interface TestCase {
+        id: string
+        name: string
+        status: string
+        assertions: Array<{ type: string; params: unknown }>
+        evaluators: Array<{ type: string; config: unknown }>
+      }
+      interface Suite {
+        id: string
+        name: string
+        cases: TestCase[]
+      }
 
+      let cases: TestCase[] = []
+
+      if (options.suite) {
+        const suite = await apiFetch(suitesUrl) as Suite
+        cases = suite.cases
+        console.log(chalk.gray(`  Suite: ${suite.name}`))
+      } else {
+        const { suites } = await apiFetch(suitesUrl) as { suites: Suite[] }
+        cases = suites.flatMap((s) => s.cases)
+        console.log(chalk.gray(`  Suites: ${suites.length}`))
+      }
+
+      // Filter by pattern
+      if (options.grep) {
+        const pattern = new RegExp(options.grep, 'i')
+        cases = cases.filter((c) => pattern.test(c.name))
+      }
+
+      console.log(chalk.gray(`  Test cases: ${cases.length}`))
       console.log('')
-      console.log(chalk.bold('Results:'))
-      console.log(chalk.green(`  ✓ ${passed} passed`))
-      if (failed > 0) console.log(chalk.red(`  ✗ ${failed} failed`))
 
-      if (failed > 0) process.exit(1)
+      if (cases.length === 0) {
+        console.log(chalk.yellow('No test cases found.'))
+        return
+      }
+
+      // Run each test case
+      const results: Array<{
+        name: string
+        status: string
+        duration: number
+        assertions: { passed: number; failed: number; total: number }
+      }> = []
+
+      for (const tc of cases) {
+        const startTime = Date.now()
+        process.stdout.write(chalk.gray(`  Running: ${tc.name}... `))
+
+        try {
+          const run = await apiFetch('/runs', {
+            method: 'POST',
+            body: JSON.stringify({
+              projectId: options.project,
+              testCaseId: tc.id,
+              name: `${tc.name} (${new Date().toISOString()})`,
+              tags: ['cli', 'test'],
+            }),
+          }) as { id: string; status: string }
+
+          // Run evaluation if assertions exist
+          if (tc.assertions.length > 0) {
+            const evalResult = await apiFetch(`/runs/${run.id}/evaluate`, {
+              method: 'POST',
+              body: JSON.stringify({
+                rules: tc.assertions.map((a) => ({
+                  type: a.type,
+                  params: a.params ?? {},
+                })),
+              }),
+            }) as {
+              summary: { passed: number; failed: number; totalRules: number }
+            }
+
+            results.push({
+              name: tc.name,
+              status: evalResult.summary.failed === 0 ? 'PASSED' : 'FAILED',
+              duration: Date.now() - startTime,
+              assertions: {
+                passed: evalResult.summary.passed,
+                failed: evalResult.summary.failed,
+                total: evalResult.summary.totalRules,
+              },
+            })
+
+            const icon = evalResult.summary.failed === 0 ? chalk.green('✓') : chalk.red('✗')
+            console.log(
+              icon +
+                ` ${evalResult.summary.passed}/${evalResult.summary.totalRules} passed (${Date.now() - startTime}ms)`,
+            )
+          } else {
+            results.push({
+              name: tc.name,
+              status: run.status === 'PASSED' ? 'PASSED' : run.status.toUpperCase(),
+              duration: Date.now() - startTime,
+              assertions: { passed: 0, failed: 0, total: 0 },
+            })
+
+            const icon = run.status === 'PASSED' ? chalk.green('✓') : chalk.red('✗')
+            console.log(icon + ` ${run.status} (${Date.now() - startTime}ms)`)
+          }
+        } catch (err) {
+          results.push({
+            name: tc.name,
+            status: 'ERROR',
+            duration: Date.now() - startTime,
+            assertions: { passed: 0, failed: 0, total: 0 },
+          })
+          console.log(chalk.red(`✗ ${err instanceof Error ? err.message : String(err)}`))
+        }
+      }
+
+      // Output results
+      console.log('')
+      if (options.format === 'json') {
+        console.log(JSON.stringify(results, null, 2))
+      } else {
+        const passed = results.filter((r) => r.status === 'PASSED').length
+        const failed = results.filter((r) => r.status === 'FAILED').length
+        const errored = results.filter((r) => r.status === 'ERROR').length
+
+        console.log(chalk.bold('─'.repeat(60)))
+        console.log(chalk.bold('Test Results'))
+        console.log(chalk.bold('─'.repeat(60)))
+
+        if (options.verbose) {
+          for (const r of results) {
+            const icon =
+              r.status === 'PASSED'
+                ? chalk.green('  ✓')
+                : r.status === 'FAILED'
+                  ? chalk.red('  ✗')
+                  : chalk.yellow('  ⚠')
+            console.log(
+              `${icon} ${r.name} [${r.status}] ${r.duration}ms` +
+                (r.assertions.total > 0
+                  ? ` (${r.assertions.passed}/${r.assertions.total} assertions)`
+                  : ''),
+            )
+          }
+          console.log('')
+        }
+
+        console.log(chalk.bold('Summary:'))
+        if (passed > 0) console.log(chalk.green(`  ✓ ${passed} passed`))
+        if (failed > 0) console.log(chalk.red(`  ✗ ${failed} failed`))
+        if (errored > 0) console.log(chalk.yellow(`  ⚠ ${errored} errors`))
+        console.log(chalk.gray(`  Total: ${results.length} test(s)`))
+
+        if (failed > 0 || errored > 0) {
+          process.exit(1)
+        }
+      }
     } catch (err) {
       console.error(chalk.red(`✗ Failed: ${err instanceof Error ? err.message : String(err)}`))
       process.exit(1)
@@ -138,6 +289,112 @@ program
 
       console.log(chalk.green('✓ Replay created!'))
       console.log(chalk.gray(`  New Run ID: ${result.id}`))
+    } catch (err) {
+      console.error(chalk.red(`✗ Failed: ${err instanceof Error ? err.message : String(err)}`))
+      process.exit(1)
+    }
+  })
+
+// evaluate command
+program
+  .command('evaluate <run-id>')
+  .description('Evaluate a run with rules and criteria')
+  .option('--contains <text>', 'Check if output contains text')
+  .option('--tool <name>', 'Check if a tool was called')
+  .option('--tool-not <name>', 'Check if a tool was NOT called')
+  .option('--latency-lt <ms>', 'Check if latency is less than threshold (ms)')
+  .option('--tokens-lt <n>', 'Check if tokens are less than threshold')
+  .option('--cost-lt <dollars>', 'Check if cost is less than threshold')
+  .option('--json-schema <schema>', 'Validate output against JSON schema (file path)')
+  .option('--expected <text>', 'Expected output for exact match')
+  .option('-v, --verbose', 'Show detailed evaluation results')
+  .action(async (runId, options) => {
+    console.log(chalk.blue(`⚡ Evaluating run: ${runId}`))
+
+    try {
+      // Build rule configs from CLI options
+      const rules: Array<{ type: string; params: Record<string, unknown> }> = []
+
+      if (options.contains) {
+        rules.push({ type: 'contains', params: { substring: options.contains } })
+      }
+      if (options.tool) {
+        rules.push({ type: 'tool_called', params: { tool: options.tool } })
+      }
+      if (options.toolNot) {
+        rules.push({ type: 'tool_not_called', params: { tool: options.toolNot } })
+      }
+      if (options.latencyLt) {
+        rules.push({ type: 'latency_lt', params: { threshold: parseInt(options.latencyLt) } })
+      }
+      if (options.tokensLt) {
+        rules.push({ type: 'tokens_lt', params: { threshold: parseInt(options.tokensLt) } })
+      }
+      if (options.costLt) {
+        rules.push({ type: 'cost_lt', params: { threshold: parseFloat(options.costLt) } })
+      }
+      if (options.expected) {
+        rules.push({ type: 'exact_match', params: { expected: options.expected } })
+      }
+      if (options.jsonSchema) {
+        const fs = await import('node:fs')
+        const schemaContent = fs.readFileSync(options.jsonSchema, 'utf-8')
+        const schema = JSON.parse(schemaContent)
+        rules.push({ type: 'json_schema', params: { schema } })
+      }
+
+      if (rules.length === 0) {
+        console.log(chalk.yellow('No evaluation rules specified. Use --help to see options.'))
+        return
+      }
+
+      const result = await apiFetch(`/runs/${runId}/evaluate`, {
+        method: 'POST',
+        body: JSON.stringify({ rules }),
+      }) as {
+        runId: string
+        summary: { totalRules: number; passed: number; failed: number; errored: number }
+        scores: Array<{ evaluator: string; score: number; maxScore: number; reason: string }>
+        assertionResults: Array<{ type: string; status: string; message?: string }>
+      }
+
+      console.log('')
+      console.log(chalk.bold('─'.repeat(50)))
+      console.log(chalk.bold('Evaluation Results'))
+      console.log(chalk.bold('─'.repeat(50)))
+      console.log('')
+
+      if (options.verbose) {
+        for (const ar of result.assertionResults) {
+          const icon =
+            ar.status === 'PASSED'
+              ? chalk.green('  ✓')
+              : ar.status === 'FAILED'
+                ? chalk.red('  ✗')
+                : chalk.yellow('  ⚠')
+          console.log(`${icon} [${ar.type}] ${ar.message ?? ar.status}`)
+        }
+        console.log('')
+      }
+
+      // Summary
+      const { summary } = result
+      console.log(chalk.bold('Summary:'))
+      if (summary.passed > 0) console.log(chalk.green(`  ✓ ${summary.passed} passed`))
+      if (summary.failed > 0) console.log(chalk.red(`  ✗ ${summary.failed} failed`))
+      if (summary.errored > 0) console.log(chalk.yellow(`  ⚠ ${summary.errored} errored`))
+      console.log(chalk.gray(`  Total: ${summary.totalRules} rule(s)`))
+
+      // Score summary
+      if (result.scores.length > 0) {
+        console.log('')
+        console.log(chalk.bold('Scores:'))
+        for (const s of result.scores) {
+          console.log(chalk.gray(`  ${s.evaluator}: ${s.score}/${s.maxScore} — ${s.reason}`))
+        }
+      }
+
+      if (summary.failed > 0) process.exit(1)
     } catch (err) {
       console.error(chalk.red(`✗ Failed: ${err instanceof Error ? err.message : String(err)}`))
       process.exit(1)

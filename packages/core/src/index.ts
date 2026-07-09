@@ -15,9 +15,9 @@ export * from './tracer'
 export * from './storage'
 export { tokenCounter, costCalculator, TokenCounter, CostCalculator } from './utils/token-counter'
 
-// Coming in Phase 2:
-// export * from './evaluator'
-// export * from './assertion'
+// Phase 2: Evaluation & Assertion
+export * from './evaluator'
+export * from './assertion'
 // Coming in Phase 3:
 // export * from './snapshot'
 // export * from './diff'

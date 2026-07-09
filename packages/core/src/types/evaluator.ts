@@ -69,6 +69,7 @@ export interface JudgeScore {
   maxScore: number
   reasoning: string
   confidence?: number
+  duration?: number
 }
 
 // ============================================================

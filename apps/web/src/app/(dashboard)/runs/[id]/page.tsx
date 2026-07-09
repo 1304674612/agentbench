@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { db } from '@/shared/lib/db'
 import { formatNumber, formatCurrency, formatDuration, formatRelativeTime } from '@/shared/lib/utils'
-import { ArrowLeft, Clock, Zap, DollarSign, BarChart3, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Clock, Zap, DollarSign, BarChart3, AlertTriangle, CheckCircle2, XCircle, SkipForward, AlertCircle, ThumbsUp } from 'lucide-react'
 
 const statusStyles: Record<string, string> = {
   passed: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
@@ -258,6 +258,78 @@ export default async function RunDetailPage({ params }: PageProps) {
                 )}
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Assertion Results */}
+      {run.assertionResults.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold mb-4">Assertion Results</h2>
+          <div className="rounded-xl border border-border overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase">
+                    Type
+                  </th>
+                  <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase">
+                    Status
+                  </th>
+                  <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase">
+                    Expected
+                  </th>
+                  <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase">
+                    Actual
+                  </th>
+                  <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase">
+                    Message
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {run.assertionResults.map((result: { id: string; type: string; status: string; expected?: unknown; actual?: unknown; message?: string | null }) => (
+                  <tr key={result.id} className="hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-2.5">
+                      <code className="text-xs font-mono bg-muted rounded px-1.5 py-0.5">
+                        {result.type}
+                      </code>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      {result.status === 'PASSED' && (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-400">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Passed
+                        </span>
+                      )}
+                      {result.status === 'FAILED' && (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-red-400">
+                          <XCircle className="h-3.5 w-3.5" /> Failed
+                        </span>
+                      )}
+                      {result.status === 'ERROR' && (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-400">
+                          <AlertCircle className="h-3.5 w-3.5" /> Error
+                        </span>
+                      )}
+                      {result.status === 'SKIPPED' && (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                          <SkipForward className="h-3.5 w-3.5" /> Skipped
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-[200px] truncate">
+                      {result.expected ? JSON.stringify(result.expected as unknown) : '—'}
+                    </td>
+                    <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-[200px] truncate">
+                      {result.actual ? JSON.stringify(result.actual as unknown) : '—'}
+                    </td>
+                    <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-[250px] truncate">
+                      {result.message ?? '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
