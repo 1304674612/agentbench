@@ -14,7 +14,7 @@
 
 *回放 · 评估 · 对比 · 断言 · 回归检测 — 全流程自动化*
 
-[English](README.md) | 中文 | [路线图](docs/ROADMAP.md) | [架构](docs/ARCHITECTURE.md) | [部署](docs/DEPLOYMENT.md)
+[English](README.md) | 中文 | [📖 文档中心](docs/INDEX.md) | [更新日志](CHANGELOG.md) | [Release](https://github.com/1304674612/agentbench/releases)
 
 </div>
 

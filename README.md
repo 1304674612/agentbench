@@ -17,7 +17,7 @@
 
 *Replay · Evaluate · Compare · Assert · Catch Regressions — in CI.*
 
-[English](README.md) | [中文](README_CN.md) | [Changelog](CHANGELOG.md) | [Roadmap](docs/ROADMAP.md) | [Architecture](docs/ARCHITECTURE.md)
+[English](README.md) | [中文](README_CN.md) | [📖 文档中心](docs/INDEX.md) | [Changelog](CHANGELOG.md) | [Release](https://github.com/1304674612/agentbench/releases)
 
 </div>
 
