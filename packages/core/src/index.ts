@@ -22,10 +22,9 @@ export * from './assertion'
 export * from './snapshot'
 export * from './replay'
 export * from './diff'
-// Coming in Phase 4:
-// export * from './coverage'
-// export * from './experiment'
-// export * from './reporter'
+// Phase 4: Experiments & Coverage
+export * from './experiment'
+export * from './coverage'
 
 // Version
 export const VERSION = '0.1.0'
