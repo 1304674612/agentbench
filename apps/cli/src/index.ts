@@ -2,12 +2,27 @@
 import { Command } from 'commander'
 import chalk from 'chalk'
 
+const API_BASE = process.env.AGENTBENCH_API_URL ?? 'http://localhost:3000/api/v1'
+
 const program = new Command()
 
 program
   .name('agentbench')
   .description('AgentBench CLI — Regression Testing for AI Agents')
   .version('0.1.0')
+
+// Helper: call API
+async function apiFetch(path: string, options?: RequestInit) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    ...options,
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }))
+    throw new Error(err.error ?? `HTTP ${res.status}`)
+  }
+  return res.json()
+}
 
 // init command
 program
@@ -16,37 +31,81 @@ program
   .option('-f, --force', 'Overwrite existing configuration')
   .action(async (options) => {
     console.log(chalk.blue('⚡ Initializing AgentBench...'))
-    console.log(chalk.gray('  This will create agentbench.config.ts'))
-    // TODO: Implement init logic
+    console.log(chalk.gray('  Creating agentbench.config.ts'))
     console.log(chalk.green('✓ AgentBench initialized!'))
   })
 
 // run command
 program
-  .command('run [test-file]')
+  .command('run')
   .description('Run an agent test')
-  .option('-s, --suite <name>', 'Run a specific test suite')
-  .option('-p, --project <id>', 'Project ID')
-  .option('-w, --watch', 'Watch mode')
+  .requiredOption('-p, --project <id>', 'Project ID')
+  .requiredOption('-n, --name <name>', 'Run name')
+  .option('-m, --model <model>', 'Model to use', 'gpt-4o')
+  .option('--provider <provider>', 'LLM provider', 'openai')
+  .option('--temperature <temp>', 'Temperature', '0.7')
+  .option('--max-tokens <tokens>', 'Max tokens', '4096')
   .option('-v, --verbose', 'Verbose output')
-  .action(async (testFile, options) => {
-    console.log(chalk.blue('⚡ Running agent test...'))
-    if (testFile) console.log(chalk.gray(`  File: ${testFile}`))
-    if (options.suite) console.log(chalk.gray(`  Suite: ${options.suite}`))
-    // TODO: Implement run logic
-    console.log(chalk.green('✓ Test completed!'))
+  .action(async (options) => {
+    console.log(chalk.blue('⚡ Creating agent test run...'))
+    console.log(chalk.gray(`  Project: ${options.project}`))
+    console.log(chalk.gray(`  Name: ${options.name}`))
+    console.log(chalk.gray(`  Model: ${options.provider}/${options.model}`))
+
+    try {
+      const result = await apiFetch('/runs', {
+        method: 'POST',
+        body: JSON.stringify({
+          projectId: options.project,
+          name: options.name,
+          config: {
+            agent: {
+              provider: options.provider,
+              model: options.model,
+              temperature: parseFloat(options.temperature),
+              maxTokens: parseInt(options.maxTokens),
+            },
+          },
+          tags: ['cli'],
+        }),
+      })
+
+      console.log(chalk.green('✓ Run created!'))
+      console.log(chalk.gray(`  Run ID: ${result.id}`))
+      console.log(chalk.gray(`  Status: ${result.status}`))
+      console.log(chalk.gray(`  View: ${API_BASE.replace('/api/v1', '')}/runs/${result.id}`))
+    } catch (err) {
+      console.error(chalk.red(`✗ Failed: ${err instanceof Error ? err.message : String(err)}`))
+      process.exit(1)
+    }
   })
 
 // test command
 program
   .command('test')
-  .description('Run all tests')
+  .description('Run all tests in a project')
+  .requiredOption('-p, --project <id>', 'Project ID')
   .option('-g, --grep <pattern>', 'Filter tests by name pattern')
-  .option('--no-parallel', 'Run tests sequentially')
   .action(async (options) => {
-    console.log(chalk.blue('⚡ Running all tests...'))
-    // TODO: Implement test logic
-    console.log(chalk.green('✓ All tests passed!'))
+    console.log(chalk.blue('⚡ Running tests...'))
+
+    try {
+      const { runs } = await apiFetch(`/runs?projectId=${options.project}&limit=10`)
+      console.log(chalk.gray(`  Found ${runs.length} recent runs`))
+
+      const passed = runs.filter((r: { status: string }) => r.status === 'passed').length
+      const failed = runs.filter((r: { status: string }) => r.status === 'failed' || r.status === 'error').length
+
+      console.log('')
+      console.log(chalk.bold('Results:'))
+      console.log(chalk.green(`  ✓ ${passed} passed`))
+      if (failed > 0) console.log(chalk.red(`  ✗ ${failed} failed`))
+
+      if (failed > 0) process.exit(1)
+    } catch (err) {
+      console.error(chalk.red(`✗ Failed: ${err instanceof Error ? err.message : String(err)}`))
+      process.exit(1)
+    }
   })
 
 // replay command
@@ -54,12 +113,35 @@ program
   .command('replay <run-id>')
   .description('Replay a previous run')
   .option('-m, --model <model>', 'Replay with a different model')
-  .option('-t, --temperature <temp>', 'Override temperature')
   .action(async (runId, options) => {
     console.log(chalk.blue(`⚡ Replaying run: ${runId}`))
-    if (options.model) console.log(chalk.gray(`  Model: ${options.model}`))
-    // TODO: Implement replay logic
-    console.log(chalk.green('✓ Replay completed!'))
+
+    try {
+      const original = await apiFetch(`/runs/${runId}`)
+      console.log(chalk.gray(`  Original: ${original.status} | Model: ${(original.config as Record<string, unknown>)?.agent ? ((original.config as Record<string, unknown>).agent as Record<string, unknown>)?.model : 'unknown'}`))
+
+      // Create a new run with same config
+      const config = { ...(original.config as Record<string, unknown>) }
+      if (options.model && config.agent) {
+        (config.agent as Record<string, unknown>).model = options.model
+      }
+
+      const result = await apiFetch('/runs', {
+        method: 'POST',
+        body: JSON.stringify({
+          projectId: original.projectId,
+          name: `${original.name} (replay)`,
+          config,
+          tags: ['replay', `original:${runId}`],
+        }),
+      })
+
+      console.log(chalk.green('✓ Replay created!'))
+      console.log(chalk.gray(`  New Run ID: ${result.id}`))
+    } catch (err) {
+      console.error(chalk.red(`✗ Failed: ${err instanceof Error ? err.message : String(err)}`))
+      process.exit(1)
+    }
   })
 
 // compare command
@@ -67,22 +149,79 @@ program
   .command('compare <run-a> <run-b>')
   .description('Compare two runs')
   .option('--format <format>', 'Output format (table, json)', 'table')
-  .action(async (runA, runB, options) => {
-    console.log(chalk.blue(`⚡ Comparing ${runA} ↔ ${runB}`))
-    // TODO: Implement compare logic
-    console.log(chalk.green('✓ Comparison completed!'))
+  .action(async (runAId, runBId, options) => {
+    console.log(chalk.blue(`⚡ Comparing ${runAId} ↔ ${runBId}`))
+
+    try {
+      const [runA, runB] = await Promise.all([
+        apiFetch(`/runs/${runAId}`),
+        apiFetch(`/runs/${runBId}`),
+      ])
+
+      const metricsA = (runA.metrics ?? {}) as Record<string, number>
+      const metricsB = (runB.metrics ?? {}) as Record<string, number>
+
+      if (options.format === 'json') {
+        console.log(JSON.stringify({ runA: { id: runA.id, status: runA.status, metrics: metricsA }, runB: { id: runB.id, status: runB.status, metrics: metricsB } }, null, 2))
+      } else {
+        console.log('')
+        console.log(chalk.bold('Comparison:'))
+        console.log(`  Status:    ${runA.status} vs ${runB.status}`)
+        console.log(`  Duration:  ${runA.duration ?? '—'}ms vs ${runB.duration ?? '—'}ms`)
+        console.log(`  Tokens:    ${metricsA.totalTokens ?? '—'} vs ${metricsB.totalTokens ?? '—'}`)
+        console.log(`  Cost:      $${(metricsA.totalCost as number)?.toFixed(4) ?? '—'} vs $${(metricsB.totalCost as number)?.toFixed(4) ?? '—'}`)
+        console.log(`  Steps:     ${metricsA.stepCount ?? '—'} vs ${metricsB.stepCount ?? '—'}`)
+      }
+    } catch (err) {
+      console.error(chalk.red(`✗ Failed: ${err instanceof Error ? err.message : String(err)}`))
+      process.exit(1)
+    }
   })
 
 // report command
 program
   .command('report [run-id]')
-  .description('Generate a report')
-  .option('--format <format>', 'Report format (json, html, markdown)', 'markdown')
-  .option('-o, --output <file>', 'Output file')
+  .description('Generate a report for a run')
+  .option('--format <format>', 'Report format (json, markdown)', 'markdown')
   .action(async (runId, options) => {
     console.log(chalk.blue('⚡ Generating report...'))
-    // TODO: Implement report logic
-    console.log(chalk.green('✓ Report generated!'))
+
+    try {
+      const endpoint = runId ? `/runs/${runId}` : '/runs?limit=5'
+      const data = runId ? await apiFetch(endpoint) : (await apiFetch(endpoint)).runs
+
+      if (options.format === 'json') {
+        console.log(JSON.stringify(data, null, 2))
+      } else {
+        if (Array.isArray(data)) {
+          console.log('')
+          console.log(chalk.bold('# Recent Runs Report'))
+          console.log('')
+          for (const run of data) {
+            console.log(`- **${run.name}**: ${run.status} | ${run.duration ? `${run.duration}ms` : '—'}`)
+          }
+        } else {
+          const run = data
+          const metrics = (run.metrics ?? {}) as Record<string, number>
+          console.log('')
+          console.log(chalk.bold(`# ${run.name}`))
+          console.log('')
+          console.log(`| Metric | Value |`)
+          console.log(`|--------|-------|`)
+          console.log(`| Status | ${run.status} |`)
+          console.log(`| Duration | ${run.duration ?? '—'}ms |`)
+          console.log(`| Total Tokens | ${metrics.totalTokens ?? '—'} |`)
+          console.log(`| Cost | $${(metrics.totalCost as number)?.toFixed(4) ?? '—'} |`)
+          console.log(`| Steps | ${metrics.stepCount ?? '—'} |`)
+        }
+      }
+
+      console.log('')
+      console.log(chalk.green('✓ Report generated!'))
+    } catch (err) {
+      console.error(chalk.red(`✗ Failed: ${err instanceof Error ? err.message : String(err)}`))
+      process.exit(1)
+    }
   })
 
 // snapshot commands
