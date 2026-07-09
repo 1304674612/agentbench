@@ -30,7 +30,7 @@ export default function LandingPage() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
           </span>
-          ✅ All 7 Phases Complete — v0.1.0 Ready
+          🎉 v0.1.0 Released — 100+ files · 51/51 tests · 0 TS errors
         </div>
         <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight leading-tight">
           Regression Testing

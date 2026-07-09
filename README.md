@@ -8,15 +8,16 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-336791.svg)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-7+-DC382D.svg)](https://redis.io/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
-[![TypeScript](https://img.shields.io/badge/TS_Errors-0-emerald?style=flat-square)](.)
-[![E2E](https://img.shields.io/badge/E2E_Tests-95%25-emerald?style=flat-square)](.)
+[![Tests](https://img.shields.io/badge/Tests-51%2F51-emerald?style=flat-square)](.)
+[![TS Errors](https://img.shields.io/badge/TS_Errors-0-emerald?style=flat-square)](.)
+[![Release](https://img.shields.io/badge/Release-v0.1.0-7c3aed?style=flat-square)](https://github.com/1304674612/agentbench/releases/tag/v0.1.0)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 **The Regression Testing Framework for AI Agents**
 
 *Replay · Evaluate · Compare · Assert · Catch Regressions — in CI.*
 
-[English](README.md) | [中文](README_CN.md) | [Roadmap](docs/ROADMAP.md) | [Architecture](docs/ARCHITECTURE.md)
+[English](README.md) | [中文](README_CN.md) | [Changelog](CHANGELOG.md) | [Roadmap](docs/ROADMAP.md) | [Architecture](docs/ARCHITECTURE.md)
 
 </div>
 
