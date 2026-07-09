@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { db } from '@/shared/lib/db'
 import { formatNumber, formatCurrency, formatDuration, formatRelativeTime } from '@/shared/lib/utils'
-import { ArrowLeft, Clock, Zap, DollarSign, BarChart3, AlertTriangle, CheckCircle2, XCircle, SkipForward, AlertCircle, ThumbsUp } from 'lucide-react'
+import { ArrowLeft, Clock, Zap, DollarSign, BarChart3, AlertTriangle, CheckCircle2, XCircle, SkipForward, AlertCircle, ThumbsUp, RotateCcw } from 'lucide-react'
 
 const statusStyles: Record<string, string> = {
   passed: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
@@ -62,6 +62,15 @@ export default async function RunDetailPage({ params }: PageProps) {
             {model && <span>Model: {String(model)} · </span>}
             Run {id.slice(0, 8)} · {run.createdAt ? formatRelativeTime(run.createdAt) : ''}
           </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/compare?runA=${id}`}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Replay
+          </Link>
         </div>
       </div>
 

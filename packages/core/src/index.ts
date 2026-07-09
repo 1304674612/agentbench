@@ -18,10 +18,10 @@ export { tokenCounter, costCalculator, TokenCounter, CostCalculator } from './ut
 // Phase 2: Evaluation & Assertion
 export * from './evaluator'
 export * from './assertion'
-// Coming in Phase 3:
-// export * from './snapshot'
-// export * from './diff'
-// export * from './replay'
+// Phase 3: Regression & Replay
+export * from './snapshot'
+export * from './replay'
+export * from './diff'
 // Coming in Phase 4:
 // export * from './coverage'
 // export * from './experiment'

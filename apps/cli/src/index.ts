@@ -264,31 +264,43 @@ program
   .command('replay <run-id>')
   .description('Replay a previous run')
   .option('-m, --model <model>', 'Replay with a different model')
+  .option('--provider <provider>', 'Replay with a different provider')
+  .option('--temperature <temp>', 'Override temperature')
+  .option('--mode <mode>', 'Replay mode: deterministic, cross_model, batch', 'deterministic')
+  .option('--batch-count <n>', 'Number of batch runs (for batch mode)', '5')
+  .option('--seed <n>', 'Seed for deterministic replay')
+  .option('--no-parallel', 'Disable parallel execution in batch mode')
   .action(async (runId, options) => {
     console.log(chalk.blue(`⚡ Replaying run: ${runId}`))
+    console.log(chalk.gray(`  Mode: ${options.mode}`))
 
     try {
-      const original = await apiFetch(`/runs/${runId}`)
-      console.log(chalk.gray(`  Original: ${original.status} | Model: ${(original.config as Record<string, unknown>)?.agent ? ((original.config as Record<string, unknown>).agent as Record<string, unknown>)?.model : 'unknown'}`))
-
-      // Create a new run with same config
-      const config = { ...(original.config as Record<string, unknown>) }
-      if (options.model && config.agent) {
-        (config.agent as Record<string, unknown>).model = options.model
+      const body: Record<string, unknown> = {
+        mode: options.mode,
+        parallel: options.parallel !== false,
       }
 
-      const result = await apiFetch('/runs', {
-        method: 'POST',
-        body: JSON.stringify({
-          projectId: original.projectId,
-          name: `${original.name} (replay)`,
-          config,
-          tags: ['replay', `original:${runId}`],
-        }),
-      })
+      if (options.model) body.model = options.model
+      if (options.provider) body.provider = options.provider
+      if (options.temperature) body.temperature = parseFloat(options.temperature)
+      if (options.seed) body.seed = parseInt(options.seed)
+      if (options.mode === 'batch') body.batchCount = parseInt(options.batchCount)
 
-      console.log(chalk.green('✓ Replay created!'))
-      console.log(chalk.gray(`  New Run ID: ${result.id}`))
+      const result = await apiFetch(`/runs/${runId}/replay`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }) as { message: string; mode: string; originalRunId: string; replayRuns: Array<{ id: string; name: string }> }
+
+      console.log('')
+      console.log(chalk.green(`✓ ${result.replayRuns.length} replay run(s) created!`))
+      for (const r of result.replayRuns) {
+        console.log(chalk.gray(`  ${r.name}: ${r.id}`))
+      }
+
+      if (result.replayRuns.length > 1) {
+        console.log('')
+        console.log(chalk.gray(`  Compare: agentbench compare ${runId} ${result.replayRuns[0].id}`))
+      }
     } catch (err) {
       console.error(chalk.red(`✗ Failed: ${err instanceof Error ? err.message : String(err)}`))
       process.exit(1)
@@ -486,30 +498,105 @@ const snapshotCmd = program.command('snapshot').description('Snapshot management
 
 snapshotCmd
   .command('create')
-  .description('Create a new snapshot')
-  .option('-n, --name <name>', 'Snapshot name')
+  .description('Create a new snapshot from a run')
+  .requiredOption('-p, --project <id>', 'Project ID')
+  .requiredOption('-r, --run <id>', 'Run ID to snapshot')
+  .requiredOption('-n, --name <name>', 'Snapshot name')
+  .option('-d, --description <desc>', 'Snapshot description')
   .action(async (options) => {
     console.log(chalk.blue('⚡ Creating snapshot...'))
-    // TODO: Implement
-    console.log(chalk.green('✓ Snapshot created!'))
+    try {
+      const run = await apiFetch(`/runs/${options.run}`) as {
+        projectId: string
+        name: string
+        config: Record<string, unknown>
+      }
+      const config = run.config
+      const agent = (config?.agent ?? {}) as Record<string, unknown>
+      const input = (config?.input ?? { messages: [] }) as Record<string, unknown>
+      const opts = (config?.options ?? {}) as Record<string, unknown>
+
+      const snapshot = await apiFetch(`/projects/${options.project}/snapshots`, {
+        method: 'POST',
+        body: JSON.stringify({
+          name: options.name,
+          description: options.description,
+          type: 'MANUAL',
+          runId: options.run,
+          data: {
+            agent: { name: run.name, config: agent },
+            prompt: { system: agent.systemPrompt ?? '', variables: {} },
+            model: {
+              provider: agent.provider ?? 'openai',
+              name: agent.model ?? 'unknown',
+              temperature: agent.temperature ?? 0.7,
+              maxTokens: agent.maxTokens ?? 4096,
+            },
+            tools: (agent.tools as Array<unknown>) ?? [],
+            context: { messages: input.messages ?? [] },
+            input,
+            options: opts,
+          },
+          tags: ['cli'],
+        }),
+      }) as { id: string }
+
+      console.log(chalk.green('✓ Snapshot created!'))
+      console.log(chalk.gray(`  ID: ${snapshot.id}`))
+    } catch (err) {
+      console.error(chalk.red(`✗ Failed: ${err instanceof Error ? err.message : String(err)}`))
+      process.exit(1)
+    }
   })
 
 snapshotCmd
   .command('list')
   .description('List all snapshots')
-  .action(async () => {
+  .requiredOption('-p, --project <id>', 'Project ID')
+  .action(async (options) => {
     console.log(chalk.blue('Snapshots:'))
-    // TODO: Implement
-    console.log(chalk.gray('  No snapshots yet.'))
+    try {
+      const { snapshots } = await apiFetch(`/projects/${options.project}/snapshots`) as {
+        snapshots: Array<{ id: string; name: string; type: string; createdAt: string; toolCount: number; messageCount: number }>
+      }
+
+      if (snapshots.length === 0) {
+        console.log(chalk.gray('  No snapshots yet.'))
+        return
+      }
+
+      for (const s of snapshots) {
+        const typeColor = s.type === 'AUTO' ? chalk.blue : s.type === 'CI' ? chalk.magenta : chalk.white
+        console.log(`  ${typeColor(`[${s.type.toLowerCase()}]`)} ${s.name}`)
+        console.log(chalk.gray(`    ${s.id} | ${s.toolCount} tools | ${s.messageCount} messages | ${s.createdAt}`))
+      }
+    } catch (err) {
+      console.error(chalk.red(`✗ Failed: ${err instanceof Error ? err.message : String(err)}`))
+      process.exit(1)
+    }
   })
 
 snapshotCmd
   .command('restore <snapshot-id>')
-  .description('Restore a snapshot')
-  .action(async (snapshotId) => {
+  .description('Restore a snapshot (creates a new run)')
+  .option('-m, --model <model>', 'Override model for restored run')
+  .action(async (snapshotId, options) => {
     console.log(chalk.blue(`⚡ Restoring snapshot: ${snapshotId}`))
-    // TODO: Implement
-    console.log(chalk.green('✓ Snapshot restored!'))
+    try {
+      const result = await apiFetch(`/snapshots/${snapshotId}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          createRun: true,
+          overrides: options.model ? { model: options.model } : undefined,
+        }),
+      }) as { runId: string; snapshotId: string }
+
+      console.log(chalk.green('✓ Snapshot restored!'))
+      console.log(chalk.gray(`  New Run ID: ${result.runId}`))
+    } catch (err) {
+      console.error(chalk.red(`✗ Failed: ${err instanceof Error ? err.message : String(err)}`))
+      process.exit(1)
+    }
   })
 
 // experiment commands

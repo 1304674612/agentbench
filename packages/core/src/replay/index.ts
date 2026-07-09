@@ -1,0 +1,18 @@
+export {
+  buildDeterministicReplay,
+  buildCrossModelReplay,
+  buildBatchReplay,
+  applyReplayOverrides,
+  aggregateReplayResults,
+  compareReplayToOriginal,
+  detectRegressions,
+  type ReplayMode,
+  type ReplayConfig,
+  type ReplayResult,
+  type ReplayAggregate,
+  type ReplayComparison,
+  type MetricDiff,
+  type ScoreDiff,
+  type RegressionFlag,
+  type ReplayRegressionThresholds,
+} from './replay-engine'
