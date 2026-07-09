@@ -1,0 +1,112 @@
+name: AgentBench CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Project ID to test'
+        required: true
+      test_pattern:
+        description: 'Test name pattern (grep)'
+        required: false
+
+jobs:
+  agent-tests:
+    name: Agent Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: agentbench
+          POSTGRES_PASSWORD: agentbench
+          POSTGRES_DB: agentbench
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+        env:
+          DATABASE_URL: postgresql://agentbench:agentbench@localhost:5432/agentbench
+
+      - name: Run database migrations
+        run: pnpm db:migrate
+        env:
+          DATABASE_URL: postgresql://agentbench:agentbench@localhost:5432/agentbench
+
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint || true
+
+      - name: Run Agent Tests
+        run: |
+          pnpm --filter agentbench exec agentbench test \
+            --project ${{ inputs.project || 'default' }} \
+            ${{ inputs.test_pattern && format('--grep {0}', inputs.test_pattern) || '' }} \
+            --verbose \
+            --format json > test-results.json
+        env:
+          DATABASE_URL: postgresql://agentbench:agentbench@localhost:5432/agentbench
+          AGENTBENCH_API_URL: http://localhost:3000/api/v1
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results.json
+
+      - name: Generate report
+        if: always()
+        run: |
+          pnpm --filter agentbench exec agentbench report --format markdown > agent-report.md
+          cat agent-report.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Status badge webhook
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          curl -X POST "${{ secrets.AGENTBENCH_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -H "X-Webhook-Source: github" \
+            -H "X-Webhook-Secret: ${{ secrets.AGENTBENCH_WEBHOOK_SECRET }}" \
+            -d "{\"action\":\"ci_complete\",\"status\":\"$STATUS\",\"repository\":\"${{ github.repository }}\"}"

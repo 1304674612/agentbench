@@ -25,6 +25,8 @@ export * from './diff'
 // Phase 4: Experiments & Coverage
 export * from './experiment'
 export * from './coverage'
+// Reporter
+export * from './reporter'
 
 // Version
 export const VERSION = '0.1.0'
