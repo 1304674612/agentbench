@@ -143,8 +143,8 @@ async function handleImport(
   await db.datasetItem.createMany({
     data: items.map((item, i) => ({
       datasetId: dataset.id,
-      input: item.input as Record<string, unknown>,
-      expected: item.expected as Record<string, unknown> | undefined,
+      input: item.input as any,
+      expected: item.expected as any,
       split: i < trainEnd ? 'TRAIN' : i < testEnd ? 'TEST' : 'VALIDATION',
       sortOrder: i,
     })),

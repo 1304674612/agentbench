@@ -159,7 +159,7 @@ export default async function RunDetailPage({ params }: PageProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {run.traceSteps.map((step) => {
+                {(run.traceSteps as Array<{ id: string; sequence: number; type: string; duration?: number | null; totalTokens?: number | null; status: string; toolName?: string | null; llmRequest?: Record<string, unknown> | null; llmResponse?: Record<string, unknown> | null; error?: { message?: string } | null }>).map((step) => {
                   const llmReq = step.llmRequest as Record<string, unknown> | null
                   const toolName = step.toolName
 
@@ -239,7 +239,7 @@ export default async function RunDetailPage({ params }: PageProps) {
         <div>
           <h2 className="text-lg font-semibold mb-4">Scores</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {run.scores.map((score) => (
+            {run.scores.map((score: { id: string; evaluator: string; score: number; maxScore: number; reason?: string | null; judgeModel?: string | null }) => (
               <div
                 key={score.id}
                 className="rounded-xl border border-border bg-card p-4"

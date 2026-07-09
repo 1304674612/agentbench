@@ -57,15 +57,10 @@ export class AgentBenchAnthropic {
       // Count tokens
       const inputText = params.messages.map((m) => m.content).join('\n') + (params.system ?? '')
       const outputText = response.content?.map((b) => b.text).join('\n') ?? ''
-      const promptTokens = response.usage?.input_tokens ?? tokenCounter.count(inputText)
-      const completionTokens = response.usage?.output_tokens ?? tokenCounter.count(outputText)
+      const promptTokens = response.usage?.input_tokens ?? tokenCounter.estimateTokens(inputText)
+      const completionTokens = response.usage?.output_tokens ?? tokenCounter.estimateTokens(outputText)
       const totalTokens = promptTokens + completionTokens
-      const cost = costCalculator.calculate({
-        provider: 'anthropic',
-        model: params.model,
-        promptTokens,
-        completionTokens,
-      })
+      const cost = costCalculator.calculate(params.model, promptTokens, completionTokens)
 
       const completedStep: TraceStep = {
         id: `step-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -136,9 +131,9 @@ export class AgentBenchAnthropic {
 
       const endTime = Date.now()
       if (this._context.onStep) {
-        const promptTokens = tokenCounter.count(params.messages.map((m) => m.content).join('\n'))
-        const completionTokens = tokenCounter.count(fullContent)
-        const cost = costCalculator.calculate({ provider: 'anthropic', model: params.model, promptTokens, completionTokens })
+        const promptTokens = tokenCounter.estimateTokens(params.messages.map((m) => m.content).join('\n'))
+        const completionTokens = tokenCounter.estimateTokens(fullContent)
+        const cost = costCalculator.calculate(params.model, promptTokens, completionTokens)
         this._context.onStep({
           id: `step-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           sequence: 0, type: 'response',

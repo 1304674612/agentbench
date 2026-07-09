@@ -69,20 +69,23 @@ export async function POST(
       data: {
         ...caseData,
         suiteId,
+        agentConfig: caseData.agentConfig as any,
+        input: caseData.input as any,
+        options: caseData.options as any,
         assertions: {
           create: assertions.map((a, i) => ({
             type: a.type,
-            params: a.params,
+            params: a.params as any,
             sortOrder: i,
           })),
-        },
+        } as any,
         evaluators: {
           create: evaluators.map((e, i) => ({
             type: e.type as 'RULE_BASED' | 'LLM_JUDGE' | 'HYBRID',
-            config: e.config,
+            config: e.config as any,
             sortOrder: i,
           })),
-        },
+        } as any,
       },
       include: {
         assertions: true,

@@ -147,19 +147,18 @@ export class AgentBenchOpenAI {
       // Count tokens
       const promptText = params.messages.map((m) => m.content).join('\n')
       const completionText = response.content ?? ''
-      const promptTokens = tokenCounter.count(promptText)
-      const completionTokens = tokenCounter.count(completionText)
+      const promptTokens = tokenCounter.estimateTokens(promptText)
+      const completionTokens = tokenCounter.estimateTokens(completionText)
       const totalTokens = response.usage
         ? response.usage.total_tokens
         : promptTokens + completionTokens
 
       // Calculate cost
-      const cost = costCalculator.calculate({
-        provider: 'openai',
-        model: params.model,
-        promptTokens: response.usage?.prompt_tokens ?? promptTokens,
-        completionTokens: response.usage?.completion_tokens ?? completionTokens,
-      })
+      const cost = costCalculator.calculate(
+        params.model,
+        response.usage?.prompt_tokens ?? promptTokens,
+        response.usage?.completion_tokens ?? completionTokens,
+      )
 
       // Complete the trace step
       const completedStep: TraceStep = {
@@ -278,14 +277,9 @@ export class AgentBenchOpenAI {
       // Emit trace step for the full streaming response
       if (this._context.onStep) {
         const promptText = params.messages.map((m) => m.content).join('\n')
-        const promptTokens = tokenCounter.count(promptText)
-        const completionTokens = tokenCounter.count(fullContent)
-        const cost = costCalculator.calculate({
-          provider: 'openai',
-          model: params.model,
-          promptTokens,
-          completionTokens,
-        })
+        const promptTokens = tokenCounter.estimateTokens(promptText)
+        const completionTokens = tokenCounter.estimateTokens(fullContent)
+        const cost = costCalculator.calculate(params.model, promptTokens, completionTokens)
 
         this._context.onStep({
           id: `step-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,

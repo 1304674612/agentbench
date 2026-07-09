@@ -80,7 +80,7 @@ export async function POST(
             },
             input,
             options,
-          },
+          } as any,
           tags: ['restored', `snapshot:${snapshotId}`],
         },
       })

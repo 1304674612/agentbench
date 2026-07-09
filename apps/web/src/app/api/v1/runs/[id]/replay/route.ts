@@ -69,7 +69,7 @@ export async function POST(
           name: count > 1
             ? `${originalRun.name} (replay #${i + 1})`
             : `${originalRun.name} (replay)`,
-          config: replayConfig,
+          config: replayConfig as any,
           tags: ['replay', `original:${runId}`, parsed.data.mode],
         },
       })

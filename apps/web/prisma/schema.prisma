@@ -5,13 +5,13 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch", "postgresqlExtensions"]
+  previewFeatures = ["fullTextSearchPostgres", "postgresqlExtensions"]
 }
 
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
-  extensions = [pgcrypto, pg_trgm, uuid_ossp]
+  extensions = [pgcrypto, pg_trgm]
 }
 
 // ===================================================================
@@ -284,6 +284,7 @@ model Project {
   experiments  Experiment[]
   datasets     Dataset[]
   apiKeys      ApiKey[]
+  auditLogs    AuditLog[]
 
   @@unique([slug, ownerId])
   @@index([ownerId])
@@ -415,6 +416,7 @@ model Run {
   assertionResults AssertionResult[]
   scores           Score[]
   experimentRuns   ExperimentRun[]
+  snapshots        Snapshot[]
 
   @@index([projectId])
   @@index([testCaseId])
@@ -573,7 +575,8 @@ model ExperimentVariant {
   config       Json     // VariantConfig (prompt, model, temperature, etc.)
   createdAt    DateTime @default(now())
 
-  experiment Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  experiment    Experiment        @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  experimentRuns ExperimentRun[]
 
   @@index([experimentId])
   @@map("experiment_variants")

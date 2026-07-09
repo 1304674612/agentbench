@@ -65,16 +65,8 @@ export class AgentBenchMCP {
       this._connected = true
       this._tools = (response.tools ?? []) as MCPToolDefinition[]
 
-      if (this._context.onStep) {
-        this._context.onStep({
-          id: `step-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          sequence: 0, type: 'llm_call',
-          startedAt: new Date(startTime), endedAt: new Date(),
-          duration: Date.now() - startTime,
-          llmProvider: 'mcp', llmModel: 'mcp',
-          status: 'success',
-        } as TraceStep)
-      }
+      // MCP connection is infrastructure, not an LLM call — skip trace or log as system step
+      // The actual tool calls will be traced individually
 
       return { connected: true, tools: this._tools }
     } catch (err) {
@@ -174,21 +166,39 @@ export class AgentBenchMCP {
    */
   async readResource(uri: string): Promise<{ contents: unknown[]; duration: number; trace: TraceStep }> {
     const startTime = Date.now()
-    const response = await this._sendMCPRequest('resources/read', { uri })
-    const duration = Date.now() - startTime
+    try {
+      const response = await this._sendMCPRequest('resources/read', { uri })
+      const duration = Date.now() - startTime
 
-    const traceStep: TraceStep = {
-      id: `step-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      sequence: 0, type: 'tool_call',
-      startedAt: new Date(startTime), endedAt: new Date(), duration,
-      toolName: 'resources/read',
-      toolRequest: { name: 'resources/read', arguments: { uri } },
-      toolResponse: { result: response.contents },
-      status: 'success',
-    } as TraceStep
+      const traceStep: TraceStep = {
+        id: `step-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        sequence: 0, type: 'tool_call',
+        startedAt: new Date(startTime), endedAt: new Date(), duration,
+        toolName: 'resources/read',
+        toolRequest: { name: 'resources/read', arguments: { uri } },
+        toolResponse: { result: response.contents },
+        status: 'success',
+      } as TraceStep
 
-    this._context.onStep?.(traceStep)
-    return { contents: response.contents as unknown[], duration, trace: traceStep }
+      this._context.onStep?.(traceStep)
+      return { contents: response.contents as unknown[], duration, trace: traceStep }
+    } catch (err) {
+      this._emitError(startTime, err)
+      throw err
+    }
+  }
+
+  private _emitError(startTime: number, err: unknown): void {
+    if (this._context.onStep) {
+      this._context.onStep({
+        id: `step-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        sequence: 0, type: 'error',
+        startedAt: new Date(startTime), endedAt: new Date(),
+        duration: Date.now() - startTime,
+        status: 'error',
+        error: { message: err instanceof Error ? err.message : String(err), type: 'api_error', retryable: true },
+      } as TraceStep)
+    }
   }
 
   disconnect(): void { this._connected = false; this._tools = [] }

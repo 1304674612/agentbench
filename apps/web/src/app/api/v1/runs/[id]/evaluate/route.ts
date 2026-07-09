@@ -58,8 +58,9 @@ export async function POST(
     const { rules, dimensions, expected } = parsed.data
 
     // Extract output from trace steps
-    const responseSteps = run.traceSteps.filter((s: { type: string; llmResponse?: Record<string, unknown> | null }) => s.type === 'RESPONSE')
-    const output = responseSteps.map((s: { llmResponse?: Record<string, unknown> | null }) => (s.llmResponse as Record<string, unknown> | null)?.content ?? '').join('\n')
+    const rawTraceSteps = run.traceSteps as Array<{ type: string; llmResponse?: Record<string, unknown> | null }>
+    const responseSteps = rawTraceSteps.filter((s) => s.type?.toLowerCase() === 'response')
+    const output = responseSteps.map((s) => (s.llmResponse)?.content ?? '').join('\n')
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     interface ToolCallItem {
@@ -75,7 +76,7 @@ export async function POST(
       toolResponse?: Record<string, unknown> | null
     }>
     const toolCalls: ToolCallItem[] = rawSteps
-      .filter((s) => s.type === 'TOOL_CALL')
+      .filter((s) => s.type?.toLowerCase() === 'tool_call')
       .map((s) => ({
         name: s.toolName ?? 'unknown',
         arguments: (s.toolRequest as Record<string, unknown> | null)?.arguments ?? {},
@@ -216,8 +217,8 @@ export async function POST(
         await db.assertionResult.deleteMany({ where: { runId } })
       }
 
-      await db.score.createMany({ data: newScores })
-      await db.assertionResult.createMany({ data: newAssertionResults })
+      await db.score.createMany({ data: newScores as any })
+      await db.assertionResult.createMany({ data: newAssertionResults as any })
     }
 
     // Return results

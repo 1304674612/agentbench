@@ -76,7 +76,7 @@ export async function POST(
         description: parsed.data.description,
         type: parsed.data.type,
         runId: parsed.data.runId,
-        data: parsed.data.data,
+        data: parsed.data.data as any,
         tags: parsed.data.tags,
       },
     })

@@ -41,7 +41,7 @@ export async function POST(
       data: {
         testCaseId: caseId,
         type: parsed.data.type,
-        params: parsed.data.params,
+        params: parsed.data.params as any,
         sortOrder: parsed.data.sortOrder,
       },
     })

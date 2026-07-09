@@ -3,6 +3,7 @@
  */
 
 import type { AssertionResult } from '../../types/run'
+import { validateJsonNode, truncate } from '../../utils/json-validator'
 
 /**
  * Assert output contains a substring.
@@ -147,92 +148,4 @@ export function outputToMatchSnapshot(
   }
 }
 
-// ============================================================
-// Helpers
-// ============================================================
-
-function truncate(str: string, maxLen: number): string {
-  if (str.length <= maxLen) return str
-  return str.slice(0, maxLen) + '...'
-}
-
-function validateJsonNode(
-  value: unknown,
-  schema: Record<string, unknown>,
-  path: string,
-): string[] {
-  const errors: string[] = []
-  const type = schema.type as string | undefined
-
-  if (type) {
-    let typeMatch = false
-    switch (type) {
-      case 'string': typeMatch = typeof value === 'string'; break
-      case 'number': case 'integer': typeMatch = typeof value === 'number'; break
-      case 'boolean': typeMatch = typeof value === 'boolean'; break
-      case 'null': typeMatch = value === null; break
-      case 'array': typeMatch = Array.isArray(value); break
-      case 'object': typeMatch = value !== null && typeof value === 'object' && !Array.isArray(value); break
-    }
-    if (!typeMatch) {
-      errors.push(`${path}: expected ${type}, got ${typeof value}`)
-      return errors
-    }
-  }
-
-  if (schema.enum !== undefined && !(schema.enum as unknown[]).some((v) => deepEqual(value, v))) {
-    errors.push(`${path}: value not in enum`)
-  }
-
-  if (typeof value === 'string') {
-    const minLength = schema.minLength as number | undefined
-    const maxLength = schema.maxLength as number | undefined
-    if (minLength !== undefined && value.length < minLength) errors.push(`${path}: length < ${minLength}`)
-    if (maxLength !== undefined && value.length > maxLength) errors.push(`${path}: length > ${maxLength}`)
-  }
-
-  if (typeof value === 'number') {
-    if (schema.minimum !== undefined && value < (schema.minimum as number)) errors.push(`${path}: < ${schema.minimum}`)
-    if (schema.maximum !== undefined && value > (schema.maximum as number)) errors.push(`${path}: > ${schema.maximum}`)
-  }
-
-  if (type === 'object' && schema.properties && typeof value === 'object' && value !== null) {
-    const obj = value as Record<string, unknown>
-    const props = schema.properties as Record<string, Record<string, unknown>>
-    const required = (schema.required as string[] | undefined) ?? []
-    for (const key of required) {
-      if (!(key in obj)) errors.push(`${path}.${key}: required`)
-    }
-    for (const [key, propSchema] of Object.entries(props)) {
-      if (key in obj) errors.push(...validateJsonNode(obj[key], propSchema, `${path}.${key}`))
-    }
-  }
-
-  if (type === 'array' && Array.isArray(value)) {
-    const itemSchema = schema.items as Record<string, unknown> | undefined
-    if (itemSchema) {
-      for (let i = 0; i < value.length; i++) {
-        errors.push(...validateJsonNode(value[i], itemSchema, `${path}[${i}]`))
-      }
-    }
-    const minItems = schema.minItems as number | undefined
-    const maxItems = schema.maxItems as number | undefined
-    if (minItems !== undefined && value.length < minItems) errors.push(`${path}: length < ${minItems}`)
-    if (maxItems !== undefined && value.length > maxItems) errors.push(`${path}: length > ${maxItems}`)
-  }
-
-  return errors
-}
-
-function deepEqual(a: unknown, b: unknown): boolean {
-  if (a === b) return true
-  if (typeof a !== typeof b) return false
-  if (a === null || b === null) return a === b
-  if (typeof a !== 'object' || typeof b !== 'object') return false
-  const aObj = a as Record<string, unknown>
-  const bObj = b as Record<string, unknown>
-  const aKeys = Object.keys(aObj)
-  const bKeys = Object.keys(bObj)
-  if (aKeys.length !== bKeys.length) return false
-  return aKeys.every((key) => deepEqual(aObj[key], bObj[key]))
-}
+// Helpers imported from '../../../utils/json-validator'

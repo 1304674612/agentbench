@@ -119,7 +119,7 @@ export default async function RunsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {runs.map((run) => {
+              {(runs as Array<{ id: string; name: string; status: string; config?: unknown; duration?: number | null; createdAt: Date; error?: string | null; metrics?: Record<string, number> | null; project?: { id: string; name: string } | null; testCase?: { id: string; name: string } | null }>).map((run) => {
                 const model =
                   (run.config as Record<string, unknown>)?.agent &&
                   ((run.config as Record<string, unknown>).agent as Record<string, unknown>)?.model as string

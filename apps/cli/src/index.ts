@@ -31,8 +31,39 @@ program
   .option('-f, --force', 'Overwrite existing configuration')
   .action(async (options) => {
     console.log(chalk.blue('⚡ Initializing AgentBench...'))
-    console.log(chalk.gray('  Creating agentbench.config.ts'))
-    console.log(chalk.green('✓ AgentBench initialized!'))
+    const fs = await import('node:fs')
+    const configPath = 'agentbench.config.ts'
+    if (!options.force && fs.existsSync(configPath)) {
+      console.log(chalk.yellow('⚠ agentbench.config.ts already exists. Use --force to overwrite.'))
+      return
+    }
+    const config = `import { defineConfig } from '@agentbench/core'
+
+export default defineConfig({
+  // Project name
+  name: 'my-agent-project',
+
+  // Default model
+  model: {
+    provider: 'openai',
+    model: 'gpt-4o',
+    temperature: 0.7,
+    maxTokens: 4096,
+  },
+
+  // Test configuration
+  tests: {
+    timeout: 30000,
+    maxSteps: 10,
+    retries: 1,
+  },
+
+  // Plugins
+  plugins: [],
+})
+`
+    fs.writeFileSync(configPath, config, 'utf-8')
+    console.log(chalk.green('✓ Created agentbench.config.ts'))
   })
 
 // run command
@@ -605,20 +636,49 @@ const experimentCmd = program
   .description('Experiment management')
 
 experimentCmd
-  .command('run <config>')
+  .command('run <experiment-id>')
   .description('Run an experiment')
-  .action(async (config) => {
-    console.log(chalk.blue(`⚡ Running experiment: ${config}`))
-    // TODO: Implement
-    console.log(chalk.green('✓ Experiment completed!'))
+  .option('-p, --project <id>', 'Project ID')
+  .action(async (experimentId, options) => {
+    console.log(chalk.blue(`⚡ Running experiment: ${experimentId}`))
+    try {
+      const result = await apiFetch(`/experiments/${experimentId}`, {
+        method: 'POST',
+        body: JSON.stringify({ dryRun: false }),
+      }) as { message: string; runs: Array<{ id: string; variant: string }> }
+      console.log(chalk.green(`✓ ${result.message}`))
+      for (const r of result.runs) {
+        console.log(chalk.gray(`  [${r.variant}] ${r.id}`))
+      }
+    } catch (err) {
+      console.error(chalk.red(`✗ Failed: ${err instanceof Error ? err.message : String(err)}`))
+      process.exit(1)
+    }
   })
 
 experimentCmd
   .command('results <experiment-id>')
   .description('View experiment results')
-  .action(async (experimentId) => {
+  .option('--format <format>', 'Output format (table, json)', 'table')
+  .action(async (experimentId, options) => {
     console.log(chalk.blue(`Experiment results: ${experimentId}`))
-    // TODO: Implement
+    try {
+      const exp = await apiFetch(`/experiments/${experimentId}`) as {
+        name: string; status: string; conclusion?: string
+        variants: Array<{ name: string; config: Record<string, unknown> }>
+        runs: Array<{ run: { status: string; duration?: number } }>
+        summary: Record<string, { runCount: number; passedCount: number; avgDuration: number }>
+      }
+      console.log(chalk.bold(`\n${exp.name}`))
+      console.log(chalk.gray(`Status: ${exp.status}  Conclusion: ${exp.conclusion ?? 'pending'}\n`))
+      for (const [name, s] of Object.entries(exp.summary)) {
+        const icon = s.passedCount === s.runCount ? chalk.green('✓') : chalk.yellow('⚠')
+        console.log(`  ${icon} Variant ${name}: ${s.passedCount}/${s.runCount} passed (avg ${s.avgDuration}ms)`)
+      }
+    } catch (err) {
+      console.error(chalk.red(`✗ Failed: ${err instanceof Error ? err.message : String(err)}`))
+      process.exit(1)
+    }
   })
 
 // config commands
@@ -628,17 +688,40 @@ configCmd
   .command('set <key> <value>')
   .description('Set a configuration value')
   .action(async (key, value) => {
-    console.log(chalk.blue(`Setting ${key}=${value}`))
-    // TODO: Implement
-    console.log(chalk.green('✓ Configuration updated!'))
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    const configPath = path.join(process.cwd(), 'agentbench.config.ts')
+    if (!fs.existsSync(configPath)) {
+      console.log(chalk.yellow('⚠ No agentbench.config.ts found. Run `agentbench init` first.'))
+      return
+    }
+    // Store in environment or local config
+    const envPath = path.join(process.cwd(), '.env.agentbench')
+    const envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : ''
+    const lines = envContent.split('\n').filter((l) => !l.startsWith(`${key}=`))
+    lines.push(`${key}=${value}`)
+    fs.writeFileSync(envPath, lines.join('\n'), 'utf-8')
+    console.log(chalk.green(`✓ ${key}=${value}`))
   })
 
 configCmd
   .command('get <key>')
   .description('Get a configuration value')
   .action(async (key) => {
-    console.log(chalk.blue(`Config: ${key}`))
-    // TODO: Implement
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    const envPath = path.join(process.cwd(), '.env.agentbench')
+    if (!fs.existsSync(envPath)) {
+      console.log(chalk.gray(`${key} is not set`))
+      return
+    }
+    const content = fs.readFileSync(envPath, 'utf-8')
+    const line = content.split('\n').find((l) => l.startsWith(`${key}=`))
+    if (line) {
+      console.log(line.split('=')[1])
+    } else {
+      console.log(chalk.gray(`${key} is not set`))
+    }
   })
 
 // Parse arguments

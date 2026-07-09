@@ -53,7 +53,7 @@ export async function PATCH(
 
     const testCase = await db.testCase.update({
       where: { id: caseId },
-      data: parsed.data,
+      data: parsed.data as any,
       include: {
         assertions: { orderBy: { sortOrder: 'asc' } },
         evaluators: { orderBy: { sortOrder: 'asc' } },

@@ -34,9 +34,9 @@ export async function POST(req: NextRequest) {
         projectId: parsed.data.projectId,
         testCaseId: parsed.data.testCaseId,
         name: parsed.data.name,
-        config: parsed.data.config ?? {},
+        config: (parsed.data.config ?? {}) as any,
         tags: parsed.data.tags ?? [],
-        metadata: parsed.data.metadata ?? {},
+        metadata: (parsed.data.metadata ?? {}) as any,
       },
     })
 
@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
       db.run.count({ where }),
     ])
 
-    const summaries = runs.map((r) => ({
+    const summaries = runs.map((r: { id: string; name: string; status: string; projectId: string; testCaseId?: string | null; duration?: number | null; metrics?: unknown; tags: string[]; createdAt: Date }) => ({
       ...r,
       totalTokens: (r.metrics as Record<string, unknown> | null)?.totalTokens as number | undefined,
       totalCost: (r.metrics as Record<string, unknown> | null)?.totalCost as number | undefined,
