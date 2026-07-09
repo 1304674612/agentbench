@@ -9,6 +9,28 @@ export type RunStatus =
   | 'timeout'
   | 'cancelled'
 
+/**
+ * Persisted Run record in the database.
+ */
+export interface Run {
+  id: string
+  projectId: string
+  testCaseId?: string
+  userId?: string
+  name: string
+  status: RunStatus
+  config: Record<string, unknown>
+  metrics?: Record<string, unknown>
+  startedAt?: Date
+  endedAt?: Date
+  duration?: number
+  summary?: string
+  error?: string
+  tags?: string[]
+  metadata?: Record<string, unknown>
+  createdAt: Date
+}
+
 export interface RunConfig {
   name: string
   description?: string

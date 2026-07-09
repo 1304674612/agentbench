@@ -9,18 +9,23 @@
 // Types — re-export all public types
 export type * from './types'
 
-// Sub-modules will be exported as they are implemented:
-// export * as runner from './runner'
-// export * as tracer from './tracer'
-// export * as evaluator from './evaluator'
-// export * as assertion from './assertion'
-// export * as snapshot from './snapshot'
-// export * as diff from './diff'
-// export * as replay from './replay'
-// export * as coverage from './coverage'
-// export * as experiment from './experiment'
-// export * as reporter from './reporter'
-// export * as storage from './storage'
+// Core Engine (Phase 1)
+export * from './runner'
+export * from './tracer'
+export * from './storage'
+export { tokenCounter, costCalculator, TokenCounter, CostCalculator } from './utils/token-counter'
+
+// Coming in Phase 2:
+// export * from './evaluator'
+// export * from './assertion'
+// Coming in Phase 3:
+// export * from './snapshot'
+// export * from './diff'
+// export * from './replay'
+// Coming in Phase 4:
+// export * from './coverage'
+// export * from './experiment'
+// export * from './reporter'
 
 // Version
 export const VERSION = '0.1.0'

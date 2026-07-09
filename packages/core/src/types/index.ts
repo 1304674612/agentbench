@@ -1,5 +1,6 @@
 export * from './trace'
 export * from './run'
+export * from './test'
 export * from './evaluator'
 export * from './assertion'
 export * from './snapshot'

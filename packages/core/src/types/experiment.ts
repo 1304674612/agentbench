@@ -1,6 +1,34 @@
 export type ExperimentStatus = 'draft' | 'running' | 'completed' | 'failed' | 'cancelled'
 export type ExperimentConclusion = 'winner_a' | 'winner_b' | 'inconclusive' | 'tie'
 
+/**
+ * Persisted Experiment record in the database.
+ */
+export interface Experiment {
+  id: string
+  projectId: string
+  name: string
+  description?: string
+  status: ExperimentStatus
+  config: ExperimentConfig
+  variants: ExperimentVariant[]
+  runs: ExperimentRun[]
+  results?: ExperimentResult
+  conclusion?: ExperimentConclusion
+  startedAt?: Date
+  endedAt?: Date
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface ExperimentRun {
+  id: string
+  experimentId: string
+  variantId: string
+  runId: string
+  createdAt: Date
+}
+
 export interface ExperimentConfig {
   name: string
   description?: string
