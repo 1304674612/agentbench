@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch",
+    "dev": "tsc --watch --noEmit",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"

@@ -268,14 +268,14 @@ model Project {
   slug           String
   description    String?
   plan           ProjectPlan @default(COMMUNITY)
-  ownerId        String
+  ownerId        String?
   organizationId String?
   settings       Json?       @default("{}")
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 
   // Relations
-  owner        User          @relation(fields: [ownerId], references: [id])
+  owner        User?         @relation(fields: [ownerId], references: [id])
   organization Organization? @relation(fields: [organizationId], references: [id])
   
   testSuites   TestSuite[]

@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         name: parsed.data.name,
         slug: parsed.data.slug,
         description: parsed.data.description,
-        ownerId: 'default', // TODO: get from auth session
+        // ownerId: from auth session (not required in alpha)
       },
     })
 
