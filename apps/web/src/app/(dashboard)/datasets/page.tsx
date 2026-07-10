@@ -247,6 +247,7 @@ function ImportModal({
   const [format, setFormat] = useState<'CSV' | 'JSON' | 'JSONL'>('JSON')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]
@@ -267,22 +268,43 @@ function ImportModal({
     reader.readAsText(f)
   }
 
+  function validate(): boolean {
+    const errors: Record<string, string> = {}
+
+    // Dataset name: required, 2-100 chars
+    const trimmedName = name.trim()
+    if (!trimmedName) {
+      errors.name = 'Dataset name is required.'
+    } else if (trimmedName.length < 2) {
+      errors.name = 'Dataset name must be at least 2 characters.'
+    } else if (trimmedName.length > 100) {
+      errors.name = 'Dataset name must be at most 100 characters.'
+    }
+
+    // Project
+    if (!projectId) {
+      errors.projectId = 'Please select a project.'
+    }
+
+    // File: must be selected and have valid extension
+    if (!file) {
+      errors.file = 'Please select a file to import.'
+    } else {
+      const ext = file.name.split('.').pop()?.toLowerCase()
+      if (!ext || !['csv', 'json', 'jsonl'].includes(ext)) {
+        errors.file = 'File must be a .csv, .json, or .jsonl file.'
+      }
+    }
+
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
 
-    if (!name.trim()) {
-      setError('Dataset name is required.')
-      return
-    }
-    if (!projectId) {
-      setError('Please select a project.')
-      return
-    }
-    if (!file || !fileContent.trim()) {
-      setError('Please select a file to import.')
-      return
-    }
+    if (!validate()) return
 
     setLoading(true)
 
@@ -353,9 +375,11 @@ function ImportModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Customer Support Q&A"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors"
-              required
+              className={`w-full rounded-lg border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors ${fieldErrors.name ? 'border-red-400' : 'border-border'}`}
             />
+            {fieldErrors.name && (
+              <p className="text-red-400 text-xs mt-1">{fieldErrors.name}</p>
+            )}
           </div>
 
           {/* Project */}
@@ -366,8 +390,7 @@ function ImportModal({
             <select
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors appearance-none"
-              required
+              className={`w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors appearance-none ${fieldErrors.projectId ? 'border-red-400' : 'border-border'}`}
             >
               <option value="" disabled>
                 Select a project
@@ -378,6 +401,9 @@ function ImportModal({
                 </option>
               ))}
             </select>
+            {fieldErrors.projectId && (
+              <p className="text-red-400 text-xs mt-1">{fieldErrors.projectId}</p>
+            )}
           </div>
 
           {/* File Upload */}
@@ -387,7 +413,7 @@ function ImportModal({
             </label>
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="cursor-pointer rounded-lg border border-dashed border-border p-6 text-center hover:border-foreground/20 hover:bg-muted/20 transition-colors"
+              className={`cursor-pointer rounded-lg border border-dashed p-6 text-center hover:border-foreground/20 hover:bg-muted/20 transition-colors ${fieldErrors.file ? 'border-red-400' : 'border-border'}`}
             >
               {file ? (
                 <div className="space-y-1">
@@ -417,6 +443,9 @@ function ImportModal({
               onChange={handleFileChange}
               className="hidden"
             />
+            {fieldErrors.file && (
+              <p className="text-red-400 text-xs mt-1">{fieldErrors.file}</p>
+            )}
           </div>
 
           {/* Format indicator */}

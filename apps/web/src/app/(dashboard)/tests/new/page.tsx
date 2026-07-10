@@ -385,8 +385,11 @@ export default function NewTestSuitePage() {
                       onChange={(e) => updateTestCase(tc.id, 'expected', e.target.value)}
                       placeholder="What should the agent response contain?"
                       rows={2}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors resize-none"
+                      className={`w-full rounded-lg border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors resize-none ${caseErrors[tc.id]?.expected ? 'border-red-400' : 'border-border'}`}
                     />
+                    {caseErrors[tc.id]?.expected && (
+                      <p className="text-red-400 text-xs mt-1">{caseErrors[tc.id].expected}</p>
+                    )}
                   </div>
                 </div>
               ))}

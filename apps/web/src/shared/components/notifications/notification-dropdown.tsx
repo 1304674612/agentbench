@@ -3,7 +3,9 @@
 import type { Notification } from '@prisma/client'
 import { Bell } from 'lucide-react'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { apiFetch } from '@/shared/lib/client-fetch'
 import { NotificationItem } from './notification-item'
 
 interface NotificationDropdownProps {
@@ -12,6 +14,7 @@ interface NotificationDropdownProps {
 
 export function NotificationDropdown({ className }: NotificationDropdownProps) {
   const { data: session } = useSession()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -48,11 +51,8 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
   const fetchUnreadCount = useCallback(async () => {
     if (!session?.user?.id) return
     try {
-      const res = await fetch('/api/v1/notifications/unread-count')
-      if (res.ok) {
-        const data = await res.json()
-        setUnreadCount(data.count ?? 0)
-      }
+      const data = await apiFetch<{ count: number }>('/api/v1/notifications/unread-count')
+      setUnreadCount(data.count ?? 0)
     } catch {
       // Silently fail — non-critical
     }
@@ -63,11 +63,11 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
     if (!session?.user?.id) return
     setLoading(true)
     try {
-      const res = await fetch('/api/v1/notifications?limit=20&offset=0')
-      if (res.ok) {
-        const data = await res.json()
-        setNotifications(data.notifications ?? [])
-      }
+      const data = await apiFetch<{ notifications: Notification[] }>(
+        '/api/v1/notifications',
+        { params: { limit: '20', offset: '0' } },
+      )
+      setNotifications(data.notifications ?? [])
     } catch {
       // Silently fail
     } finally {
@@ -96,9 +96,8 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
   const handleNotificationClick = useCallback(async (notification: Notification) => {
     // Mark as read
     try {
-      await fetch('/api/v1/notifications', {
+      await apiFetch('/api/v1/notifications', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'mark_read',
           notificationId: notification.id,
@@ -116,15 +115,14 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
     // Navigate if there's a link
     if (notification.link) {
       setOpen(false)
-      window.location.href = notification.link
+      router.push(notification.link)
     }
-  }, [])
+  }, [router])
 
   const handleMarkAllRead = useCallback(async () => {
     try {
-      await fetch('/api/v1/notifications', {
+      await apiFetch('/api/v1/notifications', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'mark_all_read' }),
       })
       // Optimistic update
@@ -137,8 +135,8 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
 
   const handleViewAll = useCallback(() => {
     setOpen(false)
-    window.location.href = '/notifications'
-  }, [])
+    router.push('/notifications')
+  }, [router])
 
   // Don't render if not authenticated
   if (!session?.user) {

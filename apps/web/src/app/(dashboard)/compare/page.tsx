@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ArrowRightLeft, Loader2, TrendingDown, TrendingUp, Minus, Zap, Clock, DollarSign, BarChart3, Activity } from 'lucide-react'
+import { apiPost, ApiFetchError } from '@/shared/lib/client-fetch'
 
 interface ComparisonResult {
   runA: {
@@ -69,19 +70,20 @@ export default function ComparePage() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/v1/compare', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ runAId: runAId.trim(), runBId: runBId.trim() }),
+      const data = await apiPost<ComparisonResult>('/api/v1/compare', {
+        runAId: runAId.trim(),
+        runBId: runBId.trim(),
       })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Failed' }))
-        throw new Error(err.error ?? 'Comparison failed')
-      }
-      const data = (await res.json()) as ComparisonResult
       setResult(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      if (err instanceof ApiFetchError) {
+        if (err.status === 401) setError('Please sign in to continue')
+        else if (err.status === 403) setError('You do not have permission')
+        else setError(err.message)
+      } else {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+      }
+      console.error('[ComparePage] API error:', err)
     } finally {
       setLoading(false)
     }

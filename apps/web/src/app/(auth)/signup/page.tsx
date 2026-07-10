@@ -6,6 +6,7 @@ import Link from 'next/link'
 import {
   Shield, Mail, Lock, User, Loader2, AlertCircle,
 } from 'lucide-react'
+import { apiPost, ApiFetchError } from '@/shared/lib/client-fetch'
 
 export default function SignUpPage() {
   const router = useRouter()
@@ -58,28 +59,20 @@ export default function SignUpPage() {
     setIsLoading(true)
 
     try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name.trim(),
-          email: email.toLowerCase().trim(),
-          password,
-        }),
+      await apiPost('/api/auth/register', {
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        password,
       })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error ?? 'Registration failed')
-        setIsLoading(false)
-        return
-      }
 
       // Redirect to sign-in with success message
       router.push('/signin?registered=true')
-    } catch {
-      setError('An unexpected error occurred. Please try again.')
+    } catch (err) {
+      if (err instanceof ApiFetchError) {
+        setError(err.message)
+      } else {
+        setError('An unexpected error occurred. Please try again.')
+      }
       setIsLoading(false)
     }
   }

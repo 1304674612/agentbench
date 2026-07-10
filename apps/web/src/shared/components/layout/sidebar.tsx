@@ -43,6 +43,11 @@ const bottomNav: NavItem[] = [
   { title: 'Settings', href: '/settings', icon: Settings },
 ]
 
+function isActive(pathname: string, href: string): boolean {
+  // Exact match, or pathname starts with href + '/' (for nested routes like /runs/[id])
+  return pathname === href || pathname.startsWith(href + '/')
+}
+
 export function Sidebar() {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
@@ -76,7 +81,7 @@ export function Sidebar() {
             href={item.href}
             className={cn(
               'flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-              pathname.startsWith(item.href)
+              isActive(pathname, item.href)
                 ? 'bg-primary/10 text-primary'
                 : 'text-muted-foreground hover:bg-accent hover:text-foreground'
             )}
@@ -104,7 +109,7 @@ export function Sidebar() {
             href={item.href}
             className={cn(
               'flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-              pathname.startsWith(item.href)
+              isActive(pathname, item.href)
                 ? 'bg-primary/10 text-primary'
                 : 'text-muted-foreground hover:bg-accent hover:text-foreground'
             )}
