@@ -258,9 +258,12 @@
 | Milestone | Version | Type |
 |-----------|---------|------|
 | M0-M3 | v0.1.0 | Alpha — Core MVP |
-| M4-M5 | v0.5.0 | Beta — Feature complete |
-| M6 | v0.9.0 | RC — Platform ready |
-| M7 | v1.0.0 | GA — Production release |
+| M4-M7 | v0.2.0 | **Production** — All 7 milestones complete + 12 production streams |
+| Next | v1.0.0 | GA — Production release (target) |
+
+> **Status (2026-07-10)**: All 7 original milestones are complete. v0.2.0 adds production-grade auth, 391+ tests, streaming support, Python SDK, real LangGraph adapter, Docker production deployment, email notifications, SEO, rate limiting, health checks, and npm publishing infrastructure.
+
+---
 
 ---
 

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { db } from '@/shared/lib/db'
@@ -12,6 +13,18 @@ const statusStyles: Record<string, string> = {
 
 interface PageProps {
   params: Promise<{ id: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params
+  const run = await db.run.findUnique({
+    where: { id },
+    select: { name: true, status: true },
+  })
+  return {
+    title: run?.name ?? 'Run',
+    description: run ? `Run "${run.name}" — status: ${run.status}. View full trace, metrics, scores, and assertion results.` : 'View run details, traces, and evaluation results.',
+  }
 }
 
 export default async function RunDetailPage({ params }: PageProps) {

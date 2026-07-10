@@ -1,3 +1,10 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Datasets',
+  description: 'Manage test datasets for your AI agent evaluation workflows.',
+}
+
 export default function DatasetsPage() {
   return (
     <div className="space-y-6">

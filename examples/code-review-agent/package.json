@@ -1,0 +1,14 @@
+{
+  "name": "example-code-review-agent",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "agentbench test --project code-review --verbose",
+    "run": "agentbench run --project code-review"
+  },
+  "devDependencies": {
+    "agentbench": "workspace:*",
+    "@agentbench/anthropic": "workspace:*"
+  }
+}

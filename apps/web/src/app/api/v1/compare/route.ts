@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/shared/lib/db'
+import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { db } from '@/shared/lib/db'
 
 const compareSchema = z.object({
   runAId: z.string(),
@@ -12,7 +12,10 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const parsed = compareSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsed.error.flatten() },
+        { status: 400 }
+      )
     }
 
     const [runA, runB] = await Promise.all([
@@ -91,7 +94,10 @@ export async function POST(req: NextRequest) {
         status: runA.status === runB.status ? 'same' : 'different',
         duration: {
           diff: (runB.duration ?? 0) - (runA.duration ?? 0),
-          changePercent: runA.duration ? Math.round((((runB.duration ?? 0) - (runA.duration ?? 0)) / runA.duration) * 10000) / 100 : 0,
+          changePercent: runA.duration
+            ? Math.round((((runB.duration ?? 0) - (runA.duration ?? 0)) / runA.duration) * 10000) /
+              100
+            : 0,
         },
         metrics: Object.keys(metricsA).map((key) => {
           const a = metricsA[key] ?? 0
@@ -105,7 +111,9 @@ export async function POST(req: NextRequest) {
           }
         }),
         scores: runA.scores.map((sA: { evaluator: string; score: number }) => {
-          const sB = runB.scores.find((s: { evaluator: string; score: number }) => s.evaluator === sA.evaluator)
+          const sB = runB.scores.find(
+            (s: { evaluator: string; score: number }) => s.evaluator === sA.evaluator
+          )
           return {
             evaluator: sA.evaluator,
             scoreA: sA.score,
@@ -119,6 +127,68 @@ export async function POST(req: NextRequest) {
         stepsB: runB.traceSteps.length,
         diff: runB.traceSteps.length - runA.traceSteps.length,
       },
+    }
+
+    // Detect regressions and create notifications
+    const regressions: Array<{ metric: string; before: number; after: number; pctChange: number }> =
+      []
+
+    // Check score regressions (score dropped by more than 10%)
+    for (const scoreDiff of comparison.diffs.scores) {
+      if (scoreDiff.diff < 0 && scoreDiff.scoreA > 0) {
+        const pctDropped = Math.abs(scoreDiff.diff / scoreDiff.scoreA)
+        if (pctDropped > 0.1) {
+          regressions.push({
+            metric: `${scoreDiff.evaluator} score`,
+            before: scoreDiff.scoreA,
+            after: scoreDiff.scoreB,
+            pctChange: Math.round(pctDropped * 100),
+          })
+        }
+      }
+    }
+
+    // Check latency regression (duration increased by more than 20%)
+    if (comparison.diffs.duration.changePercent > 20 && comparison.diffs.duration.diff > 0) {
+      regressions.push({
+        metric: 'duration',
+        before: runA.duration ?? 0,
+        after: runB.duration ?? 0,
+        pctChange: comparison.diffs.duration.changePercent,
+      })
+    }
+
+    // Create notifications for significant regressions
+    if (regressions.length > 0) {
+      try {
+        const { createNotification } = await import('@/shared/lib/notifications')
+        const project = await db.project.findUnique({
+          where: { id: runA.projectId },
+          select: { ownerId: true },
+        })
+        if (project?.ownerId) {
+          for (const reg of regressions) {
+            await createNotification(
+              project.ownerId,
+              'REGRESSION_DETECTED',
+              `Regression detected in ${runA.name}`,
+              `${reg.metric} dropped by ${reg.pctChange}% (${reg.before} → ${reg.after})`,
+              `/runs/${runB.id}`,
+              {
+                runAId: runA.id,
+                runBId: runB.id,
+                projectName: (runA as { project?: { name?: string } }).project?.name ?? 'Unknown',
+                metric: reg.metric,
+                before: reg.before,
+                after: reg.after,
+                pctChange: reg.pctChange,
+              }
+            )
+          }
+        }
+      } catch (notifError) {
+        console.error('[compare] Failed to create regression notification:', notifError)
+      }
     }
 
     return NextResponse.json(comparison)

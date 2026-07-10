@@ -1,7 +1,13 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { db } from '@/shared/lib/db'
 import { Camera, Wrench, MessageSquare, Activity } from 'lucide-react'
 import { formatRelativeTime } from '@/shared/lib/utils'
+
+export const metadata: Metadata = {
+  title: 'Snapshots',
+  description: 'Save and restore agent state snapshots — deterministic replay from any point in the agent lifecycle.',
+}
 
 export default async function SnapshotsPage() {
   const snapshots = await db.snapshot.findMany({

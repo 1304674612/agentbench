@@ -6,7 +6,7 @@
  */
 
 import type { TraceStep } from '@agentbench/core'
-import { tokenCounter, costCalculator } from '@agentbench/core'
+import { tokenCounter, costCalculator, StreamCapture } from '@agentbench/core'
 
 export interface AgentBenchAnthropicConfig {
   apiKey: string
@@ -43,12 +43,6 @@ export class AgentBenchAnthropic {
     stop_sequences?: string[]
   }): Promise<AnthropicMessageResult> {
     const startTime = Date.now()
-    const traceStep: Partial<TraceStep> = {
-      type: 'llm_call',
-      startedAt: new Date(startTime),
-      llmProvider: 'anthropic',
-      llmModel: params.model,
-    }
 
     try {
       const response = await this._callAnthropic(params)
@@ -97,7 +91,7 @@ export class AgentBenchAnthropic {
         id: response.id,
         model: response.model,
         content: outputText,
-        content_blocks: response.content,
+        content_blocks: response.content ?? [],
         stop_reason: response.stop_reason ?? 'end_turn',
         usage: { input_tokens: promptTokens, output_tokens: completionTokens },
         cost,
@@ -116,30 +110,101 @@ export class AgentBenchAnthropic {
     messages: Array<{ role: 'user' | 'assistant'; content: string }>
     max_tokens: number
     temperature?: number
+    tools?: Array<{ name: string; description: string; input_schema: Record<string, unknown> }>
   }): AsyncGenerator<AnthropicStreamChunk> {
     const startTime = Date.now()
-    let fullContent = ''
 
     try {
-      const stream = await this._callAnthropicStream(params)
-      for await (const event of stream) {
-        if (event.type === 'content_block_delta' && event.delta?.text) {
-          fullContent += event.delta.text
-          yield { content: event.delta.text, fullContent, type: 'text' }
+      const stream = await this._callAnthropicStreamRaw(params)
+      const capture = new StreamCapture('anthropic')
+      const reader = stream.getReader()
+      const decoder = new TextDecoder()
+      let lastFullText = ''
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          const text = decoder.decode(value, { stream: true })
+          capture.processChunk(text)
+
+          const assembled = capture.getAssembledResponse()
+          const newText = assembled.fullText.slice(lastFullText.length)
+          lastFullText = assembled.fullText
+
+          const toolCallsInfo = assembled.toolCalls.length > 0
+            ? assembled.toolCalls.map((tc, idx) => ({
+                index: idx,
+                id: tc.id,
+                name: tc.name,
+                arguments: JSON.stringify(tc.arguments),
+              }))
+            : undefined
+
+          yield {
+            content: newText,
+            fullContent: assembled.fullText,
+            type: newText ? 'text' : 'tool_use',
+            toolCalls: toolCallsInfo,
+          }
         }
+      } finally {
+        reader.releaseLock()
       }
 
       const endTime = Date.now()
+      const assembled = capture.getAssembledResponse()
+      const metrics = capture.getStreamingMetrics()
+      const streamLatency = capture.getTimeToFirstToken()
+
       if (this._context.onStep) {
-        const promptTokens = tokenCounter.estimateTokens(params.messages.map((m) => m.content).join('\n'))
-        const completionTokens = tokenCounter.estimateTokens(fullContent)
+        const inputText = params.messages.map((m) => m.content).join('\n') + (params.system ?? '')
+        const promptTokens = assembled.usage?.promptTokens ?? tokenCounter.estimateTokens(inputText)
+        const completionTokens =
+          assembled.usage?.completionTokens ?? tokenCounter.estimateTokens(assembled.fullText)
+        const totalTokens = assembled.usage?.totalTokens ?? promptTokens + completionTokens
         const cost = costCalculator.calculate(params.model, promptTokens, completionTokens)
+
+        const assembledToolCalls = assembled.toolCalls.map((tc) => ({
+          id: tc.id,
+          type: 'function' as const,
+          function: {
+            name: tc.name,
+            arguments: JSON.stringify(tc.arguments),
+          },
+        }))
+
         this._context.onStep({
           id: `step-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          sequence: 0, type: 'response',
-          startedAt: new Date(startTime), endedAt: new Date(endTime), duration: endTime - startTime,
-          llmResponse: { content: fullContent, finishReason: 'end_turn', usage: { promptTokens, completionTokens, totalTokens: promptTokens + completionTokens }, model: params.model },
-          promptTokens, completionTokens, totalTokens: promptTokens + completionTokens, cost, status: 'success',
+          sequence: 0,
+          type: 'llm_call',
+          startedAt: new Date(startTime),
+          endedAt: new Date(endTime),
+          duration: endTime - startTime,
+          llmProvider: 'anthropic',
+          llmModel: params.model,
+          llmRequest: {
+            provider: 'anthropic',
+            model: params.model,
+            messages: params.messages.map((m) => ({ role: m.role, content: m.content })),
+            temperature: params.temperature ?? 0.7,
+            maxTokens: params.max_tokens,
+          },
+          llmResponse: {
+            content: assembled.fullText || null,
+            toolCalls: assembledToolCalls.length > 0 ? assembledToolCalls : undefined,
+            finishReason: assembled.finishReason,
+            usage: { promptTokens, completionTokens, totalTokens },
+            model: params.model,
+          },
+          promptTokens,
+          completionTokens,
+          totalTokens,
+          cost,
+          status: 'success',
+          isStreaming: true,
+          streamChunks: metrics.chunkCount,
+          streamLatency,
         } as TraceStep)
       }
     } catch (err) {
@@ -182,34 +247,41 @@ export class AgentBenchAnthropic {
     } finally { clearTimeout(timeoutId) }
   }
 
-  private async *_callAnthropicStream(body: Record<string, unknown>): AsyncGenerator<AnthropicStreamEvent> {
+  private async _callAnthropicStreamRaw(
+    body: Record<string, unknown>
+  ): Promise<ReadableStream<Uint8Array>> {
     const url = `${this.config.baseURL ?? 'https://api.anthropic.com'}/v1/messages`
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': this.config.apiKey,
-        'anthropic-version': this.config.anthropicVersion ?? '2023-06-01',
-      },
-      body: JSON.stringify({ ...body, stream: true }),
-    })
-    if (!res.ok) throw new Error(`Anthropic API error ${res.status}`)
-    const reader = res.body?.getReader()
-    if (!reader) throw new Error('No response body')
-    const decoder = new TextDecoder()
-    let buffer = ''
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      buffer += decoder.decode(value, { stream: true })
-      const lines = buffer.split('\n')
-      buffer = lines.pop() ?? ''
-      for (const line of lines) {
-        const trimmed = line.trim()
-        if (!trimmed.startsWith('data: ')) continue
-        const data = trimmed.slice(6)
-        try { yield JSON.parse(data) as AnthropicStreamEvent } catch { /* skip */ }
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), this.config.timeout)
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': this.config.apiKey,
+          'anthropic-version': this.config.anthropicVersion ?? '2023-06-01',
+        },
+        body: JSON.stringify({ ...body, stream: true }),
+        signal: controller.signal,
+      })
+
+      if (!res.ok) {
+        const errBody = (await res.json().catch(() => ({}))) as {
+          error?: { message?: string }
+        }
+        throw new Error(
+          `Anthropic API error ${res.status}: ${errBody.error?.message ?? res.statusText}`
+        )
       }
+
+      if (!res.body) {
+        throw new Error('No response body for streaming')
+      }
+
+      return res.body
+    } finally {
+      clearTimeout(timeoutId)
     }
   }
 }
@@ -223,7 +295,16 @@ export interface AnthropicMessageResult {
 }
 
 export interface AnthropicStreamChunk {
-  content: string; fullContent: string; type: string
+  content: string
+  fullContent: string
+  type: string
+  /** Tool call deltas accumulated so far (for streaming tool calls) */
+  toolCalls?: Array<{
+    index: number
+    id: string
+    name: string
+    arguments: string
+  }>
 }
 
 interface AnthropicAPIResponse {
@@ -231,11 +312,6 @@ interface AnthropicAPIResponse {
   content?: Array<{ type: string; text: string }>
   stop_reason?: string
   usage?: { input_tokens: number; output_tokens: number }
-}
-
-interface AnthropicStreamEvent {
-  type: string
-  delta?: { text?: string }
 }
 
 export function createAnthropicClient(config: AgentBenchAnthropicConfig): AgentBenchAnthropic {

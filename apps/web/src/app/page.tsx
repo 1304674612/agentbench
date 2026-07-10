@@ -1,9 +1,27 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import {
   ArrowRight, Play, CheckCircle2, Zap, BarChart3, Shield,
   Terminal, Code2, Github, ExternalLink, BookOpen, FileText, Scale,
   Wrench, Gauge, Target, Layers, Sparkles, Heart, RotateCcw, Camera,
 } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'AgentBench — The Regression Testing Framework for AI Agents',
+  description:
+    'Replay, evaluate, compare, and assert — catch AI agent regressions before your users do. The Verification Framework for AI Agents.',
+  openGraph: {
+    title: 'AgentBench — The Regression Testing Framework for AI Agents',
+    description: 'Replay, evaluate, compare, and assert — catch AI agent regressions before your users do.',
+    images: ['/api/og?title=AgentBench+Landing'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AgentBench — The Regression Testing Framework for AI Agents',
+    description: 'Replay, evaluate, compare, and assert — catch AI agent regressions before your users do.',
+    images: ['/api/og?title=AgentBench+Landing'],
+  },
+}
 
 export default function LandingPage() {
   return (
@@ -19,7 +37,7 @@ export default function LandingPage() {
             </div>
             <span className="font-bold text-base">AgentBench</span>
             <span className="hidden sm:inline-flex text-[10px] font-medium bg-indigo-500/10 text-indigo-400 rounded-full px-2 py-0.5 border border-indigo-500/20">
-              v0.1.0
+              v0.2.0
             </span>
           </Link>
 
@@ -74,8 +92,10 @@ export default function LandingPage() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
             <span className="text-muted-foreground">
-              All 7 phases complete —{' '}
-              <span className="text-emerald-400 font-medium">51/51 tests</span>
+              Production release —{' '}
+              <span className="text-emerald-400 font-medium">v0.2.0</span>
+              {' · '}
+              <span className="text-emerald-400 font-medium">391+ tests</span>
               {' · '}
               <span className="text-emerald-400 font-medium">0 TS errors</span>
             </span>
@@ -290,7 +310,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {ecosystem.map((pkg) => (
               <div key={pkg.name} className="rounded-2xl border border-border p-6 text-center hover:border-indigo-500/10 transition-colors">
                 <code className="text-sm font-bold text-indigo-400 bg-indigo-500/5 rounded-lg px-3 py-1.5 inline-block mb-4">
@@ -404,10 +424,10 @@ const navLinks = [
 ]
 
 const stats = [
-  { value: '100+', label: 'TypeScript Files' },
-  { value: '8', label: 'Packages' },
-  { value: '18', label: 'API Endpoints' },
-  { value: '51/51', label: 'Unit Tests' },
+  { value: '150+', label: 'TypeScript Files' },
+  { value: '9', label: 'Packages' },
+  { value: '20', label: 'API Endpoints' },
+  { value: '391+', label: 'Unit Tests' },
   { value: '0', label: 'TS Errors' },
 ]
 
@@ -459,7 +479,9 @@ const ecosystem = [
   { name: '@agentbench/openai', desc: 'OpenAI wrapper with automatic tracing, token counting, and cost calculation.' },
   { name: '@agentbench/anthropic', desc: 'Anthropic Claude wrapper with streaming, system prompt, and tool use support.' },
   { name: '@agentbench/mcp', desc: 'MCP client for tool calls and resource access, with full tracing.' },
-  { name: '@agentbench/adapter', desc: 'Generic adapter base class for LangGraph, CrewAI, LlamaIndex, and custom agents.' },
+  { name: '@agentbench/langgraph', desc: 'Real LangGraph adapter — trace and evaluate your LangGraph agents.' },
+  { name: '@agentbench/adapter', desc: 'Generic adapter for CrewAI, LlamaIndex, and custom agents.' },
+  { name: 'agentbench (Python)', desc: 'Full Python SDK — Runner, Tracer, Assertion DSL, CLI. pip install agentbench.' },
 ]
 
 const footerLinks = [

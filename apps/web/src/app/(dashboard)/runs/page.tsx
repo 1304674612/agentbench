@@ -1,7 +1,13 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { db } from '@/shared/lib/db'
 import { formatNumber, formatCurrency, formatDuration, formatRelativeTime } from '@/shared/lib/utils'
 import { Play, Search, Filter } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Runs',
+  description: 'View and manage all agent test runs — replay, evaluate, and compare execution results.',
+}
 
 const statusStyles: Record<string, string> = {
   passed: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',

@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://img.shields.io/badge/AgentBench-v0.1.0-7c3aed?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgMjJzOC00IDgtMTBWNWwtOC0zLTggM3Y3YzAgNiA4IDEwIDggMTB6Ii8+PHBhdGggZD0iTTkgMTJsMiAyIDQtNCIvPjwvc3ZnPg==" alt="AgentBench" />
+  <img src="https://img.shields.io/badge/AgentBench-v0.2.0-22c55e?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgMjJzOC00IDgtMTBWNWwtOC0zLTggM3Y3YzAgNiA4IDEwIDggMTB6Ii8+PHBhdGggZD0iTTkgMTJsMiAyIDQtNCIvPjwvc3ZnPg==" alt="AgentBench" />
 </div>
 
 <h1 align="center">AgentBench</h1>
@@ -19,9 +19,9 @@
   <img src="https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white&style=flat-square" alt="Docker" />
   <br/>
   <!-- Quality -->
-  <img src="https://img.shields.io/badge/Tests-51%2F51-22c55e?logo=vitest&logoColor=white&style=flat-square" alt="Tests" />
+  <img src="https://img.shields.io/badge/Tests-391%2B-22c55e?logo=vitest&logoColor=white&style=flat-square" alt="Tests" />
   <img src="https://img.shields.io/badge/TS_Errors-0-22c55e?logo=typescript&logoColor=white&style=flat-square" alt="TS Errors" />
-  <img src="https://img.shields.io/badge/E2E-95%25-22c55e?style=flat-square" alt="E2E" />
+  <img src="https://img.shields.io/badge/Python_SDK-0.1.0-3776AB?logo=python&logoColor=white&style=flat-square" alt="Python SDK" />
   <img src="https://img.shields.io/badge/License-Apache_2.0-3b82f6?logo=apache&logoColor=white&style=flat-square" alt="License" />
   <img src="https://img.shields.io/github/stars/1304674612/agentbench?style=flat-square&color=fbbf24" alt="Stars" />
 </p>

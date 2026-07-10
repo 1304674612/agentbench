@@ -1,17 +1,16 @@
 /**
  * Auth utilities for AgentBench.
  *
- * Alpha auth system — supports:
+ * Production auth system — supports:
+ * - NextAuth.js v5 session-based authentication
  * - API Key authentication for programmatic access
- * - Session-based auth via NextAuth.js (when configured)
  * - Anonymous access for public read endpoints
- *
- * In production, replace the `authenticateRequest` function
- * with NextAuth.js `getServerSession` + API key validation.
  */
 
 import type { NextRequest } from 'next/server'
 import crypto from 'node:crypto'
+import { auth, getServerSession } from '@/shared/lib/auth-config'
+import { db } from '@/shared/lib/db'
 
 // ============================================================
 // API Key Validation
@@ -19,26 +18,39 @@ import crypto from 'node:crypto'
 
 /**
  * Validate an API key from the Authorization header.
+ * Looks up the hashed key in the database.
  * Returns the associated user/project context if valid.
  */
 export async function validateApiKey(apiKey: string): Promise<AuthContext | null> {
-  // Hash the provided key to look it up
   const hashed = hashApiKey(apiKey)
 
-  // In production, look up in the database
-  // const record = await db.apiKey.findUnique({ where: { key: hashed } })
-  // if (!record || record.isRevoked) return null
+  const record = await db.apiKey.findUnique({
+    where: { key: hashed },
+    include: { user: true, project: true },
+  })
 
-  // For alpha, accept any key starting with "ab-"
-  if (apiKey.startsWith('ab-')) {
-    return {
-      userId: 'api-key-user',
-      source: 'api_key',
-      scopes: ['read', 'write'],
-    }
+  if (!record || record.isRevoked) return null
+
+  // Check expiration
+  if (record.expiresAt && record.expiresAt < new Date()) return null
+
+  // Update last used timestamp (fire and forget)
+  db.apiKey.update({
+    where: { id: record.id },
+    data: { lastUsedAt: new Date() },
+  }).catch(() => {})
+
+  const scopeSet = new Set(record.scopes)
+  const scopes: Array<'read' | 'write' | 'admin'> = []
+  if (scopeSet.has('READ')) scopes.push('read')
+  if (scopeSet.has('WRITE')) scopes.push('write')
+  if (scopeSet.has('ADMIN')) scopes.push('admin')
+
+  return {
+    userId: record.userId ?? 'api-key-user',
+    source: 'api_key',
+    scopes: scopes.length > 0 ? scopes : ['read'],
   }
-
-  return null
 }
 
 // ============================================================
@@ -65,11 +77,18 @@ export async function authenticateRequest(req: NextRequest): Promise<AuthContext
     if (context) return context
   }
 
-  // 2. Check for session cookie (NextAuth.js integration point)
-  // const session = await getServerSession()
-  // if (session?.user) {
-  //   return { userId: session.user.id, source: 'session', scopes: ['read', 'write'] }
-  // }
+  // 2. Check for NextAuth.js session
+  const session = await getServerSession()
+  if (session?.user?.id) {
+    const role = (session.user as { role?: string }).role ?? 'user'
+    const scopes: Array<'read' | 'write' | 'admin'> = ['read', 'write']
+    if (role === 'admin') scopes.push('admin')
+    return {
+      userId: session.user.id,
+      source: 'session',
+      scopes,
+    }
+  }
 
   // 3. Anonymous — read-only access to public endpoints
   return {
@@ -134,7 +153,7 @@ export class AuthError extends Error {
 }
 
 /**
- * Next.js API route helper: authenticate and return context, or return 401 response.
+ * Next.js API route helper: authenticate and return context, or throw.
  */
 export async function withAuth(req: NextRequest): Promise<AuthContext> {
   try {

@@ -1,3 +1,10 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Settings',
+  description: 'Manage your account, API keys, and project settings.',
+}
+
 export default function SettingsPage() {
   return (
     <div className="space-y-6">

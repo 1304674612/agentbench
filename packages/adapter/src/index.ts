@@ -26,7 +26,8 @@
  * ```
  */
 
-import type { AgentConfig, RunInput, RunResult, TraceStep, ExecutionTrace, ToolDefinition } from '@agentbench/core'
+import type { AgentConfig, RunResult, TraceStep, ToolConfig } from '@agentbench/core'
+import { LangGraphAdapter } from '@agentbench/langgraph'
 
 // ============================================================
 // Types
@@ -49,7 +50,7 @@ export interface AdapterConfig {
     onError?: (error: Error) => Promise<void> | void
   }
   /** Tools available to the agent */
-  tools?: ToolDefinition[]
+  tools?: ToolConfig[]
 }
 
 export interface AdapterRunInput {
@@ -57,7 +58,7 @@ export interface AdapterRunInput {
   systemPrompt: string
   variables?: Record<string, string>
   context?: Record<string, unknown>
-  tools?: ToolDefinition[]
+  tools?: ToolConfig[]
 }
 
 export interface AdapterRunOutput {
@@ -151,33 +152,89 @@ export function createAdapter(config: AdapterConfig): GenericAgentAdapter {
 
 /**
  * Create a LangGraph adapter.
- * Placeholder — integrates with LangGraph's agent executor.
+ *
+ * Delegates to @agentbench/langgraph for real execution.
+ * Wraps the LangGraph compiled graph and produces trace-compatible output.
+ *
+ * @example
+ * ```typescript
+ * import { createLangGraphAdapter } from '@agentbench/adapter'
+ * import { Runner } from '@agentbench/core'
+ *
+ * const adapter = createLangGraphAdapter({
+ *   name: 'my-agent',
+ *   graph: compiledGraph,
+ * })
+ *
+ * const runner = new Runner({ agent: adapter.toAgentConfig() })
+ * const result = await runner.run({
+ *   messages: [{ role: 'user', content: 'Hello!' }],
+ *   systemPrompt: 'You are a helpful assistant.',
+ * })
+ * ```
  */
 export function createLangGraphAdapter(options: {
   name: string
-  graph: unknown // LangGraph compiled graph
+  graph: unknown // LangGraph compiled graph (duck-typed)
   apiKey?: string
+  maxSteps?: number
+  timeout?: number
 }): GenericAgentAdapter {
+  const langGraphAdapter = new LangGraphAdapter({
+    name: options.name,
+    graph: options.graph,
+    apiKey: options.apiKey,
+    maxSteps: options.maxSteps,
+    timeout: options.timeout,
+  })
+
   return new GenericAgentAdapter({
     name: options.name,
     provider: 'langgraph',
     description: `LangGraph adapter for ${options.name}`,
     run: async (input) => {
-      // In production, this would:
-      // 1. Convert input messages to LangGraph state
-      // 2. Execute the graph
-      // 3. Convert LangGraph output back to AdapterRunOutput
-      throw new Error(
-        'LangGraph adapter requires @langchain/langgraph dependency. ' +
-        'Install it with: npm install @langchain/langgraph',
-      )
+      const result = await langGraphAdapter.run({
+        messages: input.messages,
+        systemPrompt: input.systemPrompt,
+        variables: input.variables,
+      })
+
+      return {
+        output: result.output,
+        toolCalls: result.toolCalls,
+        metrics: result.metrics,
+        trace: result.traceSteps,
+      }
     },
   })
 }
 
 /**
  * Create a CrewAI adapter.
- * Placeholder — integrates with CrewAI's agent system.
+ *
+ * CrewAI is a Python-native framework. To evaluate CrewAI agents with AgentBench:
+ *
+ * 1. Use the @agentbench Python SDK to run CrewAI agents natively:
+ *    ```bash
+ *    pip install agentbench crewai
+ *    ```
+ *
+ * 2. Or wrap your CrewAI agent behind an HTTP API and use createAdapter():
+ *    ```typescript
+ *    const adapter = createAdapter({
+ *      name: 'my-crew',
+ *      provider: 'custom',
+ *      run: async (input) => {
+ *        const res = await fetch('http://localhost:8000/run', {
+ *          method: 'POST',
+ *          body: JSON.stringify(input),
+ *        })
+ *        return res.json()
+ *      },
+ *    })
+ *    ```
+ *
+ * @see https://docs.agentbench.dev/integrations/crewai
  */
 export function createCrewAIAdapter(options: {
   name: string
@@ -187,10 +244,12 @@ export function createCrewAIAdapter(options: {
     name: options.name,
     provider: 'crewai',
     description: `CrewAI adapter for ${options.name}`,
-    run: async (input) => {
+    run: async () => {
       throw new Error(
-        'CrewAI adapter requires crewai dependency. ' +
-        'Install it with: pip install crewai (Python SDK)',
+        'CrewAI is a Python-native framework. ' +
+        'Use the @agentbench Python SDK (pip install agentbench crewai) to evaluate CrewAI agents, ' +
+        'or wrap your CrewAI agent behind an HTTP API and use createAdapter() with fetch calls. ' +
+        'See https://docs.agentbench.dev/integrations/crewai for details.'
       )
     },
   })
@@ -198,7 +257,30 @@ export function createCrewAIAdapter(options: {
 
 /**
  * Create a LlamaIndex adapter.
- * Placeholder — integrates with LlamaIndex's agent runner.
+ *
+ * LlamaIndex is a Python-native framework. To evaluate LlamaIndex agents with AgentBench:
+ *
+ * 1. Use the @agentbench Python SDK to run LlamaIndex agents natively:
+ *    ```bash
+ *    pip install agentbench llama-index
+ *    ```
+ *
+ * 2. Or wrap your LlamaIndex agent behind an HTTP API and use createAdapter():
+ *    ```typescript
+ *    const adapter = createAdapter({
+ *      name: 'my-llamaindex',
+ *      provider: 'custom',
+ *      run: async (input) => {
+ *        const res = await fetch('http://localhost:8000/run', {
+ *          method: 'POST',
+ *          body: JSON.stringify(input),
+ *        })
+ *        return res.json()
+ *      },
+ *    })
+ *    ```
+ *
+ * @see https://docs.agentbench.dev/integrations/llamaindex
  */
 export function createLlamaIndexAdapter(options: {
   name: string
@@ -208,10 +290,12 @@ export function createLlamaIndexAdapter(options: {
     name: options.name,
     provider: 'llamaindex',
     description: `LlamaIndex adapter for ${options.name}`,
-    run: async (input) => {
+    run: async () => {
       throw new Error(
-        'LlamaIndex adapter requires llamaindex dependency. ' +
-        'Install it with: pip install llama-index (Python SDK)',
+        'LlamaIndex is a Python-native framework. ' +
+        'Use the @agentbench Python SDK (pip install agentbench llama-index) to evaluate LlamaIndex agents, ' +
+        'or wrap your LlamaIndex agent behind an HTTP API and use createAdapter() with fetch calls. ' +
+        'See https://docs.agentbench.dev/integrations/llamaindex for details.'
       )
     },
   })

@@ -1,0 +1,14 @@
+{
+  "name": "example-customer-support-agent",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "agentbench test --project customer-support --verbose",
+    "run": "agentbench run --project customer-support"
+  },
+  "devDependencies": {
+    "agentbench": "workspace:*",
+    "@agentbench/openai": "workspace:*"
+  }
+}

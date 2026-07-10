@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { db } from '@/shared/lib/db'
 import { FlaskConical, Plus, Beaker, Layers, Gauge } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Experiments',
+  description: 'A/B test prompts, models, and configurations with statistical rigor — compare variants side by side.',
+}
 
 const statusStyles: Record<string, string> = {
   DRAFT: 'bg-muted text-muted-foreground border-border',

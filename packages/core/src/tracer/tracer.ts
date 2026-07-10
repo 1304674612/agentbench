@@ -10,6 +10,7 @@ import type {
   TraceMetadata,
 } from '../types'
 import { tokenCounter, costCalculator } from '../utils/token-counter'
+import { StreamCapture, type AssembledStreamResponse } from './stream-capture'
 
 export interface TracerConfig {
   runId: string
@@ -150,6 +151,134 @@ export class Tracer {
 
       this.steps.push(step)
       return result
+    } catch (error) {
+      const stepEnd = new Date()
+      step.endedAt = stepEnd
+      step.duration = stepEnd.getTime() - stepStart.getTime()
+      step.status = 'error'
+      step.error = {
+        message: error instanceof Error ? error.message : String(error),
+        type: 'api_error',
+        retryable: true,
+      }
+      this.steps.push(step)
+      throw error
+    }
+  }
+
+  /**
+   * Trace a streaming LLM API call — captures SSE chunks and assembles the full response.
+   * The `execute` callback returns a ReadableStream that yields SSE data.
+   */
+  async traceLLMCallStream(
+    provider: string,
+    model: string,
+    request: {
+      messages: Array<{ role: string; content: string | null }>
+      tools?: Array<unknown>
+      temperature?: number
+      max_tokens?: number
+    },
+    execute: () => Promise<ReadableStream<Uint8Array>>,
+    streamType: 'openai' | 'anthropic'
+  ): Promise<AssembledStreamResponse> {
+    const stepId = generateStepId()
+    const stepStart = new Date()
+
+    // Estimate tokens for request
+    const estimatedPromptTokens = tokenCounter.estimateMessagesTokens(
+      request.messages,
+      provider
+    )
+
+    // Create initial step
+    const step: TraceStep = {
+      id: stepId,
+      sequence: this.steps.length + 1,
+      type: 'llm_call' as TraceStepType,
+      startedAt: stepStart,
+      llmProvider: provider,
+      llmModel: model,
+      llmRequest: this.captureRequestData
+        ? {
+            provider,
+            model,
+            messages: request.messages.map((m) => ({
+              role: m.role as 'system' | 'user' | 'assistant' | 'tool',
+              content: m.content,
+            })),
+            tools: request.tools as unknown as Array<{
+              type: 'function'
+              function: {
+                name: string
+                description: string
+                parameters: Record<string, unknown>
+              }
+            }>,
+            temperature: request.temperature ?? 0.7,
+            maxTokens: request.max_tokens ?? 4096,
+          }
+        : undefined,
+      promptTokens: estimatedPromptTokens,
+      totalTokens: estimatedPromptTokens,
+      cost: 0,
+      status: 'success' as StepStatus,
+      isStreaming: true,
+      metadata: {},
+    }
+
+    const capture = new StreamCapture(streamType)
+
+    try {
+      // Execute and stream through capture
+      const stream = await execute()
+      await capture.captureStream(stream)
+
+      const stepEnd = new Date()
+      const assembled = capture.getAssembledResponse()
+      const metrics = capture.getStreamingMetrics()
+      const timeToFirstToken = capture.getTimeToFirstToken()
+
+      // Use actual usage from stream, or estimates
+      const promptTokens = assembled.usage?.promptTokens ?? estimatedPromptTokens
+      const completionTokens = assembled.usage?.completionTokens ??
+        tokenCounter.estimateTokens(assembled.fullText, provider)
+      const totalTokens = promptTokens + completionTokens
+      const cost = costCalculator.calculate(model, promptTokens, completionTokens)
+
+      // Update step with response data
+      step.endedAt = stepEnd
+      step.duration = stepEnd.getTime() - stepStart.getTime()
+      step.llmResponse = this.captureRequestData
+        ? {
+            content: assembled.fullText || null,
+            toolCalls: assembled.toolCalls.map((tc) => ({
+              id: tc.id,
+              type: 'function' as const,
+              function: {
+                name: tc.name,
+                arguments: JSON.stringify(tc.arguments),
+              },
+            })),
+            finishReason: assembled.finishReason,
+            usage: {
+              promptTokens,
+              completionTokens,
+              totalTokens,
+            },
+            model,
+          }
+        : undefined
+      step.promptTokens = promptTokens
+      step.completionTokens = completionTokens
+      step.totalTokens = totalTokens
+      step.cost = cost
+      step.status = 'success'
+      step.streamChunks = metrics.chunkCount
+      step.streamLatency = timeToFirstToken
+
+      this.steps.push(step)
+      return assembled
     } catch (error) {
       const stepEnd = new Date()
       step.endedAt = stepEnd

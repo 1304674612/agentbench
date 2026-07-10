@@ -1,3 +1,10 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Projects',
+  description: 'Organize your agent testing by project — manage runs, suites, and experiments per project.',
+}
+
 export default function ProjectsPage() {
   return (
     <div className="space-y-6">

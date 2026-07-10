@@ -1,34 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/shared/lib/db'
+import { createProjectSchema, paginationSchema } from '@/shared/lib/validations'
+import { handleApiError } from '@/shared/lib/error-handler'
+
 import { z } from 'zod'
 
-const createProjectSchema = z.object({
-  name: z.string().min(1).max(128),
-  slug: z.string().min(1).max(128),
-  description: z.string().optional(),
+const projectQuerySchema = paginationSchema.extend({
+  search: z.string().optional(),
 })
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const parsed = createProjectSchema.safeParse(body)
-    if (!parsed.success) {
-      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
-    }
+    const parsed = createProjectSchema.parse(body)
 
     const project = await db.project.create({
       data: {
-        name: parsed.data.name,
-        slug: parsed.data.slug,
-        description: parsed.data.description,
-        // ownerId: from auth session (not required in alpha)
+        name: parsed.name,
+        slug: parsed.slug,
+        description: parsed.description,
       },
     })
 
     return NextResponse.json(project, { status: 201 })
   } catch (error) {
-    console.error('Failed to create project:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return handleApiError(error)
   }
 }
 
@@ -56,7 +52,6 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ projects, total, limit, offset })
   } catch (error) {
-    console.error('Failed to list projects:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return handleApiError(error)
   }
 }

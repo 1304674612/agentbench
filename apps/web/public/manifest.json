@@ -1,0 +1,28 @@
+{
+  "name": "AgentBench — Regression Testing Framework for AI Agents",
+  "short_name": "AgentBench",
+  "description": "The Verification Framework for AI Agents. Replay, evaluate, compare, and regression test your AI agents with confidence.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "theme_color": "#0a0a0b",
+  "background_color": "#0a0a0b",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["developer tools", "productivity"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "scope": "/"
+}

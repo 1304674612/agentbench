@@ -5,7 +5,7 @@
  * Intercepts tool invocations and resource access for full observability.
  */
 
-import type { TraceStep, ToolCallRecord } from '@agentbench/core'
+import type { TraceStep } from '@agentbench/core'
 
 export interface AgentBenchMCPConfig {
   /** MCP server endpoint */

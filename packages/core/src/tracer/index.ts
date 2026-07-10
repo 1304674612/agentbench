@@ -1,5 +1,7 @@
 export { Tracer } from './tracer'
 export type { TracerConfig } from './tracer'
+export { StreamCapture } from './stream-capture'
+export type { StreamChunk, AssembledStreamResponse } from './stream-capture'
 export { wrapOpenAI } from './interceptors/openai'
 export type { WrappedOpenAI } from './interceptors/openai'
 export { wrapAnthropic } from './interceptors/anthropic'

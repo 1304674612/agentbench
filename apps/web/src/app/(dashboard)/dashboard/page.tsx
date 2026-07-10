@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { db } from '@/shared/lib/db'
 import Link from 'next/link'
 import {
@@ -6,6 +7,11 @@ import {
   FlaskConical,
 } from 'lucide-react'
 import { formatNumber, formatCurrency, formatDuration, formatRelativeTime } from '@/shared/lib/utils'
+
+export const metadata: Metadata = {
+  title: 'Dashboard',
+  description: 'Monitor your AI agent runs, pass rates, costs, and performance metrics at a glance.',
+}
 
 export default async function DashboardPage() {
   // Real data from database

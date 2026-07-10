@@ -17,12 +17,26 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  // Compiler optimizations
+  compiler: {
+    // Remove console.log in production for cleaner bundles
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+  },
+
   // Experimental features
   experimental: {
     // Server actions body size
     serverActions: {
       bodySizeLimit: '10mb',
     },
+    // Optimize package imports for tree-shaking
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      'recharts',
+      'framer-motion',
+    ],
   },
 
   // Security headers

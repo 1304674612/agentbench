@@ -1,7 +1,13 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { db } from '@/shared/lib/db'
 import { Plus, TestTube, Layers, Clock } from 'lucide-react'
 import { formatRelativeTime } from '@/shared/lib/utils'
+
+export const metadata: Metadata = {
+  title: 'Test Suites',
+  description: 'Create and manage test suites with chained assertions — run, evaluate, and view results.',
+}
 
 export default async function TestsPage() {
   const suites = await db.testSuite.findMany({

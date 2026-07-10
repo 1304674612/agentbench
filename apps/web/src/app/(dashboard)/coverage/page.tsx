@@ -1,5 +1,11 @@
+import type { Metadata } from 'next'
 import { db } from '@/shared/lib/db'
 import { Shield, TrendingUp, AlertTriangle, CheckCircle2, Lightbulb } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Coverage',
+  description: 'Analyze test coverage across tools, evaluators, and assertion types — identify gaps in your agent testing.',
+}
 
 export default async function CoveragePage() {
   // Aggregate coverage from all projects

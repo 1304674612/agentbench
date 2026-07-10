@@ -52,6 +52,11 @@ export interface TraceStep {
   status: StepStatus
   error?: TraceError
 
+  // Streaming
+  isStreaming?: boolean
+  streamChunks?: number
+  streamLatency?: number
+
   // Metadata
   metadata?: Record<string, unknown>
 }
