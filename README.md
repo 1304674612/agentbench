@@ -447,6 +447,10 @@ AgentBench is open source and community-driven. We welcome all contributions.
 | **Security Policy** | [SECURITY.md](SECURITY.md) |
 | **Code of Conduct** | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) |
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=1304674612/agentbench&type=Date)](https://star-history.com/#1304674612/agentbench&Date)
+
 ---
 
 <div align="center">
@@ -456,9 +460,4 @@ AgentBench is open source and community-driven. We welcome all contributions.
   <sub>Apache 2.0 License - (c) 2026 AgentBench Contributors</sub>
   <br/>
   <sub>If AgentBench saves you from shipping a broken agent, give it a star</sub>
-  <br/><br/>
 </div>
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=1304674612/agentbench&type=Date)](https://star-history.com/#1304674612/agentbench&Date)
