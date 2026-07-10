@@ -121,14 +121,7 @@ export default function NewTestSuitePage() {
           }
         }
 
-        // Expected: must be valid JSON if non-empty
-        if (tc.expected.trim()) {
-          try {
-            JSON.parse(tc.expected)
-          } catch {
-            tcErrors.expected = 'Expected must be valid JSON.'
-          }
-        }
+        // Expected: plain text keywords (comma-separated), used for contains matching
       }
 
       if (Object.keys(tcErrors).length > 0) {
@@ -378,12 +371,12 @@ export default function NewTestSuitePage() {
                   {/* Expected output */}
                   <div>
                     <label className="block text-xs font-medium mb-1 text-muted-foreground">
-                      Expected Output
+                      Expected Keywords
                     </label>
                     <textarea
                       value={tc.expected}
                       onChange={(e) => updateTestCase(tc.id, 'expected', e.target.value)}
-                      placeholder="What should the agent response contain?"
+                      placeholder="Keywords that should appear in the response, e.g. refund, policy"
                       rows={2}
                       className={`w-full rounded-lg border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors resize-none ${caseErrors[tc.id]?.expected ? 'border-red-400' : 'border-border'}`}
                     />
