@@ -4,6 +4,12 @@ Welcome to the AgentBench documentation. AgentBench is the regression testing fr
 
 This documentation follows the [Diataxis](https://diataxis.fr/) framework, organizing content by what it does for you.
 
+## Origin Story
+
+| Document | Description |
+|----------|-------------|
+| [Why Agent Testing](article-why-agent-testing.md) | "I tracked my time. Coding was 10%. Testing was 90%." — The story of why AgentBench exists |
+
 ## Tutorials
 
 Step-by-step guides that teach you the basics by doing.
@@ -11,8 +17,6 @@ Step-by-step guides that teach you the basics by doing.
 | Document | Description |
 |----------|-------------|
 | [Quick Start](GETTING_STARTED.md) | Install, init, and run your first test in 5 minutes |
-| [Installation](v0.3/installation.md) | Detailed install options: npm, pnpm, yarn, Docker |
-| [Your First Test](v0.3/your-first-test.md) | Write your first assertion, run it, understand the output |
 
 ## Core Concepts
 

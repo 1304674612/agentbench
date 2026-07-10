@@ -1,5 +1,5 @@
 {
-  "name": "agentbench",
+  "name": "@agentbench/cli",
   "version": "0.3.0",
   "description": "AgentBench CLI — Regression Testing for AI Agents",
   "license": "Apache-2.0",

@@ -36,6 +36,9 @@
   <img src="https://img.shields.io/badge/Python_SDK-0.2.0-3776AB?logo=python&logoColor=white&style=flat-square" alt="Python SDK" />
   <img src="https://img.shields.io/badge/npm-v0.3.0-CB3837?logo=npm&logoColor=white&style=flat-square" alt="npm" />
   <img src="https://img.shields.io/badge/VS_Code-Extension-007ACC?logo=visualstudiocode&logoColor=white&style=flat-square" alt="VS Code" />
+  <br/>
+  <a href="https://github.com/1304674612/agentbench/actions/workflows/agentbench-ci.yml"><img src="https://github.com/1304674612/agentbench/actions/workflows/agentbench-ci.yml/badge.svg?branch=main" alt="CI" style="max-width:100%;" /></a>
+  <img src="https://img.shields.io/npm/v/@agentbench/cli?label=npm&color=CB3837&logo=npm&style=flat-square" alt="npm" />
 </p>
 
 ---
@@ -43,7 +46,7 @@
 ## 🚀 Quick Start
 
 ```bash
-npm install -g agentbench
+npm install -g @agentbench/cli
 agentbench init
 agentbench test
 ```
@@ -90,6 +93,10 @@ pnpm dev
 ---
 
 ## 📖 Why AgentBench?
+
+> *"I tracked my time. Coding was 10%. Testing was 90%. Not because I'm slow — because there was no tool."*
+>
+> — [Read the full origin story](docs/article-why-agent-testing.md)
 
 AI Agents are **unpredictable**. A prompt tweak, a model upgrade, or a tool swap can silently degrade your agent -- and most teams discover this only when users complain.
 
