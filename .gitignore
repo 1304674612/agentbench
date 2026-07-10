@@ -46,6 +46,14 @@ coverage/               # Test coverage reports (root only)
 test-results/
 playwright-report/
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+sdk-python/dist/
+*.whl
+
 # Misc
 *.pem
 tmp/
