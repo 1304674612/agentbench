@@ -15,10 +15,11 @@ export const metadata: Metadata = {
 
 export default async function DashboardPage() {
   // Real data from database
-  const [totalRuns, passedRuns, failedRuns, recentRuns, totalProjects, totalSuites] = await Promise.all([
+  const [totalRuns, passedRuns, failedRuns, pendingRuns, recentRuns, totalProjects, totalSuites, totalCases] = await Promise.all([
     db.run.count(),
     db.run.count({ where: { status: 'PASSED' } }),
     db.run.count({ where: { status: { in: ['FAILED', 'ERROR'] } } }),
+    db.run.count({ where: { status: { in: ['PENDING', 'RUNNING'] } } }),
     db.run.findMany({
       orderBy: { createdAt: 'desc' },
       take: 8,
@@ -30,9 +31,11 @@ export default async function DashboardPage() {
     }),
     db.project.count(),
     db.testSuite.count(),
+    db.testCase.count(),
   ])
 
-  const passRate = totalRuns > 0 ? Math.round((passedRuns / totalRuns) * 1000) / 10 : 0
+  const completedRuns = passedRuns + failedRuns
+  const passRate = completedRuns > 0 ? Math.round((passedRuns / completedRuns) * 1000) / 10 : null
 
   // Aggregate metrics from recent runs
   const runsWithMetrics = recentRuns.filter((r) => r.metrics != null)
@@ -47,10 +50,10 @@ export default async function DashboardPage() {
     : 0
 
   const statCards = [
-    { label: 'Pass Rate', value: `${passRate}%`, icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-500/10', desc: `${passedRuns} of ${totalRuns} runs` },
-    { label: 'Avg Score', value: '—', icon: Activity, color: 'text-blue-400', bg: 'bg-blue-500/10', desc: 'Run evaluations to see' },
-    { label: 'Total Runs', value: formatNumber(totalRuns), icon: Play, color: 'text-indigo-400', bg: 'bg-indigo-500/10', desc: `${totalProjects} projects · ${totalSuites} suites` },
-    { label: 'Avg Latency', value: avgLatency > 0 ? formatDuration(avgLatency) : '—', icon: Clock, color: 'text-purple-400', bg: 'bg-purple-500/10', desc: avgCost > 0 ? `$${avgCost.toFixed(3)} avg cost` : 'No data yet' },
+    { label: 'Pass Rate', value: passRate != null ? `${passRate}%` : 'N/A', icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-500/10', desc: `${passedRuns} passed · ${failedRuns} failed · ${pendingRuns} pending` },
+    { label: 'Test Suites', value: formatNumber(totalSuites), icon: FlaskConical, color: 'text-amber-400', bg: 'bg-amber-500/10', desc: `${totalCases} test cases across ${totalProjects} projects` },
+    { label: 'Total Runs', value: formatNumber(totalRuns), icon: Play, color: 'text-indigo-400', bg: 'bg-indigo-500/10', desc: `${completedRuns} completed · ${pendingRuns} pending` },
+    { label: 'Avg Cost', value: avgCost > 0 ? `$${avgCost.toFixed(4)}` : 'N/A', icon: DollarSign, color: 'text-purple-400', bg: 'bg-purple-500/10', desc: avgTokens > 0 ? `${formatNumber(avgTokens)} avg tokens` : 'Run tests to see cost data' },
   ]
 
   return (
@@ -92,7 +95,7 @@ export default async function DashboardPage() {
             <div className="space-y-3">
               <BarRow label="Passed" value={passedRuns} total={totalRuns} color="bg-emerald-500" />
               <BarRow label="Failed" value={failedRuns} total={totalRuns} color="bg-red-500" />
-              <BarRow label="Other" value={totalRuns - passedRuns - failedRuns} total={totalRuns} color="bg-muted-foreground/30" />
+              <BarRow label="Pending" value={pendingRuns} total={totalRuns} color="bg-muted-foreground/30" />
             </div>
           )}
         </div>
