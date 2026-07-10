@@ -1,0 +1,32 @@
+name: Update Star History Chart
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight
+  workflow_dispatch:       # Manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  update-chart:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate Star Chart
+        run: |
+          # Fetch star data from GitHub API (GITHUB_TOKEN auto-provided)
+          STARS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}" | jq '.stargazers_count')
+
+          echo "Current stars: $STARS"
+          echo "{\"stars\": $STARS, \"date\": \"$(date -u +%Y-%m-%d)\"}" >> star-data.jsonl
+
+      - name: Commit updated chart data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add star-data.jsonl
+          git diff --staged --quiet || git commit -m "chore: update star chart data ($(date +%Y-%m-%d))"
+          git push
