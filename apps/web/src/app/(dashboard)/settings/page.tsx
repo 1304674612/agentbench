@@ -566,6 +566,8 @@ function ProjectSettingsSection() {
           <option value="claude-opus-4-5">Claude Opus 4.5</option>
           <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
           <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+          <option value="deepseek-chat">DeepSeek Chat (V3)</option>
+          <option value="deepseek-reasoner">DeepSeek Reasoner (R1)</option>
         </select>
       </div>
 
