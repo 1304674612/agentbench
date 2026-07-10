@@ -4,7 +4,7 @@ import { db } from '@/shared/lib/db'
 export async function GET() {
   const checks = {
     status: 'ok',
-    version: '0.1.0',
+    version: '0.3.0',
     timestamp: new Date().toISOString(),
     checks: {
       database: 'unknown',
