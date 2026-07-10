@@ -561,11 +561,11 @@ function ProjectSettingsSection() {
           <option value="gpt-4o">GPT-4o</option>
           <option value="gpt-4o-mini">GPT-4o Mini</option>
           <option value="gpt-4-turbo">GPT-4 Turbo</option>
-          <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
-          <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
-          <option value="claude-opus-4-5">Claude Opus 4.5</option>
-          <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-          <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+          <option value="claude-sonnet-4-5">Claude Sonnet</option>
+          <option value="claude-haiku-4-5">Claude Haiku</option>
+          <option value="claude-opus-4-8">Claude Opus</option>
+          <option value="gemini-2.5-pro">Gemini Pro</option>
+          <option value="gemini-2.5-flash">Gemini Flash</option>
           <option value="deepseek-chat">DeepSeek Chat</option>
           <option value="deepseek-reasoner">DeepSeek Reasoner</option>
         </select>
