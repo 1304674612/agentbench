@@ -457,13 +457,11 @@ AgentBench is open source and community-driven. We welcome all contributions.
   <br/>
   <sub>If AgentBench saves you from shipping a broken agent, give it a star</sub>
   <br/><br/>
-  ## Star History
+  ## ⭐ Star History
 
   <a href="https://www.star-history.com/?type=date&repos=1304674612%2Fagentbench">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=1304674612/agentbench&type=date&theme=dark&legend=top-left&sealed_token=r2pBvvkkazmiyBlRh2AMlAqBBobFpBJAm1CefnXxqGrma156_caZ0HsEurtBsqMhEBxjkby9-0T53j8JrjtCoY-GHHoKWWeInIw07PAKHZGAakofgj1DEg" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=1304674612/agentbench&type=date&legend=top-left&sealed_token=r2pBvvkkazmiyBlRh2AMlAqBBobFpBJAm1CefnXxqGrma156_caZ0HsEurtBsqMhEBxjkby9-0T53j8JrjtCoY-GHHoKWWeInIw07PAKHZGAakofgj1DEg" />
-      <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=1304674612/agentbench&type=date&legend=top-left&sealed_token=r2pBvvkkazmiyBlRh2AMlAqBBobFpBJAm1CefnXxqGrma156_caZ0HsEurtBsqMhEBxjkby9-0T53j8JrjtCoY-GHHoKWWeInIw07PAKHZGAakofgj1DEg" />
-    </picture>
+    <img src="https://img.shields.io/github/stars/1304674612/agentbench?style=social" alt="Stars" />
   </a>
+  <br/>
+  <sub><a href="https://www.star-history.com/?type=date&repos=1304674612%2Fagentbench">View full star history chart →</a> (requires GitHub login)</sub>
 </div>
