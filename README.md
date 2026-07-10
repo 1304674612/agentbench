@@ -41,12 +41,6 @@
   <img src="https://img.shields.io/npm/v/@agentbench/cli?label=npm&color=CB3837&logo=npm&style=flat-square" alt="npm" />
 </p>
 
-<p align="center">
-  <a href="https://star-history.com/#1304674612/agentbench&Date">
-    <img src="https://api.star-history.com/svg?repos=1304674612/agentbench&type=Date" alt="Star History Chart" width="600" />
-  </a>
-</p>
-
 ---
 
 ## 🚀 Quick Start
@@ -462,4 +456,8 @@ AgentBench is open source and community-driven. We welcome all contributions.
   <sub>Apache 2.0 License - (c) 2026 AgentBench Contributors</sub>
   <br/>
   <sub>If AgentBench saves you from shipping a broken agent, give it a star</sub>
+  <br/><br/>
+  <a href="https://star-history.com/#1304674612/agentbench&Date">
+    <img src="https://api.star-history.com/svg?repos=1304674612/agentbench&type=Date" alt="Star History Chart" width="500" />
+  </a>
 </div>
