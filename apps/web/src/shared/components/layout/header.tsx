@@ -4,6 +4,7 @@ import { Command, Moon, Search, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 import { NotificationDropdown } from '@/shared/components/notifications/notification-dropdown'
+import { CommandSearch } from './command-search'
 
 export function Header() {
   const { theme, setTheme } = useTheme()
@@ -66,6 +67,8 @@ export function Header() {
           <span className="text-xs font-medium text-primary">U</span>
         </div>
       </div>
+
+      <CommandSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
   )
 }
