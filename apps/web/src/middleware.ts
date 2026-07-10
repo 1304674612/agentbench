@@ -57,10 +57,15 @@ export default auth(async function middleware(req) {
   }
 
   // Protect API v1 write endpoints
+  // Middleware only checks NextAuth session. API key auth is handled by
+  // the route-level withApiAuth() wrapper, so we pass through requests
+  // that have an Authorization header.
   if (isApiWriteRoute(pathname)) {
     const method = req.method
     const isWriteMethod = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)
-    if (isWriteMethod && !req.auth) {
+    const hasApiKey = req.headers.get('authorization')?.startsWith('Bearer ')
+
+    if (isWriteMethod && !req.auth && !hasApiKey) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 },
