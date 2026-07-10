@@ -39,14 +39,27 @@ export interface AuthOptions {
  *
  * Extracts auth from the request and passes it to the handler via `ctx.auth`.
  * Returns 401/403 on auth failure.
+ *
+ * Two overloads:
+ * - Static routes (no params): handler receives `ctx: ApiContext`, returns a 1-arg function.
+ * - Dynamic routes (with segment params): handler receives `ctx: Params & ApiContext`,
+ *   returns a 2-arg function whose second arg is just Params (satisfying Next.js RouteContext).
  */
-export function withApiAuth<T extends { params?: unknown }>(
-  handler: (req: NextRequest, ctx: T & ApiContext) => Promise<NextResponse> | NextResponse,
+export function withApiAuth(
+  handler: (req: NextRequest, ctx: ApiContext) => Promise<NextResponse> | NextResponse,
+  options?: AuthOptions,
+): (req: NextRequest) => Promise<NextResponse>
+export function withApiAuth<Params extends { params?: unknown }>(
+  handler: (req: NextRequest, ctx: Params & ApiContext) => Promise<NextResponse> | NextResponse,
+  options?: AuthOptions,
+): (req: NextRequest, ctx: Params) => Promise<NextResponse>
+export function withApiAuth(
+  handler: (req: NextRequest, ctx: any) => Promise<NextResponse> | NextResponse,
   options?: AuthOptions,
 ) {
   return async function authenticatedHandler(
     req: NextRequest,
-    routeCtx?: T,
+    routeCtx?: any,
   ): Promise<NextResponse> {
     try {
       const auth = await authenticateRequest(req)
@@ -54,7 +67,7 @@ export function withApiAuth<T extends { params?: unknown }>(
       if (options?.requireWrite) requireWrite(auth)
       if (options?.requireAdmin) requireAdmin(auth)
 
-      const ctx = { ...(routeCtx ?? {}), auth } as T & ApiContext
+      const ctx = { ...(routeCtx ?? {}), auth }
       return await handler(req, ctx)
     } catch (err) {
       if (err instanceof AuthError) {

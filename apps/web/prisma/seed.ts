@@ -327,7 +327,7 @@ async function main() {
   // ------------------------------------------------------------------
   console.log('  Creating sample runs with realistic trace data...')
 
-  const allCases = await prisma.testCase.findMany({ where: { projectId: project.id } })
+  const allCases = await prisma.testCase.findMany({ where: { suite: { projectId: project.id } } })
 
   // Helper: create a run with trace steps, scores, assertion results
   async function createSampleRun(
@@ -446,7 +446,7 @@ async function main() {
           llmResponse:
             s.type === 'LLM_CALL'
               ? {
-                  content: s.content ?? null,
+                  content: s.content ?? undefined,
                   finishReason: s.stepStatus === 'SUCCESS' ? 'stop' : 'error',
                   usage: {
                     promptTokens: s.promptTokens ?? 300,
@@ -583,7 +583,6 @@ async function main() {
           type: 'LLM_CALL',
           stepStatus: 'SUCCESS',
           llmModel: 'gpt-4o',
-          content: null,
           promptTokens: 312,
           completionTokens: 45,
           durationMs: 1850,
@@ -647,7 +646,6 @@ async function main() {
           type: 'LLM_CALL',
           stepStatus: 'SUCCESS',
           llmModel: 'gpt-4o',
-          content: null,
           promptTokens: 310,
           completionTokens: 52,
           durationMs: 2100,
@@ -737,7 +735,6 @@ async function main() {
           type: 'LLM_CALL',
           stepStatus: 'SUCCESS',
           llmModel: 'gpt-3.5-turbo',
-          content: null,
           promptTokens: 280,
           completionTokens: 35,
           durationMs: 950,
@@ -934,35 +931,28 @@ async function main() {
 
   const datasetItems = [
     {
-      split: 'TEST' as const,
       input: { messages: [{ role: 'user', content: 'Hello, I need help with my account.' }] },
       expected: { shouldGreet: true, shouldOfferHelp: true },
-      labels: ['greeting', 'account-help'],
-      metadata: { difficulty: 'easy', category: 'greeting' },
+      metadata: { difficulty: 'easy', category: 'greeting', split: 'TEST', labels: ['greeting', 'account-help'] },
       sortOrder: 1,
     },
     {
-      split: 'TEST' as const,
       input: {
         messages: [{ role: 'user', content: 'I want a refund for my annual subscription.' }],
       },
       expected: { shouldLookupPolicy: true, shouldMentionRefundWindow: true },
-      labels: ['refund', 'policy'],
-      metadata: { difficulty: 'medium', category: 'refund' },
+      metadata: { difficulty: 'medium', category: 'refund', split: 'TEST', labels: ['refund', 'policy'] },
       sortOrder: 2,
     },
     {
-      split: 'TRAIN' as const,
       input: {
         messages: [{ role: 'user', content: 'What is the pricing for the Enterprise plan?' }],
       },
       expected: { shouldSearchKB: true, shouldMentionCustomPricing: true },
-      labels: ['pricing', 'enterprise'],
-      metadata: { difficulty: 'easy', category: 'pricing' },
+      metadata: { difficulty: 'easy', category: 'pricing', split: 'TRAIN', labels: ['pricing', 'enterprise'] },
       sortOrder: 3,
     },
     {
-      split: 'TEST' as const,
       input: {
         messages: [
           { role: 'user', content: 'Can you check my order ORD-12347?' },
@@ -971,12 +961,10 @@ async function main() {
         ],
       },
       expected: { shouldCheckOrder: true, shouldHandleMultiTurn: true },
-      labels: ['order-status', 'multi-turn'],
-      metadata: { difficulty: 'hard', category: 'multi-turn' },
+      metadata: { difficulty: 'hard', category: 'multi-turn', split: 'TEST', labels: ['order-status', 'multi-turn'] },
       sortOrder: 4,
     },
     {
-      split: 'VALIDATION' as const,
       input: {
         messages: [
           {
@@ -986,40 +974,33 @@ async function main() {
         ],
       },
       expected: { shouldEscalate: true, shouldNotSpeculate: true },
-      labels: ['escalation', 'security'],
-      metadata: { difficulty: 'hard', category: 'escalation' },
+      metadata: { difficulty: 'hard', category: 'escalation', split: 'VALIDATION', labels: ['escalation', 'security'] },
       sortOrder: 5,
     },
     {
-      split: 'TEST' as const,
       input: {
         messages: [{ role: 'user', content: 'How do I cancel my subscription?' }],
       },
       expected: { shouldSearchKB: true, shouldExplainCancellation: true },
-      labels: ['cancellation', 'policy'],
-      metadata: { difficulty: 'easy', category: 'policy' },
+      metadata: { difficulty: 'easy', category: 'policy', split: 'TEST', labels: ['cancellation', 'policy'] },
       sortOrder: 6,
     },
     {
-      split: 'TRAIN' as const,
       input: {
         messages: [
           { role: 'user', content: 'Is my data encrypted? I need SOC 2 compliance info.' },
         ],
       },
       expected: { shouldSearchKB: true, shouldMentionSOC2: true },
-      labels: ['security', 'compliance'],
-      metadata: { difficulty: 'medium', category: 'security' },
+      metadata: { difficulty: 'medium', category: 'security', split: 'TRAIN', labels: ['security', 'compliance'] },
       sortOrder: 7,
     },
     {
-      split: 'TEST' as const,
       input: {
         messages: [{ role: 'user', content: 'I forgot my password and cannot log in.' }],
       },
       expected: { shouldBeHelpful: true, shouldProvideResetInstructions: true },
-      labels: ['account-help', 'password-reset'],
-      metadata: { difficulty: 'easy', category: 'account' },
+      metadata: { difficulty: 'easy', category: 'account', split: 'TEST', labels: ['account-help', 'password-reset'] },
       sortOrder: 8,
     },
   ]
@@ -1028,10 +1009,8 @@ async function main() {
     await prisma.datasetItem.create({
       data: {
         datasetId: dataset.id,
-        split: item.split,
         input: item.input,
         expected: item.expected,
-        labels: item.labels,
         metadata: item.metadata,
         sortOrder: item.sortOrder,
       },
