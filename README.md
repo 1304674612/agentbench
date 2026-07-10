@@ -41,6 +41,12 @@
   <img src="https://img.shields.io/npm/v/@agentbench/cli?label=npm&color=CB3837&logo=npm&style=flat-square" alt="npm" />
 </p>
 
+<p align="center">
+  <a href="https://star-history.com/#1304674612/agentbench&Date">
+    <img src="https://api.star-history.com/svg?repos=1304674612/agentbench&type=Date" alt="Star History Chart" width="600" />
+  </a>
+</p>
+
 ---
 
 ## 🚀 Quick Start
