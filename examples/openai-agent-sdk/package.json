@@ -1,0 +1,14 @@
+{
+  "name": "example-openai-agent-sdk",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "agentbench test --project openai-agent-sdk --verbose",
+    "run": "agentbench run --project openai-agent-sdk"
+  },
+  "devDependencies": {
+    "agentbench": "workspace:*",
+    "@agentbench/openai": "workspace:*"
+  }
+}

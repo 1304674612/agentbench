@@ -86,3 +86,101 @@ jobs:
         env:
           DATABASE_URL: postgresql://agentbench:agentbench@localhost:5432/agentbench_test
           REDIS_URL: redis://localhost:6379
+
+  agent-test:
+    name: Agent Regression Tests
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: agentbench
+          POSTGRES_PASSWORD: agentbench
+          POSTGRES_DB: agentbench_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+        env:
+          DATABASE_URL: postgresql://agentbench:agentbench@localhost:5432/agentbench_test
+
+      - name: Run database migrations
+        run: pnpm db:migrate
+        env:
+          DATABASE_URL: postgresql://agentbench:agentbench@localhost:5432/agentbench_test
+
+      - name: Run Agent Regression Tests
+        run: |
+          pnpm --filter agentbench exec agentbench test \
+            --ci \
+            --json \
+            --verbose \
+            > agentbench-results.json
+        env:
+          DATABASE_URL: postgresql://agentbench:agentbench@localhost:5432/agentbench_test
+          REDIS_URL: redis://localhost:6379
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+
+      - name: Upload agentbench results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentbench-test-results
+          path: agentbench-results.json
+          retention-days: 30
+
+      - name: Generate agentbench summary
+        if: always()
+        run: |
+          echo '## :test_tube: AgentBench Regression Test Results' >> $GITHUB_STEP_SUMMARY
+          if [ -f agentbench-results.json ]; then
+            SCORE=$(jq -r '.summary.score // "N/A"' agentbench-results.json)
+            PASS_RATE=$(jq -r '.summary.passRate // "N/A"' agentbench-results.json)
+            TOTAL=$(jq -r '.summary.total // 0' agentbench-results.json)
+            PASSED=$(jq -r '.summary.passed // 0' agentbench-results.json)
+            FAILED=$(jq -r '.summary.failed // 0' agentbench-results.json)
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Score | \`$SCORE\` |" >> $GITHUB_STEP_SUMMARY
+            echo "| Pass Rate | \`$PASS_RATE\` |" >> $GITHUB_STEP_SUMMARY
+            echo "| Total Tests | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+            echo "| Passed | :white_check_mark: $PASSED |" >> $GITHUB_STEP_SUMMARY
+            echo "| Failed | :x: $FAILED |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo ':warning: No test results file found.' >> $GITHUB_STEP_SUMMARY
+          fi

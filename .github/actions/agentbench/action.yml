@@ -1,0 +1,520 @@
+name: 'AgentBench'
+description: 'Run AgentBench regression tests for AI agents and optionally comment on PRs'
+author: 'AgentBench'
+
+branding:
+  icon: 'check-circle'
+  color: 'purple'
+
+inputs:
+  mode:
+    description: |
+      Test execution mode:
+      - `ci` — optimized for CI: runs only tests affected by the change diff (default)
+      - `full` — runs the entire test suite
+      - `quick` — smoke-test mode: runs a fast subset of critical tests
+      - `experiment` — runs A/B experiments between two agent versions
+    required: false
+    default: 'ci'
+
+  project:
+    description: 'AgentBench project ID to test (matches the name in agentbench.config.*)'
+    required: false
+    default: 'default'
+
+  test-pattern:
+    description: 'Grep pattern to filter test names (e.g. "greeting" or "refund|escalation")'
+    required: false
+
+  fail-on-regression:
+    description: 'When true, the step fails if any regression (previously-passing test now failing) is detected'
+    required: false
+    default: 'true'
+
+  comment-on-pr:
+    description: 'When true, post a formatted PR comment with test results (only on pull_request events)'
+    required: false
+    default: 'false'
+
+  working-directory:
+    description: 'Working directory relative to the repository root'
+    required: false
+    default: '.'
+
+  # ---- Provider API Keys ----
+
+  openai-api-key:
+    description: 'OpenAI API key for GPT models (gpt-4o, gpt-4.1, etc.)'
+    required: false
+
+  anthropic-api-key:
+    description: 'Anthropic API key for Claude models (claude-sonnet-4-5, etc.)'
+    required: false
+
+  google-api-key:
+    description: 'Google AI API key for Gemini models'
+    required: false
+
+  cohere-api-key:
+    description: 'Cohere API key for Command models'
+    required: false
+
+  groq-api-key:
+    description: 'Groq API key for fast inference (llama-4, mixtral, etc.)'
+    required: false
+
+  deepseek-api-key:
+    description: 'DeepSeek API key for DeepSeek models'
+    required: false
+
+  mistral-api-key:
+    description: 'Mistral AI API key for Mistral models'
+    required: false
+
+  xai-api-key:
+    description: 'xAI API key for Grok models'
+    required: false
+
+  azure-openai-api-key:
+    description: 'Azure OpenAI API key'
+    required: false
+
+  azure-openai-endpoint:
+    description: 'Azure OpenAI endpoint URL'
+    required: false
+
+  # ---- Database Configuration ----
+
+  database-url:
+    description: 'PostgreSQL connection string for AgentBench database'
+    required: false
+    default: 'postgresql://agentbench:agentbench@localhost:5432/agentbench'
+
+  redis-url:
+    description: 'Redis connection string for caching and pub/sub'
+    required: false
+    default: 'redis://localhost:6379'
+
+  # ---- Advanced Options ----
+
+  timeout:
+    description: 'Maximum duration per test in milliseconds'
+    required: false
+    default: '30000'
+
+  max-steps:
+    description: 'Maximum agent steps per test interaction'
+    required: false
+    default: '10'
+
+  concurrency:
+    description: 'Number of tests to run in parallel'
+    required: false
+    default: '2'
+
+  retries:
+    description: 'Number of retries for flaky tests'
+    required: false
+    default: '1'
+
+  artifact-retention-days:
+    description: 'How many days to retain the uploaded test report artifact'
+    required: false
+    default: '30'
+
+outputs:
+  test-result:
+    description: 'Aggregate test result: pass, fail, or error'
+    value: ${{ steps.agent-test.outputs.result }}
+
+  score:
+    description: 'Overall agent score from the test run'
+    value: ${{ steps.parse-results.outputs.score }}
+
+  pass-rate:
+    description: 'Percentage of tests that passed'
+    value: ${{ steps.parse-results.outputs.pass_rate }}
+
+  total:
+    description: 'Total number of tests executed'
+    value: ${{ steps.parse-results.outputs.total }}
+
+  passed:
+    description: 'Number of tests that passed'
+    value: ${{ steps.parse-results.outputs.passed }}
+
+  failed:
+    description: 'Number of tests that failed'
+    value: ${{ steps.parse-results.outputs.failed }}
+
+  has-regression:
+    description: 'Whether any regressions were detected (0 or >0)'
+    value: ${{ steps.parse-results.outputs.has_regression }}
+
+  artifact-url:
+    description: 'URL to the uploaded test report artifact'
+    value: ${{ steps.upload-report.outputs.artifact-url }}
+
+runs:
+  using: 'composite'
+  steps:
+    # ---- 1. Setup ----
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'pnpm'
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: pnpm install --frozen-lockfile
+
+    - name: Generate Prisma client
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: pnpm db:generate
+      env:
+        DATABASE_URL: ${{ inputs.database-url }}
+
+    - name: Run database migrations
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: pnpm db:migrate
+      env:
+        DATABASE_URL: ${{ inputs.database-url }}
+
+    # ---- 2. Build agentbench CLI command ----
+
+    - name: Assemble CLI arguments
+      id: cli-args
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        MODE_FLAGS=""
+        case "${{ inputs.mode }}" in
+          ci)
+            MODE_FLAGS="--ci --json"
+            ;;
+          full)
+            MODE_FLAGS="--json"
+            ;;
+          quick)
+            MODE_FLAGS="--smoke --json"
+            ;;
+          experiment)
+            MODE_FLAGS="--experiment --json"
+            ;;
+        esac
+
+        PROJECT_FLAG=""
+        if [ -n "${{ inputs.project }}" ]; then
+          PROJECT_FLAG="--project ${{ inputs.project }}"
+        fi
+
+        GREP_FLAG=""
+        if [ -n "${{ inputs.test-pattern }}" ]; then
+          GREP_FLAG="--grep ${{ inputs.test-pattern }}"
+        fi
+
+        FAIL_FLAG=""
+        if [ "${{ inputs.fail-on-regression }}" = "true" ]; then
+          FAIL_FLAG="--fail-on-regression"
+        fi
+
+        echo "args=${MODE_FLAGS} ${PROJECT_FLAG} ${GREP_FLAG} ${FAIL_FLAG} --verbose" >> $GITHUB_OUTPUT
+
+    # ---- 3. Run AgentBench tests ----
+
+    - name: Run AgentBench tests
+      id: agent-test
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -o pipefail
+        pnpm --filter agentbench exec agentbench test \
+          ${{ steps.cli-args.outputs.args }} \
+          --timeout ${{ inputs.timeout }} \
+          --max-steps ${{ inputs.max-steps }} \
+          --concurrency ${{ inputs.concurrency }} \
+          --retries ${{ inputs.retries }} \
+          > agentbench-results.json 2>&1
+
+        EXIT_CODE=$?
+        echo "exit_code=${EXIT_CODE}" >> $GITHUB_OUTPUT
+
+        if [ ${EXIT_CODE} -eq 0 ]; then
+          echo "result=pass" >> $GITHUB_OUTPUT
+        elif [ ${EXIT_CODE} -eq 1 ]; then
+          echo "result=fail" >> $GITHUB_OUTPUT
+        else
+          echo "result=error" >> $GITHUB_OUTPUT
+        fi
+      env:
+        DATABASE_URL: ${{ inputs.database-url }}
+        REDIS_URL: ${{ inputs.redis-url }}
+        OPENAI_API_KEY: ${{ inputs.openai-api-key }}
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+        GOOGLE_API_KEY: ${{ inputs.google-api-key }}
+        COHERE_API_KEY: ${{ inputs.cohere-api-key }}
+        GROQ_API_KEY: ${{ inputs.groq-api-key }}
+        DEEPSEEK_API_KEY: ${{ inputs.deepseek-api-key }}
+        MISTRAL_API_KEY: ${{ inputs.mistral-api-key }}
+        XAI_API_KEY: ${{ inputs.xai-api-key }}
+        AZURE_OPENAI_API_KEY: ${{ inputs.azure-openai-api-key }}
+        AZURE_OPENAI_ENDPOINT: ${{ inputs.azure-openai-endpoint }}
+
+    # ---- 4. Parse results ----
+
+    - name: Parse test results
+      id: parse-results
+      if: always()
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [ -f agentbench-results.json ]; then
+          SCORE=$(jq -r '.summary.score // "N/A"' agentbench-results.json)
+          PASS_RATE=$(jq -r '.summary.passRate // "N/A"' agentbench-results.json)
+          TOTAL=$(jq -r '.summary.total // 0' agentbench-results.json)
+          PASSED=$(jq -r '.summary.passed // 0' agentbench-results.json)
+          FAILED=$(jq -r '.summary.failed // 0' agentbench-results.json)
+          SKIPPED=$(jq -r '.summary.skipped // 0' agentbench-results.json)
+          REGRESSIONS=$(jq -r '.summary.regressions // 0' agentbench-results.json)
+          AVG_LATENCY=$(jq -r '.summary.avgLatencyMs // "N/A"' agentbench-results.json)
+          TOTAL_TOKENS=$(jq -r '.summary.totalTokens // "N/A"' agentbench-results.json)
+          ESTIMATED_COST=$(jq -r '.summary.estimatedCost // "N/A"' agentbench-results.json)
+
+          echo "score=${SCORE}" >> $GITHUB_OUTPUT
+          echo "pass_rate=${PASS_RATE}" >> $GITHUB_OUTPUT
+          echo "total=${TOTAL}" >> $GITHUB_OUTPUT
+          echo "passed=${PASSED}" >> $GITHUB_OUTPUT
+          echo "failed=${FAILED}" >> $GITHUB_OUTPUT
+          echo "skipped=${SKIPPED}" >> $GITHUB_OUTPUT
+          echo "has_regression=${REGRESSIONS}" >> $GITHUB_OUTPUT
+          echo "avg_latency=${AVG_LATENCY}" >> $GITHUB_OUTPUT
+          echo "total_tokens=${TOTAL_TOKENS}" >> $GITHUB_OUTPUT
+          echo "estimated_cost=${ESTIMATED_COST}" >> $GITHUB_OUTPUT
+        else
+          echo "score=N/A" >> $GITHUB_OUTPUT
+          echo "pass_rate=N/A" >> $GITHUB_OUTPUT
+          echo "total=0" >> $GITHUB_OUTPUT
+          echo "passed=0" >> $GITHUB_OUTPUT
+          echo "failed=0" >> $GITHUB_OUTPUT
+          echo "skipped=0" >> $GITHUB_OUTPUT
+          echo "has_regression=0" >> $GITHUB_OUTPUT
+          echo "avg_latency=N/A" >> $GITHUB_OUTPUT
+          echo "total_tokens=N/A" >> $GITHUB_OUTPUT
+          echo "estimated_cost=N/A" >> $GITHUB_OUTPUT
+        fi
+
+    # ---- 5. Generate step summary ----
+
+    - name: Generate run summary
+      if: always()
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        {
+          echo '## :test_tube: AgentBench Test Results'
+          echo ''
+          echo '| Metric | Value |'
+          echo '|--------|-------|'
+          echo "| :star: Score | \`${{ steps.parse-results.outputs.score }}\` |"
+          echo "| :bar_chart: Pass Rate | \`${{ steps.parse-results.outputs.pass_rate }}\` |"
+          echo "| :package: Total | ${{ steps.parse-results.outputs.total }} |"
+          echo "| :white_check_mark: Passed | ${{ steps.parse-results.outputs.passed }} |"
+          echo "| :x: Failed | ${{ steps.parse-results.outputs.failed }} |"
+          echo "| :fast_forward: Skipped | ${{ steps.parse-results.outputs.skipped }} |"
+          echo "| :stopwatch: Avg Latency | \`${{ steps.parse-results.outputs.avg_latency }}\` ms |"
+          echo "| :1234: Total Tokens | \`${{ steps.parse-results.outputs.total_tokens }}\` |"
+          echo "| :moneybag: Est. Cost | \`${{ steps.parse-results.outputs.estimated_cost }}\` |"
+          echo ''
+          if [ "${{ steps.parse-results.outputs.has_regression }}" != "0" ]; then
+            echo '> [!CAUTION]'
+            echo '> :rotating_light: **REGRESSION DETECTED** — Previously passing tests are now failing. Blocking merge if `fail-on-regression` is enabled.'
+          elif [ "${{ steps.agent-test.outputs.result }}" = "fail" ]; then
+            echo '> [!WARNING]'
+            echo '> Some tests failed. Review the details below.'
+          else
+            echo '> [!NOTE]'
+            echo '> :tada: All tests passed! No regressions detected.'
+          fi
+        } >> $GITHUB_STEP_SUMMARY
+
+    # ---- 6. Upload report artifact ----
+
+    - name: Upload test report
+      id: upload-report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: agentbench-report-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          ${{ inputs.working-directory }}/agentbench-results.json
+          ${{ inputs.working-directory }}/.agentbench/snapshots/
+          ${{ inputs.working-directory }}/.agentbench/logs/
+        retention-days: ${{ inputs.artifact-retention-days }}
+
+    # ---- 7. PR Comment (conditional) ----
+
+    - name: Post PR comment
+      if: |
+        always() &&
+        inputs.comment-on-pr == 'true' &&
+        github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ github.token }}
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+
+          const workingDir = '${{ inputs.working-directory }}';
+          const resultsPath = path.join(workingDir, 'agentbench-results.json');
+
+          let score = 'N/A';
+          let passRate = 'N/A';
+          let total = 0;
+          let passed = 0;
+          let failed = 0;
+          let skipped = 0;
+          let hasRegression = false;
+          let avgLatency = 'N/A';
+          let totalTokens = 'N/A';
+          let estimatedCost = 'N/A';
+          let failingTests = [];
+          let passingTests = [];
+
+          try {
+            if (fs.existsSync(resultsPath)) {
+              const data = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
+              const s = data.summary || {};
+              score = s.score || 'N/A';
+              passRate = s.passRate || 'N/A';
+              total = s.total || 0;
+              passed = s.passed || 0;
+              failed = s.failed || 0;
+              skipped = s.skipped || 0;
+              hasRegression = (s.regressions || 0) > 0;
+              avgLatency = s.avgLatencyMs || 'N/A';
+              totalTokens = s.totalTokens || 'N/A';
+              estimatedCost = s.estimatedCost || 'N/A';
+
+              const suites = data.suites || [];
+              for (const suite of suites) {
+                for (const test of (suite.tests || [])) {
+                  if (test.status === 'fail' || test.status === 'error') {
+                    failingTests.push({
+                      suite: suite.name || 'Unknown',
+                      name: test.name || 'Unnamed',
+                      error: (test.error || 'No error message').substring(0, 200),
+                      duration: test.duration || 0
+                    });
+                  }
+                  if (test.status === 'pass') {
+                    passingTests.push(`\`${suite.name || 'Unknown'}\` / \`${test.name || 'Unnamed'}\``);
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.error('Failed to parse results:', e.message);
+          }
+
+          const statusEmoji = failed === 0 ? ':white_check_mark:' : ':x:';
+          const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+          const artifactUrl = `${runUrl}#artifacts`;
+
+          // Regression alert
+          const regressionAlert = hasRegression
+            ? `> [!CAUTION]\n> :rotating_light: **REGRESSION DETECTED** — One or more previously-passing tests are now failing. Please investigate before merging this PR.\n`
+            : '';
+
+          // Failing tests table
+          let failingSection = '';
+          if (failingTests.length > 0) {
+            failingSection = `
+          <details open>
+          <summary>:x: <strong>Failing Tests (${failingTests.length})</strong></summary>
+
+          | Suite | Test | Duration | Error |
+          |-------|------|----------|-------|
+          ${failingTests.map(t => `| \`${t.suite}\` | \`${t.name}\` | ${t.duration}ms | ${t.error} |`).join('\n')}
+
+          </details>`;
+          }
+
+          // Passing tests (collapsed)
+          let passingSection = '';
+          if (passingTests.length > 0) {
+            passingSection = `
+          <details>
+          <summary>:white_check_mark: <strong>Passing Tests (${passingTests.length})</strong></summary>
+
+          ${passingTests.map(t => `- ${t}`).join('\n')}
+
+          </details>`;
+          }
+
+          const commitSha = context.payload.pull_request
+            ? context.payload.pull_request.head.sha
+            : context.sha;
+          const shortSha = commitSha ? commitSha.substring(0, 7) : 'unknown';
+
+          const commentBody = `## ${statusEmoji} AgentBench CI Results
+
+          ${regressionAlert}
+          ### :bar_chart: Summary
+
+          | Metric | Value |
+          |--------|-------|
+          | :star: **Score** | \`${score}\` |
+          | :chart_with_upwards_trend: **Pass Rate** | \`${passRate}\` |
+          | :package: **Total Tests** | ${total} |
+          | :white_check_mark: **Passed** | ${passed} |
+          | :x: **Failed** | ${failed} |
+          | :fast_forward: **Skipped** | ${skipped} |
+          | :stopwatch: **Avg Latency** | \`${avgLatency}\` ms |
+          | :1234: **Total Tokens** | \`${totalTokens}\` |
+          | :moneybag: **Est. Cost** | \`${estimatedCost}\` |
+
+          ${failingSection}
+          ${passingSection}
+          ---
+          :link: [View CI run](${runUrl}) · :package: [Download report](${artifactUrl}) · Commit: \`${shortSha}\`
+          :robot: _Powered by [AgentBench](https://github.com/${context.repo.owner}/${context.repo.repo}) — The Regression Testing Framework for AI Agents_
+
+          <!-- agentbench-ci-comment -->`;
+
+          // Upsert comment
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+
+          const existingComment = comments.find(c =>
+            c.body.includes('<!-- agentbench-ci-comment -->')
+          );
+
+          if (existingComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: existingComment.id,
+              body: commentBody,
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody,
+            });
+          }

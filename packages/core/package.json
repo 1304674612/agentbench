@@ -1,6 +1,6 @@
 {
   "name": "@agentbench/core",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "AgentBench Core Engine — Runner, Tracer, Evaluator, Assertion, Snapshot, Diff, Coverage, Reporter",
   "license": "Apache-2.0",
   "type": "module",
@@ -58,6 +58,10 @@
     "./storage": {
       "import": "./dist/storage/index.js",
       "types": "./dist/storage/index.d.ts"
+    },
+    "./dataset": {
+      "import": "./dist/dataset/index.js",
+      "types": "./dist/dataset/index.d.ts"
     }
   },
   "files": [

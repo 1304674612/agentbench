@@ -11,13 +11,15 @@ import { registerSnapshotCommand } from './commands/snapshot'
 import { registerExperimentCommand } from './commands/experiment'
 import { registerConfigCommand } from './commands/config'
 import { registerDevCommand } from './commands/dev'
+import { registerBenchmarkCommand } from './commands/benchmark'
+import { registerDatasetCommand } from './commands/dataset'
 
 const program = new Command()
 
 program
   .name('agentbench')
-  .description('AgentBench CLI — Regression Testing for AI Agents')
-  .version('0.1.0')
+  .description('AgentBench — The AI Agent Regression Testing Framework. Write tests, run evals, compare models, and catch prompt regressions before they ship.')
+  .version('0.3.0')
   .option('--debug', 'Enable debug output with full error stacks')
 
 // Register all commands
@@ -32,6 +34,8 @@ registerSnapshotCommand(program)
 registerExperimentCommand(program)
 registerConfigCommand(program)
 registerDevCommand(program)
+registerBenchmarkCommand(program)
+registerDatasetCommand(program)
 
 // Parse arguments
 program.parse(process.argv)

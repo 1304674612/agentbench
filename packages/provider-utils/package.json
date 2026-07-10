@@ -1,0 +1,44 @@
+{
+  "name": "@agentbench/provider-utils",
+  "version": "0.3.0",
+  "description": "AgentBench Provider Plugin SDK — shared interfaces, base classes, token counting, cost calculation, and SSE streaming for building LLM providers",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@agentbench/typescript-config": "workspace:*",
+    "tiktoken": "^1.0.22",
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0"
+  },
+  "keywords": [
+    "agentbench",
+    "provider",
+    "llm",
+    "plugin",
+    "sdk",
+    "token-counting",
+    "cost-calculation"
+  ],
+  "license": "Apache-2.0"
+}

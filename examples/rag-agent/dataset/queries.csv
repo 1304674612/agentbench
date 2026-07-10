@@ -1,0 +1,21 @@
+query,expected_topic,min_chunks
+"How safe is Tesla Autopilot compared to human drivers?",tesla_safety,1
+"What new features were added in Python 3.13?",python_3_13,1
+"What graduated to Stable in Kubernetes v1.30?",kubernetes,1
+"What new hooks and APIs does React 19 introduce?",react_19,1
+"What does the IPCC report say about global warming?",climate,1
+"Does Tesla use cameras or lidar for Autopilot?",tesla_sensors,1
+"Is the GIL removed in Python 3.13?",python_gil,1
+"What codename was given to Kubernetes v1.30?",kubernetes_codename,1
+"What is the use() API in React 19?",react_use_api,1
+"How many people are highly vulnerable to climate change according to the IPCC?",climate_vulnerable,1
+"Compare Tesla safety improvements from 2024 to 2025",tesla_trend,2
+"Explain sidecar containers in Kubernetes v1.30",kubernetes_sidecar,1
+"What typing improvements are in Python 3.13?",python_typing,1
+"What ref improvements does React 19 introduce?",react_refs,1
+"What carbon budget remains for 1.5 degrees C?",climate_budget,1
+"What deprecated modules were removed in Python 3.13?",python_deprecated,1
+"How does Kubernetes v1.30 improve authentication?",kubernetes_auth,1
+"Does React 19 still require forwardRef?",react_forwardref,1
+"What is required to limit warming to 1.5 or 2 degrees C?",climate_netzero,1
+"Summarize the key safety statistics from the Tesla report",tesla_summary,3

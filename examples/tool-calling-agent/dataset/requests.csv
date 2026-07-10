@@ -1,0 +1,13 @@
+request,expected_tool,difficulty
+"What is the weather in London?","get_weather","easy"
+"Calculate 25 * 4 + 10","calculator","easy"
+"Find documentation about deployment","search_docs","easy"
+"Show me all users from the database","query_database","medium"
+"Send an email to alice@example.com about the meeting","send_email","medium"
+"What meetings do I have tomorrow?","check_calendar","medium"
+"Translate 'good morning' to Japanese","translate_text","easy"
+"Read the config file at /data/config.json","read_file","easy"
+"Check the weather in New York and San Francisco","get_weather","medium"
+"Calculate the total: (100 + 50) * 0.2 and then search docs for pricing","calculator;search_docs","hard"
+"Read /data/config.json and send its contents to admin@example.com","read_file;send_email","hard"
+"Check my calendar for tomorrow and translate all event titles to German","check_calendar;translate_text","hard"

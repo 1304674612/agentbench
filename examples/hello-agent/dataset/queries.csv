@@ -1,0 +1,11 @@
+query,expected_topic,expected_keyword,difficulty
+"What is the capital of France?","geography","Paris","easy"
+"What is 128 divided by 8?","arithmetic","16","easy"
+"What is the chemical symbol for water?","chemistry","H2O","easy"
+"Who wrote Romeo and Juliet?","literature","Shakespeare","easy"
+"What is the speed of light in vacuum?","physics","299","medium"
+"What year did World War II end?","history","1945","easy"
+"How many continents are there on Earth?","geography","seven","easy"
+"What is the largest planet in our solar system?","astronomy","Jupiter","easy"
+"What does HTTP stand for?","technology","HyperText","medium"
+"Convert 100 degrees Celsius to Fahrenheit.","math","212","medium"

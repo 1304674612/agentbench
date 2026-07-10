@@ -1,0 +1,33 @@
+{
+  "name": "@agentbench/deepseek",
+  "version": "0.3.0",
+  "description": "AgentBench provider for DeepSeek — extends OpenAICompatibleProvider with reasoning model support",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "publishConfig": { "access": "public" },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@agentbench/provider-utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@agentbench/typescript-config": "workspace:*",
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0"
+  },
+  "keywords": ["agentbench", "deepseek", "reasoning", "provider"],
+  "license": "Apache-2.0"
+}

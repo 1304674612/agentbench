@@ -1,0 +1,14 @@
+{
+  "name": "example-hello-agent",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "agentbench test --project hello-agent --verbose",
+    "run": "agentbench run --project hello-agent"
+  },
+  "devDependencies": {
+    "agentbench": "workspace:*",
+    "@agentbench/openai": "workspace:*"
+  }
+}

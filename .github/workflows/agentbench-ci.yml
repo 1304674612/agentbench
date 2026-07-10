@@ -4,19 +4,37 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    paths:
+      - 'src/agent/**'
+      - 'prompts/**'
+      - 'tools/**'
+      - 'agentbench.config.*'
+      - 'tests/**'
+      - 'dataset/**'
+      - '.github/workflows/agentbench-ci.yml'
+      - '.github/actions/agentbench/**'
+      - 'packages/core/**'
+      - 'packages/adapter/**'
+      - 'packages/openai/**'
+      - 'packages/anthropic/**'
+      - 'apps/cli/**'
   workflow_dispatch:
     inputs:
       project:
         description: 'Project ID to test'
-        required: true
+        required: false
+        default: 'default'
       test_pattern:
         description: 'Test name pattern (grep)'
         required: false
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  agent-tests:
-    name: Agent Tests
+  agent-test:
+    name: Agent Regression Tests
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -43,6 +61,14 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    outputs:
+      score: ${{ steps.parse-results.outputs.score }}
+      pass_rate: ${{ steps.parse-results.outputs.pass_rate }}
+      total: ${{ steps.parse-results.outputs.total }}
+      passed: ${{ steps.parse-results.outputs.passed }}
+      failed: ${{ steps.parse-results.outputs.failed }}
+      has_regression: ${{ steps.parse-results.outputs.has_regression }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -50,9 +76,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'pnpm'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 
@@ -69,44 +96,240 @@ jobs:
         env:
           DATABASE_URL: postgresql://agentbench:agentbench@localhost:5432/agentbench
 
-      - name: Type check
-        run: pnpm typecheck
-
-      - name: Lint
-        run: pnpm lint || true
-
-      - name: Run Agent Tests
+      - name: Run AgentBench tests
+        id: agent-test
         run: |
           pnpm --filter agentbench exec agentbench test \
-            --project ${{ inputs.project || 'default' }} \
+            --ci \
+            --json \
+            ${{ inputs.project && format('--project {0}', inputs.project) || '' }} \
             ${{ inputs.test_pattern && format('--grep {0}', inputs.test_pattern) || '' }} \
             --verbose \
-            --format json > test-results.json
+            > agentbench-results.json 2>&1
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
         env:
           DATABASE_URL: postgresql://agentbench:agentbench@localhost:5432/agentbench
+          REDIS_URL: redis://localhost:6379
           AGENTBENCH_API_URL: http://localhost:3000/api/v1
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
 
-      - name: Upload test results
+      - name: Parse test results
+        id: parse-results
+        if: always()
+        run: |
+          if [ -f agentbench-results.json ]; then
+            SCORE=$(jq -r '.summary.score // "N/A"' agentbench-results.json)
+            PASS_RATE=$(jq -r '.summary.passRate // "N/A"' agentbench-results.json)
+            TOTAL=$(jq -r '.summary.total // 0' agentbench-results.json)
+            PASSED=$(jq -r '.summary.passed // 0' agentbench-results.json)
+            FAILED=$(jq -r '.summary.failed // 0' agentbench-results.json)
+            HAS_REGRESSION=$(jq -r '.summary.regressions // 0' agentbench-results.json)
+            echo "score=$SCORE" >> $GITHUB_OUTPUT
+            echo "pass_rate=$PASS_RATE" >> $GITHUB_OUTPUT
+            echo "total=$TOTAL" >> $GITHUB_OUTPUT
+            echo "passed=$PASSED" >> $GITHUB_OUTPUT
+            echo "failed=$FAILED" >> $GITHUB_OUTPUT
+            echo "has_regression=$HAS_REGRESSION" >> $GITHUB_OUTPUT
+          else
+            echo "score=N/A" >> $GITHUB_OUTPUT
+            echo "pass_rate=N/A" >> $GITHUB_OUTPUT
+            echo "total=0" >> $GITHUB_OUTPUT
+            echo "passed=0" >> $GITHUB_OUTPUT
+            echo "failed=0" >> $GITHUB_OUTPUT
+            echo "has_regression=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload test report artifact
+        id: upload
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
-          path: test-results.json
+          name: agentbench-report
+          path: |
+            agentbench-results.json
+            report/
+            .agentbench/snapshots/
+            .agentbench/logs/
+          retention-days: 30
 
-      - name: Generate report
+      - name: Generate step summary
         if: always()
         run: |
-          pnpm --filter agentbench exec agentbench report --format markdown > agent-report.md
-          cat agent-report.md >> $GITHUB_STEP_SUMMARY
+          {
+            echo '## :test_tube: AgentBench CI Results'
+            echo ''
+            echo '| Metric | Value |'
+            echo '|--------|-------|'
+            echo "| :star: Score | \`${{ steps.parse-results.outputs.score }}\` |"
+            echo "| :bar_chart: Pass Rate | \`${{ steps.parse-results.outputs.pass_rate }}\` |"
+            echo "| :package: Total Tests | ${{ steps.parse-results.outputs.total }} |"
+            echo "| :white_check_mark: Passed | ${{ steps.parse-results.outputs.passed }} |"
+            echo "| :x: Failed | ${{ steps.parse-results.outputs.failed }} |"
+            if [ "${{ steps.parse-results.outputs.has_regression }}" != "0" ]; then
+              echo ''
+              echo '> [!WARNING]'
+              echo '> :rotating_light: **Regression detected!** Some previously passing tests are now failing.'
+            fi
+            echo ''
+            echo '[Download full report](${{ steps.upload.outputs.artifact-url }})'
+          } >> $GITHUB_STEP_SUMMARY
 
-      - name: Status badge webhook
-        if: always()
-        run: |
-          STATUS="${{ job.status }}"
-          curl -X POST "${{ secrets.AGENTBENCH_WEBHOOK_URL }}" \
-            -H "Content-Type: application/json" \
-            -H "X-Webhook-Source: github" \
-            -H "X-Webhook-Secret: ${{ secrets.AGENTBENCH_WEBHOOK_SECRET }}" \
-            -d "{\"action\":\"ci_complete\",\"status\":\"$STATUS\",\"repository\":\"${{ github.repository }}\"}"
+    # ---- PR Comment (only when secrets are configured) ----
+
+  pr-comment:
+    name: Comment on PR
+    runs-on: ubuntu-latest
+    needs: agent-test
+    if: |
+      always() &&
+      github.event_name == 'pull_request' &&
+      env.HAS_COMMENT_SECRETS == 'true'
+    env:
+      HAS_COMMENT_SECRETS: ${{ secrets.AGENTBENCH_WEBHOOK_SECRET != '' || secrets.GITHUB_TOKEN != '' }}
+    steps:
+      - name: Download report artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: agentbench-report
+
+      - name: Post PR comment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            let score = 'N/A';
+            let passRate = 'N/A';
+            let total = 0;
+            let passed = 0;
+            let failed = 0;
+            let hasRegression = false;
+            let failingTests = [];
+
+            try {
+              const results = JSON.parse(fs.readFileSync('agentbench-results.json', 'utf8'));
+              const summary = results.summary || {};
+              score = summary.score || 'N/A';
+              passRate = summary.passRate || 'N/A';
+              total = summary.total || 0;
+              passed = summary.passed || 0;
+              failed = summary.failed || 0;
+              hasRegression = (summary.regressions || 0) > 0;
+
+              // Collect failing test details
+              const suites = results.suites || [];
+              for (const suite of suites) {
+                const tests = suite.tests || [];
+                for (const test of tests) {
+                  if (test.status === 'fail' || test.status === 'error') {
+                    failingTests.push({
+                      suite: suite.name || 'Unknown Suite',
+                      name: test.name || 'Unnamed Test',
+                      error: test.error || 'No error message',
+                      duration: test.duration || 0
+                    });
+                  }
+                }
+              }
+
+              // Collect passing test names (for collapsed section)
+              const passingTests = [];
+              for (const suite of suites) {
+                const tests = suite.tests || [];
+                for (const test of tests) {
+                  if (test.status === 'pass') {
+                    passingTests.push(`${suite.name || 'Unknown'} / ${test.name || 'Unnamed'}`);
+                  }
+                }
+              }
+            } catch (e) {
+              console.error('Failed to parse results:', e.message);
+            }
+
+            const statusEmoji = failed === 0 ? ':white_check_mark:' : ':x:';
+            const regressionAlert = hasRegression
+              ? `> [!CAUTION]\n> :rotating_light: **REGRESSION DETECTED** — Tests that previously passed are now failing. Please investigate before merging.\n`
+              : '';
+
+            // Build failing tests details
+            let failingSection = '';
+            if (failingTests.length > 0) {
+              failingSection = `
+            <details open>
+            <summary>:x: <strong>Failing Tests (${failingTests.length})</strong></summary>
+
+            | Suite | Test | Error |
+            |-------|------|-------|
+            ${failingTests.map(t => `| \`${t.suite}\` | \`${t.name}\` | ${t.error.substring(0, 120)} |`).join('\n')}
+
+            </details>`;
+            }
+
+            // Build passing tests collapsed section
+            let passingSection = '';
+            if (passingTests.length > 0) {
+              passingSection = `
+            <details>
+            <summary>:white_check_mark: <strong>Passing Tests (${passingTests.length})</strong></summary>
+
+            ${passingTests.map(t => `- ${t}`).join('\n')}
+
+            </details>`;
+            }
+
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const artifactUrl = `${runUrl}#artifacts`;
+
+            const commentBody = `## ${statusEmoji} AgentBench CI Results
+
+            ${regressionAlert}
+            ### :bar_chart: Summary
+
+            | Metric | Value |
+            |--------|-------|
+            | :star: **Score** | \`${score}\` |
+            | :chart_with_upwards_trend: **Pass Rate** | \`${passRate}\` |
+            | :package: **Total Tests** | ${total} |
+            | :white_check_mark: **Passed** | ${passed} |
+            | :x: **Failed** | ${failed} |
+            ${failingSection}
+            ${passingSection}
+            ---
+
+            :link: [View full CI run](${runUrl}) · :package: [Download report artifact](${artifactUrl}) · :robot: Powered by [AgentBench](https://github.com/${context.repo.owner}/${context.repo.repo})
+
+            <!-- agentbench-ci-comment -->`;
+
+            // Find and update existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComment = comments.find(c =>
+              c.body.includes('<!-- agentbench-ci-comment -->')
+            );
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: commentBody,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody,
+              });
+            }

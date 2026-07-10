@@ -1,0 +1,207 @@
+{
+  "name": "agentbench-vscode",
+  "displayName": "AgentBench",
+  "description": "The Regression Testing Framework for AI Agents — VS Code Extension",
+  "version": "0.3.0",
+  "publisher": "agentbench",
+  "license": "Apache-2.0",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agentbench/agentbench"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Testing",
+    "Other"
+  ],
+  "keywords": [
+    "ai-agents",
+    "testing",
+    "regression-testing",
+    "agent-testing",
+    "llm-evaluation"
+  ],
+  "activationEvents": [
+    "onCommand:agentbench.runAllTests",
+    "onCommand:agentbench.runCurrentTest",
+    "onCommand:agentbench.runSuite",
+    "onCommand:agentbench.debugTest",
+    "onCommand:agentbench.replayLast",
+    "onCommand:agentbench.replaySelect",
+    "onCommand:agentbench.viewTrace",
+    "onCommand:agentbench.compareRuns",
+    "onCommand:agentbench.showCoverage",
+    "onCommand:agentbench.updateSnapshots",
+    "onCommand:agentbench.createSnapshot",
+    "onCommand:agentbench.openDashboard",
+    "onCommand:agentbench.init",
+    "onView:agentbench.run",
+    "onView:agentbench.history",
+    "onView:agentbench.testSuites",
+    "onView:agentbench.coverage",
+    "onView:agentbench.snapshots",
+    "workspaceContains:agentbench.config.ts",
+    "workspaceContains:agentbench.config.js",
+    "workspaceContains:agentbench.config.mjs",
+    "workspaceContains:agentbench.config.json"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "agentbench.runAllTests",
+        "title": "AgentBench: Run All Tests",
+        "icon": "$(run-all)"
+      },
+      {
+        "command": "agentbench.runCurrentTest",
+        "title": "AgentBench: Run Current Test",
+        "icon": "$(play)"
+      },
+      {
+        "command": "agentbench.runSuite",
+        "title": "AgentBench: Run Suite",
+        "icon": "$(library)"
+      },
+      {
+        "command": "agentbench.debugTest",
+        "title": "AgentBench: Debug Test",
+        "icon": "$(debug-alt)"
+      },
+      {
+        "command": "agentbench.replayLast",
+        "title": "AgentBench: Replay Last Run",
+        "icon": "$(history)"
+      },
+      {
+        "command": "agentbench.replaySelect",
+        "title": "AgentBench: Replay Selected Test",
+        "icon": "$(history)"
+      },
+      {
+        "command": "agentbench.viewTrace",
+        "title": "AgentBench: View Execution Trace",
+        "icon": "$(output)"
+      },
+      {
+        "command": "agentbench.compareRuns",
+        "title": "AgentBench: Compare Runs",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "agentbench.showCoverage",
+        "title": "AgentBench: Show Coverage Report",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "agentbench.updateSnapshots",
+        "title": "AgentBench: Update Snapshots",
+        "icon": "$(sync)"
+      },
+      {
+        "command": "agentbench.createSnapshot",
+        "title": "AgentBench: Create Snapshot",
+        "icon": "$(camera)"
+      },
+      {
+        "command": "agentbench.openDashboard",
+        "title": "AgentBench: Open Dashboard",
+        "icon": "$(dashboard)"
+      },
+      {
+        "command": "agentbench.init",
+        "title": "AgentBench: Initialize Project",
+        "icon": "$(add)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "agentbench",
+          "title": "AgentBench",
+          "icon": "$(beaker)"
+        }
+      ]
+    },
+    "views": {
+      "agentbench": [
+        {
+          "id": "agentbench.run",
+          "name": "Run",
+          "icon": "$(play)"
+        },
+        {
+          "id": "agentbench.history",
+          "name": "History",
+          "icon": "$(history)"
+        },
+        {
+          "id": "agentbench.testSuites",
+          "name": "Test Suites",
+          "icon": "$(list-tree)"
+        },
+        {
+          "id": "agentbench.coverage",
+          "name": "Coverage",
+          "icon": "$(graph)"
+        },
+        {
+          "id": "agentbench.snapshots",
+          "name": "Snapshots",
+          "icon": "$(camera)"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "AgentBench",
+      "properties": {
+        "agentbench.cliPath": {
+          "type": "string",
+          "default": "agentbench",
+          "description": "Path to the agentbench CLI binary. Defaults to 'agentbench' (looks up in PATH). Set to an absolute path if agentbench is not in your PATH.",
+          "scope": "resource"
+        },
+        "agentbench.configPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the agentbench config file. If empty, auto-detects agentbench.config.{ts,js,mjs,json} in the workspace root.",
+          "scope": "resource"
+        },
+        "agentbench.autoRun": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically run tests when a test file is saved.",
+          "scope": "resource"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "agentbench.runAllTests",
+        "key": "ctrl+shift+a r",
+        "mac": "cmd+shift+a r",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "agentbench.runCurrentTest",
+        "key": "ctrl+shift+a t",
+        "mac": "cmd+shift+a t",
+        "when": "editorTextFocus"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  }
+}

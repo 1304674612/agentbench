@@ -1,45 +1,86 @@
-# Customer Support Agent Example
+# Customer Support Agent
 
-A complete, runnable example of testing a customer support AI agent using AgentBench.
-
-## What This Example Demonstrates
-
-- **Realistic agent implementation** -- a GPT-4o customer support agent for Acme Corp (a fictional SaaS company) with three tools: `search_knowledge_base`, `escalate_to_human`, and `check_order_status`.
-- **Tool-using agent with tracing** -- uses `@agentbench/openai`'s `runWithOpenAI()` for automatic trace capture, token counting, and cost calculation.
-- **Comprehensive test suites** -- 4 test suites covering greetings, policy accuracy, escalation, and multi-turn conversations.
-- **Chained assertion DSL** -- uses `expect()` from `@agentbench/core` for expressive, readable assertions.
-- **Mock knowledge base** -- realistic mock data (not "foo bar") so tests produce meaningful results.
-
-## Test Suites
-
-| Suite | Description |
-|-------|-------------|
-| `greeting.test.ts` | Agent responds to "Hello" with a friendly, professional greeting |
-| `refund-policy.test.ts` | Agent looks up and accurately explains the 30-day refund policy |
-| `escalation.test.ts` | Agent escalates sensitive/complex requests to a human |
-| `multi-turn.test.ts` | Agent maintains context across 3 conversation turns |
+A production-grade customer support AI agent tested with AgentBench. Handles greetings, refund policies, escalations, and multi-turn conversations with tool-augmented responses.
 
 ## Quick Start
 
 ```bash
-# 1. Install dependencies
+# Install dependencies
 pnpm install
 
-# 2. Copy and configure environment
-cp .env.example .env
-# Edit .env — add your OPENAI_API_KEY
+# Set your OpenAI API key
+export OPENAI_API_KEY="sk-..."
 
-# 3. Run tests
+# Run all tests
 pnpm test
+
+# Run a single test suite
+agentbench test --project customer-support --suite tests/greeting.test.ts
+```
+
+## Architecture
+
+```
+Customer Message
+    │
+    ▼
+┌──────────────────────┐     ┌──────────────────────┐
+│  Support Agent        │────▶│  search_knowledge_base │──▶ KB Results
+│  (gpt-4o)             │────▶│  check_order_status    │──▶ Order Data
+│                       │────▶│  escalate_to_human     │──▶ Ticket Created
+└──────────────────────┘     └──────────────────────┘
+    │
+    ▼
+  Professional Response
+  (or escalation ticket)
+```
+
+## What This Tests
+
+| Test Suite | What It Verifies | Key Assertions |
+|---|---|---|
+| `greeting.test.ts` | Agent responds professionally to "Hello" | `status().toBeCompleted()`, `output().toContain('hello')` |
+| `refund-policy.test.ts` | Agent looks up and accurately explains the 30-day refund policy | `tool('search_knowledge_base').toBeCalled()`, `output().toContain('refund')`, `score('correctness').toBeGreaterThan(7)` |
+| `escalation.test.ts` | Agent escalates sensitive requests to human, does not fabricate | `tool('escalate_to_human').toBeCalled()`, `output().not.toMatchRegex(/article|section/)` |
+| `multi-turn.test.ts` | Agent maintains context across 3 conversation turns | `tool('check_order_status').toBeCalled()`, `tokens().toBeLessThan(3000)` |
+
+## Running
+
+```bash
+# Run all test suites
+agentbench run --project customer-support
+
+# Run specific suite
+agentbench test --project customer-support --suite tests/escalation.test.ts
+
+# With custom model
+agentbench run --project customer-support --model gpt-4o --temperature 0.1
+```
+
+## Replay
+
+```bash
+# Replay from a trace
+agentbench replay --trace .agentbench/traces/latest.json
+```
+
+## CI Integration
+
+```yaml
+# .github/workflows/agentbench.yml
+- name: Run Customer Support Tests
+  run: pnpm test
+  env:
+    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 ```
 
 ## Expected Output
 
 ```
-Running: Greeting ... ✓ 3/3 passed (1245ms)
-Running: Refund Policy ... ✓ 4/4 passed (1876ms)
+Running: Greeting ... ✓ 5/5 passed (1245ms)
+Running: Refund Policy ... ✓ 5/5 passed (1876ms)
 Running: Escalation ... ✓ 3/3 passed (1543ms)
-Running: Multi-Turn ... ✓ 4/4 passed (2412ms)
+Running: Multi-Turn ... ✓ 5/5 passed (2412ms)
 
 Summary:
   ✓ 4 passed
@@ -52,7 +93,7 @@ Summary:
 customer-support-agent/
 ├── package.json              # Package config with test/run scripts
 ├── agentbench.config.ts      # AgentBench project configuration
-├── agent.ts                  # Agent implementation with tools
+├── agent.ts                  # Agent implementation with 3 tools
 ├── .env.example              # Environment variable template
 ├── README.md                 # This file
 └── tests/
@@ -62,48 +103,10 @@ customer-support-agent/
     └── multi-turn.test.ts    # Multi-turn conversation test
 ```
 
-## Customizing for Your Own Agent
+## Key Takeaways
 
-1. **Update the system prompt** in `agentbench.config.ts` to match your brand voice and policies
-2. **Replace the knowledge base** in `agent.ts` with your actual product/policy content
-3. **Add or modify tools** -- update the `tools` array in `runCustomerSupportAgent()`
-4. **Add test suites** -- create new files in `tests/` and reference them in `agentbench.config.ts`
-5. **Change the model** -- update `model` in the config or `agent.ts`
-
-### Example: Adding a New Tool
-
-```typescript
-// In agent.ts, add to the knowledge base and tool definitions:
-const tools = [
-  // ... existing tools
-  {
-    type: 'function' as const,
-    function: {
-      name: 'schedule_callback',
-      description: 'Schedule a callback from a support agent',
-      parameters: {
-        type: 'object',
-        properties: {
-          phone: { type: 'string', description: 'Phone number' },
-          preferredTime: { type: 'string', description: 'Preferred callback time' },
-        },
-        required: ['phone'],
-      },
-    },
-  },
-]
-```
-
-## Assertions Reference
-
-| Assertion | Example |
-|-----------|---------|
-| `tool(name).toBeCalled()` | Verify a specific tool was invoked |
-| `tool(name).not.toBeCalled()` | Verify a tool was NOT invoked |
-| `output().toContain(text)` | Check output contains a substring |
-| `output().toMatchRegex(pattern)` | Check output matches a regex |
-| `tokens().toBeLessThan(n)` | Verify token usage is under budget |
-| `latency().toBeLessThan(ms)` | Verify response time is acceptable |
-| `score(dim).toBeGreaterThan(n)` | Verify LLM judge score meets threshold |
-| `status().toBeCompleted()` | Verify the run completed without errors |
-| `any([...])` | At least one assertion must pass |
+- **Tool-using agents need tool-call assertions.** `tool().toBeCalled()` and `tool().not.toBeCalled()` verify correct routing.
+- **Use `any([...])` for flexible matching.** LLMs rephrase — don't assert on exact strings.
+- **Hallucination prevention is testable.** Regex patterns like `/article \d+|section \d+\.\d+/` catch fabricated specifics.
+- **Token budgets catch cost regressions.** `tokens().toBeLessThan(N)` runs cheaply and catches prompt bloat.
+- **LLM-as-judge fills the gap.** `score('correctness').toBeGreaterThan(7)` evaluates semantic quality regex can't catch.

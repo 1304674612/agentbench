@@ -1,39 +1,79 @@
-# Research Agent Example
+# Research Agent
 
-A complete example of testing a multi-step AI research agent using AgentBench.
-
-## What This Example Demonstrates
-
-- **Multi-step agent workflow** -- the agent follows a structured research process: search -> fetch -> summarize -> cite
-- **Tool chaining** -- each step depends on the output of previous steps, testing complex agent orchestration
-- **Faithfulness testing** -- verifies the agent reports facts from sources rather than hallucinating
-- **Source verification** -- tests that the agent cross-references claims across multiple sources
-- **Citation quality** -- verifies proper attribution with URLs and source references
-
-## Test Suites
-
-| Suite | Description |
-|-------|-------------|
-| `research-quality.test.ts` | Agent searches before answering, cites sources, produces substantial output |
-| `source-verification.test.ts` | Agent cross-references multiple sources, fetches pages, uses attribution language |
+A production-grade multi-step research AI agent tested with AgentBench. Demonstrates a structured research workflow: web search, page fetch, summarization, and source citation with faithfulness verification.
 
 ## Quick Start
 
 ```bash
-# 1. Install dependencies
+# Install dependencies
 pnpm install
 
-# 2. Set your OpenAI API key
-export OPENAI_API_KEY=sk-...
+# Set your OpenAI API key
+export OPENAI_API_KEY="sk-..."
 
-# 3. Run tests
+# Run all tests
 pnpm test
+```
+
+## Architecture
+
+```
+Research Query
+    |
+    v
+[web_search] --> Find relevant articles
+    |
+    v
+[fetch_page] --> Retrieve full content from top results
+    |
+    v
+[summarize]  --> Extract key findings from each source
+    |
+    v
+[cite_sources] --> Format proper citations with URLs
+    |
+    v
+Final Answer  --> Synthesized, well-sourced response
+```
+
+## What This Tests
+
+| Test Suite | What It Verifies | Key Assertions |
+|---|---|---|
+| `research-quality.test.ts` | Agent searches before answering, cites sources, produces substantial output | `tool('web_search').toBeCalled()`, `output().toContain('http')`, `score('faithfulness').toBeGreaterThan(7)` |
+| `source-verification.test.ts` | Agent cross-references multiple sources, fetches pages, uses attribution language | `tool('fetch_page').toBeCalled()`, `output().toMatchRegex(/according to|source|reference/)` |
+
+## Running
+
+```bash
+# Run all test suites
+agentbench run --project research-agent
+
+# Run specific suite
+agentbench test --project research-agent --suite tests/source-verification.test.ts
+```
+
+## Replay
+
+```bash
+# Replay from a trace
+agentbench replay --trace .agentbench/traces/latest.json
+```
+
+## CI Integration
+
+```yaml
+# .github/workflows/agentbench.yml
+- name: Run Research Agent Tests
+  run: pnpm test
+  env:
+    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 ```
 
 ## Expected Output
 
 ```
-Running: Research Quality ... ✓ 4/4 passed (4321ms)
+Running: Research Quality ... ✓ 5/5 passed (4321ms)
 Running: Source Verification ... ✓ 5/5 passed (5678ms)
 
 Summary:
@@ -54,40 +94,10 @@ research-agent/
     └── source-verification.test.ts # Cross-referencing and attribution tests
 ```
 
-## How the Research Workflow Works
+## Key Takeaways
 
-```
-User Query
-    |
-    v
-[web_search] --> Find relevant articles
-    |
-    v
-[fetch_page] --> Retrieve full content from top results
-    |
-    v
-[summarize]  --> Extract key findings from each source
-    |
-    v
-[cite_sources] --> Format proper citations with URLs
-    |
-    v
-Final Answer  --> Synthesized, well-sourced response
-```
-
-## Key Assertions Explained
-
-| Assertion | Why It Matters |
-|-----------|---------------|
-| `tool('web_search').toBeCalled()` | Ensures agent searches instead of hallucinating from training data |
-| `tool('web_search').toBeCalledTimes({ min: 2 })` | Verifies cross-referencing across multiple queries/sources |
-| `output().toContain('http')` | Confirms actual URL citations in the output |
-| `output().toMatchRegex(/according to\|source\|reference/i)` | Checks for proper attribution language |
-| `score('faithfulness').toBeGreaterThan(7)` | Validates the output stays true to retrieved sources |
-
-## Customizing for Your Own Research Agent
-
-1. **Replace mock search index** -- swap `mockSearchIndex` and `mockPageContent` in `agent.ts` with real API calls to Google/Bing/Tavily search and web scraping
-2. **Add more tools** -- e.g., `fact_check` for claim verification, `extract_entities` for named entity recognition
-3. **Adjust the system prompt** -- customize the research methodology and output format
-4. **Add domain-specific tests** -- test against your specific research domains (legal, medical, financial)
+- **Search-before-answer is non-negotiable.** `tool('web_search').toBeCalled()` enforces the research workflow.
+- **Citation verification catches hallucination.** `output().toContain('http')` confirms real URLs, not fabricated ones.
+- **Faithfulness scoring fills the gap.** `score('faithfulness').toBeGreaterThan(7)` evaluates whether the answer stays true to sources.
+- **Multi-step workflows need tool-ordering tests.** Verify `web_search` is called before `summarize` and `cite_sources`.
+- **Mock search indexes must be realistic.** The agent's research quality depends on retrieving plausible content.

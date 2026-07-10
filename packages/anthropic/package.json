@@ -1,6 +1,6 @@
 {
   "name": "@agentbench/anthropic",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "AgentBench SDK wrapper for Anthropic Claude — automatic tracing, token counting, and cost tracking",
   "type": "module",
   "main": "./dist/index.js",
@@ -22,7 +22,7 @@
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": { "@agentbench/core": "workspace:*", "@anthropic-ai/sdk": "^0.30.0" },
+  "peerDependencies": { "@agentbench/core": "workspace:*", "@agentbench/provider-utils": "workspace:*", "@anthropic-ai/sdk": "^0.30.0" },
   "devDependencies": { "@agentbench/typescript-config": "workspace:*", "tsup": "^8.0.0", "typescript": "^5.7.0" },
   "keywords": ["agentbench", "anthropic", "claude", "agent", "testing"],
   "license": "Apache-2.0"

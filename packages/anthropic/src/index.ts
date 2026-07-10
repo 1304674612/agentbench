@@ -7,6 +7,16 @@
 
 import type { TraceStep } from '@agentbench/core'
 import { tokenCounter, costCalculator, StreamCapture } from '@agentbench/core'
+import type {
+  AgentBenchProvider,
+  ProviderCapabilities,
+  ProviderConfig,
+  TokenCountParams,
+  TokenCountResult,
+  Usage,
+  CostBreakdown,
+  HealthStatus,
+} from '@agentbench/provider-utils'
 
 export interface AgentBenchAnthropicConfig {
   apiKey: string
@@ -23,7 +33,30 @@ export interface AnthropicInterceptContext {
   onStep?: (step: TraceStep) => void
 }
 
-export class AgentBenchAnthropic {
+const ANTHROPIC_MODELS = [
+  'claude-opus-4-20250514', 'claude-sonnet-4-20250514', 'claude-haiku-4-5-20251001',
+  'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022',
+  'claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307',
+  'claude-opus-4', 'claude-sonnet-4', 'claude-haiku-4-5',
+  'claude-3-5-sonnet', 'claude-3-5-haiku', 'claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku',
+]
+
+export class AgentBenchAnthropic implements AgentBenchProvider {
+  // ── AgentBenchProvider identity ──────────────────────────────────────────
+  readonly id = 'anthropic'
+  readonly name = 'Anthropic'
+  readonly version = '0.3.0'
+  readonly capabilities: ProviderCapabilities = {
+    streaming: true,
+    reasoning: true,
+    embeddings: false,
+    toolCalling: true,
+    vision: true,
+    functionCalling: true,
+    jsonMode: false,
+    maxContextWindow: 200000,
+    supportedModels: ANTHROPIC_MODELS,
+  }
   public config: AgentBenchAnthropicConfig
   private _context: AnthropicInterceptContext = {}
 
@@ -41,12 +74,23 @@ export class AgentBenchAnthropic {
     temperature?: number
     tools?: Array<{ name: string; description: string; input_schema: Record<string, unknown> }>
     stop_sequences?: string[]
+    /** Extended thinking support: enable thinking with budget_tokens */
+    thinking?: { type: 'enabled'; budget_tokens: number }
   }): Promise<AnthropicMessageResult> {
     const startTime = Date.now()
 
     try {
-      const response = await this._callAnthropic(params)
+      // Build request body with extended thinking support
+      const requestBody: Record<string, unknown> = { ...params }
+      if (params.thinking) {
+        requestBody.thinking = params.thinking
+      }
+      const response = await this._callAnthropic(requestBody)
       const endTime = Date.now()
+
+      // Extract thinking content if present
+      const thinkingBlocks = response.content?.filter((b) => b.type === 'thinking') ?? []
+      const thinkingText = thinkingBlocks.map((b) => b.thinking ?? '').join('\n')
 
       // Count tokens
       const inputText = params.messages.map((m) => m.content).join('\n') + (params.system ?? '')
@@ -247,6 +291,78 @@ export class AgentBenchAnthropic {
     } finally { clearTimeout(timeoutId) }
   }
 
+  // ── AgentBenchProvider Lifecycle ─────────────────────────────────────────
+
+  async initialize(config: ProviderConfig): Promise<void> {
+    if (config.apiKey) this.config.apiKey = config.apiKey
+    if (config.baseUrl) this.config.baseURL = config.baseUrl
+    if (config.timeout) this.config.timeout = config.timeout
+    if (config.maxRetries !== undefined) this.config.maxRetries = config.maxRetries
+    if (config.extra?.anthropicVersion) this.config.anthropicVersion = config.extra.anthropicVersion as string
+  }
+
+  async countTokens(params: TokenCountParams): Promise<TokenCountResult> {
+    const text = typeof params.text === 'string'
+      ? params.text
+      : params.messages?.map((m) => typeof m.content === 'string' ? m.content : '').join('\n') ?? ''
+    return { tokens: tokenCounter.estimateTokens(text, 'anthropic'), model: params.model, method: 'heuristic' }
+  }
+
+  calculateCost(usage: Usage, model: string): CostBreakdown {
+    const pricing = costCalculator.getPricing(model)
+    const promptCost = (usage.promptTokens / 1_000_000) * pricing.input
+    const completionCost = (usage.completionTokens / 1_000_000) * pricing.output
+    return {
+      promptCost, completionCost, totalCost: promptCost + completionCost,
+      currency: 'USD', model,
+      rates: { promptPer1K: pricing.input / 1000, completionPer1K: pricing.output / 1000 },
+    }
+  }
+
+  async healthCheck(): Promise<HealthStatus> {
+    const start = Date.now()
+    try {
+      const res = await fetch(`${this.config.baseURL ?? 'https://api.anthropic.com'}/v1/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': this.config.apiKey,
+          'anthropic-version': this.config.anthropicVersion ?? '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-3-haiku-20240307',
+          max_tokens: 1,
+          messages: [{ role: 'user', content: 'ping' }],
+        }),
+        signal: AbortSignal.timeout(10000),
+      })
+      return { healthy: res.ok || res.status === 400, latency: Date.now() - start, message: res.ok ? 'Connected' : `HTTP ${res.status}` }
+    } catch (err) {
+      return { healthy: false, latency: Date.now() - start, message: err instanceof Error ? err.message : 'Unknown error' }
+    }
+  }
+
+  async dispose(): Promise<void> {
+    this._context = {}
+  }
+
+  // ── Extended Thinking Support ────────────────────────────────────────────
+
+  /**
+   * Check if the model supports extended thinking.
+   * Claude 3.5 Sonnet, Claude 3 Opus, and all Claude 4 models support it.
+   */
+  supportsExtendedThinking(model: string): boolean {
+    return (
+      model.includes('claude-3-5-sonnet') ||
+      model.includes('claude-3-opus') ||
+      model.includes('claude-4') ||
+      model.includes('claude-sonnet-4') ||
+      model.includes('claude-opus-4') ||
+      model.includes('claude-haiku-4')
+    )
+  }
+
   private async _callAnthropicStreamRaw(
     body: Record<string, unknown>
   ): Promise<ReadableStream<Uint8Array>> {
@@ -309,7 +425,7 @@ export interface AnthropicStreamChunk {
 
 interface AnthropicAPIResponse {
   id: string; model: string
-  content?: Array<{ type: string; text: string }>
+  content?: Array<{ type: string; text: string; thinking?: string }>
   stop_reason?: string
   usage?: { input_tokens: number; output_tokens: number }
 }

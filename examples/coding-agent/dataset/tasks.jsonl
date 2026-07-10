@@ -1,0 +1,5 @@
+{"task": "Write a TypeScript function that checks if a string is a palindrome. Write to src/palindrome.ts.", "expected_keywords": ["palindrome", "reverse", "split"], "category": "code-generation", "difficulty": "easy"}
+{"task": "Write a debounce function in TypeScript. It should delay execution until after a specified wait time.", "expected_keywords": ["debounce", "setTimeout", "clearTimeout", "delay"], "category": "code-generation", "difficulty": "medium"}
+{"task": "Fix: this binary search function sometimes returns -1 for elements that exist in the array.", "expected_keywords": ["binary search", "mid", "off-by-one", "fix"], "category": "bug-fix", "difficulty": "hard"}
+{"task": "Refactor this callback-based function to use async/await and Promises.", "expected_keywords": ["async", "await", "Promise", "refactor"], "category": "refactoring", "difficulty": "medium"}
+{"task": "Write tests for a function that merges two sorted arrays into one sorted array. Then implement the function.", "expected_keywords": ["merge", "sorted", "test", "expect"], "category": "test-driven", "difficulty": "medium"}

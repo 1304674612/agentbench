@@ -54,6 +54,13 @@ __pycache__/
 sdk-python/dist/
 *.whl
 
+# AgentBench
+.agentbench/
+report/
+agentbench-report/
+*.snap
+.agentbench.env
+
 # Misc
 *.pem
 tmp/

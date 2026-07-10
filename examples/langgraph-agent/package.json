@@ -1,0 +1,14 @@
+{
+  "name": "example-langgraph-agent",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "agentbench test --project langgraph-agent --verbose",
+    "run": "agentbench run --project langgraph-agent"
+  },
+  "devDependencies": {
+    "agentbench": "workspace:*",
+    "@agentbench/openai": "workspace:*"
+  }
+}

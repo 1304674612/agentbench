@@ -1,0 +1,14 @@
+{
+  "name": "example-llamaindex-agent",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "agentbench test --project llamaindex-agent --verbose",
+    "run": "agentbench run --project llamaindex-agent"
+  },
+  "devDependencies": {
+    "agentbench": "workspace:*",
+    "@agentbench/openai": "workspace:*"
+  }
+}

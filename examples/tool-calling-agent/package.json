@@ -1,0 +1,14 @@
+{
+  "name": "example-tool-calling-agent",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "agentbench test --project tool-calling-agent --verbose",
+    "run": "agentbench run --project tool-calling-agent"
+  },
+  "devDependencies": {
+    "agentbench": "workspace:*",
+    "@agentbench/openai": "workspace:*"
+  }
+}

@@ -1,0 +1,100 @@
+[
+  {
+    "id": "gs1",
+    "input": "What are the key features of TypeScript?",
+    "expectedIntent": "question_answering",
+    "expectedPath": ["classify", "retrieve", "reason", "generate", "validate"],
+    "description": "Standard QA path"
+  },
+  {
+    "id": "gs2",
+    "input": "Summarize the quarterly earnings report",
+    "expectedIntent": "summarization",
+    "expectedPath": ["classify", "retrieve", "reason", "generate", "validate"],
+    "description": "Summarization path"
+  },
+  {
+    "id": "gs3",
+    "input": "Write a function to sort an array of numbers",
+    "expectedIntent": "code_generation",
+    "expectedPath": ["classify", "retrieve", "reason", "generate", "validate"],
+    "description": "Code generation path"
+  },
+  {
+    "id": "gs4",
+    "input": "Analyze the sales data from last quarter",
+    "expectedIntent": "data_analysis",
+    "expectedPath": ["classify", "retrieve", "reason", "generate", "validate"],
+    "description": "Data analysis path"
+  },
+  {
+    "id": "gs5",
+    "input": "Translate 'Hello, how are you?' to French",
+    "expectedIntent": "translation",
+    "expectedPath": ["classify", "retrieve", "reason", "generate", "validate"],
+    "description": "Translation path"
+  },
+  {
+    "id": "gs6",
+    "input": "How does photosynthesis work?",
+    "expectedIntent": "question_answering",
+    "expectedPath": ["classify", "retrieve", "reason", "generate", "validate"],
+    "description": "Science QA path"
+  },
+  {
+    "id": "gs7",
+    "input": "Fix the bug in my authentication middleware",
+    "expectedIntent": "code_generation",
+    "expectedPath": ["classify", "retrieve", "reason", "generate", "validate"],
+    "description": "Bug fix code generation"
+  },
+  {
+    "id": "gs8",
+    "input": "Create a sales trend chart for the monthly report",
+    "expectedIntent": "data_analysis",
+    "expectedPath": ["classify", "retrieve", "reason", "generate", "validate"],
+    "description": "Chart creation data analysis"
+  },
+  {
+    "id": "gs9",
+    "input": "Short answer",
+    "expectShortResponse": true,
+    "description": "Edge case: very short input triggers revision loop"
+  },
+  {
+    "id": "gs10",
+    "input": "I think maybe perhaps the answer could possibly be something like...",
+    "expectVagueResponse": true,
+    "description": "Edge case: vague response may trigger revision"
+  },
+  {
+    "id": "gs11",
+    "input": "What is 2+2?",
+    "expectedIntent": "question_answering",
+    "description": "Simple math QA"
+  },
+  {
+    "id": "gs12",
+    "input": "Explain the concept of recursion in programming",
+    "expectedIntent": "question_answering",
+    "description": "Programming concept QA"
+  },
+  {
+    "id": "gs13",
+    "input": "Write documentation for the REST API endpoints",
+    "expectedIntent": "code_generation",
+    "description": "Documentation writing"
+  },
+  {
+    "id": "gs14",
+    "input": "Hello world",
+    "expectedIntent": "question_answering",
+    "description": "Minimal input - default classification"
+  },
+  {
+    "id": "gs15",
+    "input": "Generate a weekly metrics dashboard from our analytics data",
+    "expectedIntent": "data_analysis",
+    "description": "Dashboard generation"
+  }
+]

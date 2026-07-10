@@ -15,6 +15,7 @@ export default defineConfig({
     'coverage/index': 'src/coverage/index.ts',
     'experiment/index': 'src/experiment/index.ts',
     'reporter/index': 'src/reporter/index.ts',
+    'dataset/index': 'src/dataset/index.ts',
   },
   format: ['esm'],
   dts: true,

@@ -1,0 +1,16 @@
+question,expected_sql_keywords,expected_tables
+"Find all active users",SELECT users,users
+"List all products with price greater than 50 dollars",SELECT WHERE price,products
+"Show me all orders for user Alice",JOIN users,users orders
+"Count how many products are in each category",COUNT GROUP BY,products categories
+"Find the average rating for each product",AVG GROUP BY,reviews products
+"Get the top 5 most expensive products",ORDER BY DESC LIMIT,products
+"List all products that have never been reviewed",LEFT JOIN NULL,products reviews
+"Find users who have placed more than 2 orders",HAVING COUNT GROUP BY,users orders
+"Show total revenue by product category",SUM JOIN GROUP BY,categories products order_items orders
+"Find products with low stock (less than 50 units)",WHERE stock,products
+"Get all reviews with rating 4 or above",WHERE rating,reviews
+"Find all cancelled orders with their items",JOIN WHERE status,orders order_items
+"List users who have never placed an order",LEFT JOIN NULL,users orders
+"Calculate the average order value for each user",AVG GROUP BY,orders users
+"Find the most reviewed product",COUNT ORDER BY LIMIT,reviews products

@@ -1,0 +1,14 @@
+{
+  "name": "example-crewai-agent",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "agentbench test --project crewai-agent --verbose",
+    "run": "agentbench run --project crewai-agent"
+  },
+  "devDependencies": {
+    "agentbench": "workspace:*",
+    "@agentbench/openai": "workspace:*"
+  }
+}

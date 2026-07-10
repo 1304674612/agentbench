@@ -28,6 +28,19 @@ import type {
   ToolDefinition,
 } from '@agentbench/core'
 import { tokenCounter, costCalculator, StreamCapture } from '@agentbench/core'
+import type {
+  AgentBenchProvider,
+  ProviderCapabilities,
+  ProviderConfig,
+  ChatCompletionParams,
+  ChatCompletionResult as ProviderChatCompletionResult,
+  StreamChunk,
+  TokenCountParams,
+  TokenCountResult,
+  Usage,
+  CostBreakdown,
+  HealthStatus,
+} from '@agentbench/provider-utils'
 
 // ============================================================
 // Types
@@ -55,7 +68,29 @@ export interface OpenAIInterceptContext {
 // Main Client
 // ============================================================
 
-export class AgentBenchOpenAI {
+const OPENAI_MODELS = [
+  'gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano',
+  'gpt-4-turbo', 'gpt-4', 'gpt-4-32k', 'gpt-3.5-turbo',
+  'o1', 'o1-mini', 'o1-pro', 'o3', 'o3-mini', 'o4-mini',
+]
+
+export class AgentBenchOpenAI implements AgentBenchProvider {
+  // ── AgentBenchProvider identity ──────────────────────────────────────────
+  readonly id = 'openai'
+  readonly name = 'OpenAI'
+  readonly version = '0.3.0'
+  readonly capabilities: ProviderCapabilities = {
+    streaming: true,
+    reasoning: true,
+    embeddings: true,
+    toolCalling: true,
+    vision: true,
+    functionCalling: true,
+    jsonMode: true,
+    maxContextWindow: 200000,
+    supportedModels: OPENAI_MODELS,
+  }
+
   public config: AgentBenchOpenAIConfig
   private _context: OpenAIInterceptContext = {}
 
@@ -96,7 +131,7 @@ export class AgentBenchOpenAI {
   }): Promise<ChatCompletionResult> {
     const startTime = Date.now()
 
-    const requestBody = {
+    let requestBody: Record<string, unknown> = {
       model: params.model,
       messages: params.messages,
       temperature: params.temperature ?? 0.7,
@@ -105,6 +140,11 @@ export class AgentBenchOpenAI {
       tool_choice: params.tool_choice,
       seed: params.seed,
       stop: params.stop,
+    }
+
+    // Adapt for reasoning models (o1, o3)
+    if (this._isReasoningModel(params.model)) {
+      requestBody = this._adaptForReasoning(requestBody, params.model)
     }
 
     // Build trace step for the LLM request
@@ -588,6 +628,87 @@ export class AgentBenchOpenAI {
 
     return res.body
   }
+}
+
+  // ── AgentBenchProvider Lifecycle ─────────────────────────────────────────
+
+  async initialize(config: ProviderConfig): Promise<void> {
+    if (config.apiKey) this.config.apiKey = config.apiKey
+    if (config.baseUrl) this.config.baseURL = config.baseUrl
+    if (config.timeout) this.config.timeout = config.timeout
+    if (config.maxRetries !== undefined) this.config.maxRetries = config.maxRetries
+    // Initialize tracing context
+    if (config.extra?.tracing !== undefined) this.config.tracing = config.extra.tracing as boolean
+  }
+
+  async countTokens(params: TokenCountParams): Promise<TokenCountResult> {
+    return { tokens: await Promise.resolve(tokenCounter.estimateTokens(
+      typeof params.text === 'string'
+        ? params.text
+        : params.messages?.map((m) => typeof m.content === 'string' ? m.content : '').join('\n') ?? ''
+    )), model: params.model, method: 'heuristic' }
+  }
+
+  calculateCost(usage: Usage, model: string): CostBreakdown {
+    const pricing = costCalculator.getPricing(model)
+    const promptCost = (usage.promptTokens / 1_000_000) * pricing.input
+    const completionCost = (usage.completionTokens / 1_000_000) * pricing.output
+    return {
+      promptCost, completionCost, totalCost: promptCost + completionCost,
+      currency: 'USD', model,
+      rates: { promptPer1K: pricing.input / 1000, completionPer1K: pricing.output / 1000 },
+    }
+  }
+
+  async healthCheck(): Promise<HealthStatus> {
+    const start = Date.now()
+    try {
+      const res = await fetch(`${this.config.baseURL ?? 'https://api.openai.com/v1'}/models`, {
+        headers: { Authorization: `Bearer ${this.config.apiKey}` },
+        signal: AbortSignal.timeout(10000),
+      })
+      return { healthy: res.ok, latency: Date.now() - start, message: res.ok ? 'Connected' : `HTTP ${res.status}` }
+    } catch (err) {
+      return { healthy: false, latency: Date.now() - start, message: err instanceof Error ? err.message : 'Unknown error' }
+    }
+  }
+
+  async dispose(): Promise<void> {
+    this._context = {}
+  }
+
+  // ── Reasoning Model Support ───────────────────────────────────────────────
+
+  /** Check if the model is a reasoning model (o1, o3 family) */
+  private _isReasoningModel(model: string): boolean {
+    return model.startsWith('o1') || model.startsWith('o3') || model.startsWith('o4')
+  }
+
+  /** Adapt request body for reasoning models */
+  private _adaptForReasoning(body: Record<string, unknown>, model: string): Record<string, unknown> {
+    const adapted = { ...body }
+    // Reasoning models use max_completion_tokens instead of max_tokens
+    if ('max_tokens' in adapted) {
+      adapted.max_completion_tokens = adapted.max_tokens
+      delete adapted.max_tokens
+    }
+    // Reasoning models don't support temperature
+    delete adapted.temperature
+    // Add reasoning_effort parameter for o1/o3 models
+    adapted.reasoning_effort = (body.reasoning_effort as string) ?? 'medium'
+    // o1-mini and o1-preview need system message converted to user
+    // o1 and o3 (GA) support system messages natively
+    if (model.includes('mini') || model.includes('preview')) {
+      const messages = adapted.messages as Array<{ role: string; content: string }>
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].role === 'system') {
+          messages[i].role = 'user'
+        }
+      }
+    }
+    return adapted
+  }
+
 }
 
 // ============================================================

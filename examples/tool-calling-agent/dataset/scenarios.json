@@ -1,0 +1,124 @@
+[
+  {
+    "id": "s1",
+    "input": "What's the weather in Tokyo?",
+    "expectedTool": "get_weather",
+    "description": "Simple weather query"
+  },
+  {
+    "id": "s2",
+    "input": "Calculate the square root of 256",
+    "expectedTool": "calculator",
+    "description": "Math calculation"
+  },
+  {
+    "id": "s3",
+    "input": "How do I deploy AgentBench?",
+    "expectedTool": "search_docs",
+    "description": "Documentation search"
+  },
+  {
+    "id": "s4",
+    "input": "Show me all users in the database",
+    "expectedTool": "query_database",
+    "description": "Database query"
+  },
+  {
+    "id": "s5",
+    "input": "Send a welcome email to bob@example.com",
+    "expectedTool": "send_email",
+    "description": "Email sending"
+  },
+  {
+    "id": "s6",
+    "input": "What meetings do I have this week?",
+    "expectedTool": "check_calendar",
+    "description": "Calendar check"
+  },
+  {
+    "id": "s7",
+    "input": "Translate 'goodbye' to Spanish",
+    "expectedTool": "translate_text",
+    "description": "Text translation"
+  },
+  {
+    "id": "s8",
+    "input": "Show me the contents of /data/config.json",
+    "expectedTool": "read_file",
+    "description": "File reading"
+  },
+  {
+    "id": "s9",
+    "input": "What's the weather in New York and what's on my calendar?",
+    "expectedTools": ["get_weather", "check_calendar"],
+    "description": "Parallel: weather + calendar"
+  },
+  {
+    "id": "s10",
+    "input": "Search docs for API reference and also calculate 42 * 17",
+    "expectedTools": ["search_docs", "calculator"],
+    "description": "Parallel: search + calculator"
+  },
+  {
+    "id": "s11",
+    "input": "Read the config file, then based on that send an email to the team",
+    "expectedTools": ["read_file", "send_email"],
+    "description": "Sequential: read then email"
+  },
+  {
+    "id": "s12",
+    "input": "Get all products from the database and calculate their total value",
+    "expectedTools": ["query_database", "calculator"],
+    "description": "Sequential: query then calculate"
+  },
+  {
+    "id": "s13",
+    "input": "What's the weather in Beijing, translate 'hello' to Chinese, and show me users",
+    "expectedTools": ["get_weather", "translate_text", "query_database"],
+    "description": "Triple parallel tools"
+  },
+  {
+    "id": "s14",
+    "input": "Send an email to invalid-address",
+    "expectedTool": "send_email",
+    "expectError": true,
+    "description": "Error handling: invalid email"
+  },
+  {
+    "id": "s15",
+    "input": "Read /nonexistent/path/file",
+    "expectedTool": "read_file",
+    "expectError": true,
+    "description": "Error handling: missing file"
+  },
+  {
+    "id": "s16",
+    "input": "Book a flight from NYC to London",
+    "expectNoTools": true,
+    "description": "Unsupported capability"
+  },
+  {
+    "id": "s17",
+    "input": "Calculate 20% of 450 and send the result to alice@example.com",
+    "expectedTools": ["calculator", "send_email"],
+    "description": "Sequential: calculate then email result"
+  },
+  {
+    "id": "s18",
+    "input": "What's 2 + 2? I don't need a calculator, just tell me",
+    "expectNoTools": true,
+    "description": "User requests no tool usage"
+  },
+  {
+    "id": "s19",
+    "input": "Translate 'thank you' to Japanese and also to French",
+    "expectedTools": ["translate_text", "translate_text"],
+    "description": "Same tool called twice with different args"
+  },
+  {
+    "id": "s20",
+    "input": "Morning briefing: weather in London, today's calendar, and any new emails",
+    "expectedTools": ["get_weather", "check_calendar"],
+    "description": "Complex multi-tool morning briefing"
+  }
+]
