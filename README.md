@@ -41,6 +41,10 @@
   <img src="https://img.shields.io/npm/v/@agentbench/cli?label=npm&color=CB3837&logo=npm&style=flat-square" alt="npm" />
 </p>
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/1304674612/agentbench/main/assets/dashboard.png" alt="AgentBench Dashboard" width="720" />
+</p>
+
 ---
 
 ## 🚀 Quick Start
