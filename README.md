@@ -457,11 +457,13 @@ AgentBench is open source and community-driven. We welcome all contributions.
   <br/>
   <sub>If AgentBench saves you from shipping a broken agent, give it a star</sub>
   <br/><br/>
-  ## ⭐ Star History
+  ## Star History
 
-  <a href="https://www.star-history.com/?type=date&repos=1304674612%2Fagentbench">
-    <img src="https://raw.githubusercontent.com/1304674612/agentbench/main/star-chart.svg" alt="Star History Chart" width="500" />
+  <a href="https://star-history.com/#1304674612/agentbench&Date">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=1304674612/agentbench&type=Date&theme=dark" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=1304674612/agentbench&type=Date" />
+      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=1304674612/agentbench&type=Date" width="500" />
+    </picture>
   </a>
-  <br/>
-  <sub>Auto-updated daily · <a href="https://www.star-history.com/?type=date&repos=1304674612%2Fagentbench">View interactive chart →</a></sub>
 </div>
