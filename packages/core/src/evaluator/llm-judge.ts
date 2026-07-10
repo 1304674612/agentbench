@@ -68,19 +68,22 @@ export function parseJudgeResponse(
   // Try direct parse
   try {
     parsed = JSON.parse(rawResponse.trim())
-  } catch {
+  } catch (error) {
+    console.error('[LLM-JUDGE] Failed to parse judge response as JSON:', error)
     // Try to extract JSON block from markdown
     const jsonMatch = rawResponse.match(/```(?:json)?\s*([\s\S]*?)```/)
     if (jsonMatch) {
       try {
         parsed = JSON.parse(jsonMatch[1].trim())
-      } catch {
+      } catch (error) {
+        console.error('[LLM-JUDGE] Failed to parse JSON block from response:', error)
         // Last resort: try to find a JSON object in the text
         const objMatch = rawResponse.match(/\{[\s\S]*\}/)
         if (objMatch) {
           try {
             parsed = JSON.parse(objMatch[0])
-          } catch {
+          } catch (error) {
+            console.error('[LLM-JUDGE] Failed to parse extracted JSON object:', error)
             // Fall through to default
           }
         }

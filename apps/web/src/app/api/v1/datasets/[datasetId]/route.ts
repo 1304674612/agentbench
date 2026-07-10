@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withApiAuth } from '@/shared/lib/api-middleware'
 import { db } from '@/shared/lib/db'
 import { z } from 'zod'
 
@@ -9,12 +10,14 @@ const updateDatasetSchema = z.object({
   tags: z.array(z.string()).optional(),
 })
 
-export async function GET(
+type ParamsCtx = { params: Promise<{ datasetId: string }> }
+
+export const GET = withApiAuth(async (
   _req: NextRequest,
-  { params }: { params: Promise<{ datasetId: string }> },
-) {
+  ctx: ParamsCtx,
+) => {
+  const { datasetId } = await ctx.params
   try {
-    const { datasetId } = await params
     const dataset = await db.dataset.findUnique({
       where: { id: datasetId },
       include: {
@@ -41,14 +44,14 @@ export async function GET(
     console.error('Failed to get dataset:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+})
 
-export async function PUT(
+export const PUT = withApiAuth(async (
   req: NextRequest,
-  { params }: { params: Promise<{ datasetId: string }> },
-) {
+  ctx: ParamsCtx,
+) => {
+  const { datasetId } = await ctx.params
   try {
-    const { datasetId } = await params
     const body = await req.json()
     const parsed = updateDatasetSchema.safeParse(body)
     if (!parsed.success) {
@@ -68,18 +71,18 @@ export async function PUT(
     console.error('Failed to update dataset:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}, { requireWrite: true })
 
-export async function DELETE(
+export const DELETE = withApiAuth(async (
   _req: NextRequest,
-  { params }: { params: Promise<{ datasetId: string }> },
-) {
+  ctx: ParamsCtx,
+) => {
+  const { datasetId } = await ctx.params
   try {
-    const { datasetId } = await params
     await db.dataset.delete({ where: { id: datasetId } })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Failed to delete dataset:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}, { requireWrite: true })

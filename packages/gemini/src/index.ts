@@ -97,7 +97,10 @@ function convertMessages(messages: ChatCompletionParams['messages']): {
     if (msg.tool_calls && msg.role === 'assistant') {
       for (const tc of msg.tool_calls) {
         let args: Record<string, unknown> = {}
-        try { args = JSON.parse(tc.function.arguments) } catch { /* keep empty */ }
+        try { args = JSON.parse(tc.function.arguments) } catch (error) {
+          console.error('[GEMINI] Failed to parse tool call arguments:', error)
+          /* keep empty */
+        }
         contents.push({
           role: 'model',
           parts: [{ functionCall: { name: tc.function.name, args } }],
@@ -402,7 +405,8 @@ export class GeminiProvider {
               created: Math.floor(Date.now() / 1000),
               provider: 'gemini',
             }
-          } catch {
+          } catch (error) {
+            console.error('[GEMINI] Failed to process stream chunk:', error)
             // Skip malformed chunks
           }
         }
@@ -473,4 +477,22 @@ export class GeminiProvider {
     // Should not reach here, but TypeScript wants a return
     throw new Error(`Failed to fetch ${url} after ${retries} retries`)
   }
+}
+
+// ============================================================
+// Factory function
+// ============================================================
+
+/**
+ * Create a configured Gemini provider instance.
+ *
+ * @example
+ * ```ts
+ * const gemini = await createGeminiProvider({ apiKey: '...' })
+ * ```
+ */
+export async function createGeminiProvider(config: ProviderConfig = {}): Promise<GeminiProvider> {
+  const provider = new GeminiProvider()
+  await provider.initialize(config)
+  return provider
 }

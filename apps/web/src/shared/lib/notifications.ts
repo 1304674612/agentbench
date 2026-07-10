@@ -162,8 +162,9 @@ async function shouldSendEmail(userId: string, type: NotificationType): Promise<
     if (allowedTypes && !allowedTypes.includes(type)) return false
 
     return true
-  } catch {
+  } catch (error) {
     // If SystemSetting table doesn't exist or query fails, default to sending
+    console.error('[NOTIFICATIONS] Failed to check email preferences:', error)
     return true
   }
 }

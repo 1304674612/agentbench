@@ -307,7 +307,8 @@ async function _traceStreamingCall(
       let input: Record<string, unknown> = {}
       try {
         input = JSON.parse(tc.input_json || '{}') as Record<string, unknown>
-      } catch {
+      } catch (error) {
+        console.error('[ANTHROPIC-INTERCEPTOR] Failed to parse tool input JSON:', error)
         input = { _raw: tc.input_json }
       }
       return {

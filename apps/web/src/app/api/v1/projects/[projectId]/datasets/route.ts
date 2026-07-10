@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withApiAuth } from '@/shared/lib/api-middleware'
 import { db } from '@/shared/lib/db'
 import { z } from 'zod'
 
@@ -20,12 +21,14 @@ const importSchema = z.object({
   }).optional(),
 })
 
-export async function GET(
+type ParamsCtx = { params: Promise<{ projectId: string }> }
+
+export const GET = withApiAuth(async (
   req: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> },
-) {
+  ctx: ParamsCtx,
+) => {
+  const { projectId } = await ctx.params
   try {
-    const { projectId } = await params
     const { searchParams } = new URL(req.url)
     const split = searchParams.get('split')
 
@@ -52,14 +55,14 @@ export async function GET(
     console.error('Failed to list datasets:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+})
 
-export async function POST(
+export const POST = withApiAuth(async (
   req: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> },
-) {
+  ctx: ParamsCtx,
+) => {
+  const { projectId } = await ctx.params
   try {
-    const { projectId } = await params
     const body = await req.json()
     const action = body.action ?? 'create'
 
@@ -91,7 +94,7 @@ export async function POST(
     console.error('Failed to create dataset:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}, { requireWrite: true })
 
 async function handleImport(
   projectId: string,
@@ -157,12 +160,12 @@ async function handleImport(
   }, { status: 201 })
 }
 
-export async function DELETE(
+export const DELETE = withApiAuth(async (
   req: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> },
-) {
+  ctx: ParamsCtx,
+) => {
+  const { projectId } = await ctx.params
   try {
-    const { projectId } = await params
     const { searchParams } = new URL(req.url)
     const id = searchParams.get('id')
 
@@ -177,4 +180,4 @@ export async function DELETE(
     console.error('Failed to delete dataset:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}, { requireWrite: true })

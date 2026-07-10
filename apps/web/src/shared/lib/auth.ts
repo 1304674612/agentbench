@@ -38,7 +38,9 @@ export async function validateApiKey(apiKey: string): Promise<AuthContext | null
   db.apiKey.update({
     where: { id: record.id },
     data: { lastUsedAt: new Date() },
-  }).catch(() => {})
+  }).catch((error: unknown) => {
+    console.error('[AUTH] Failed to update API key lastUsedAt:', error)
+  })
 
   const scopeSet = new Set(record.scopes)
   const scopes: Array<'read' | 'write' | 'admin'> = []

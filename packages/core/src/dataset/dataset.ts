@@ -276,7 +276,8 @@ export class Dataset {
       try {
         const parsed = JSON.parse(line)
         items.push(applyMapping(parsed, options?.mapping))
-      } catch {
+      } catch (error) {
+        console.error('[DATASET] Failed to parse JSONL line:', error)
         // Skip malformed lines — validation will catch them later
         items.push({
           id: generateId(),
@@ -322,7 +323,8 @@ export class Dataset {
       for await (const row of iterator) {
         rows.push(row as Record<string, unknown>)
       }
-    } catch {
+    } catch (error) {
+      console.warn('[DATASET] HuggingFace Hub streaming failed, falling back to REST API:', error)
       // Fallback: direct REST API
       rows = await fetchHuggingFaceREST(repo, hfConfig, hfSplit, token)
     }
@@ -360,7 +362,8 @@ export class Dataset {
       try {
         const parsed = JSON.parse(line)
         items.push(applyMapping(parsed, mapping))
-      } catch {
+      } catch (error) {
+        console.error('[DATASET] Failed to parse OpenAI evals line:', error)
         items.push({
           id: generateId(),
           input: line,
@@ -973,7 +976,8 @@ async function tryImportHuggingFaceHub(): Promise<HuggingFaceHubModule> {
     if (typeof listRowsAtUrl === 'function') {
       return { listRowsAtUrl }
     }
-  } catch {
+  } catch (error) {
+    console.warn('[DATASET] @huggingface/hub not available, using REST API:', error)
     // Fall through to REST API
   }
   throw new Error('@huggingface/hub not available')

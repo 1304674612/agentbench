@@ -52,7 +52,8 @@ interface StreamingMetrics {
 function safeParseJson(raw: string): Record<string, unknown> {
   try {
     return JSON.parse(raw)
-  } catch {
+  } catch (error) {
+    console.error('[STREAM-CAPTURE] Failed to parse JSON:', error)
     return {}
   }
 }
@@ -63,7 +64,8 @@ function safeParseJson(raw: string): Record<string, unknown> {
 function parseToolArguments(args: string): Record<string, unknown> {
   try {
     return JSON.parse(args) as Record<string, unknown>
-  } catch {
+  } catch (error) {
+    console.error('[STREAM-CAPTURE] Failed to parse tool arguments:', error)
     return { _raw: args }
   }
 }

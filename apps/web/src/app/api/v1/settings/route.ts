@@ -1,22 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withApiAuth, type ApiContext } from '@/shared/lib/api-middleware'
 import { db } from '@/shared/lib/db'
 import { z } from 'zod'
-import { getServerSession } from '@/shared/lib/auth-config'
 
 // ============================================================
 // GET /api/v1/settings — return user profile + settings
 // ============================================================
 
-export async function GET() {
+export const GET = withApiAuth(async (_req: NextRequest, ctx: ApiContext) => {
   try {
-    const session = await getServerSession()
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const user = await db.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: ctx.auth.userId },
       select: {
         id: true,
         name: true,
@@ -33,7 +27,7 @@ export async function GET() {
 
     // Get projects owned by this user
     const projects = await db.project.findMany({
-      where: { ownerId: session.user.id },
+      where: { ownerId: ctx.auth.userId },
       orderBy: { updatedAt: 'desc' },
       select: {
         id: true,
@@ -53,7 +47,7 @@ export async function GET() {
     console.error('Failed to get settings:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+})
 
 // ============================================================
 // PATCH /api/v1/settings — update user or project settings
@@ -69,14 +63,8 @@ const updateSettingsSchema = z.object({
   projectSettings: z.record(z.unknown()).optional(),
 })
 
-export async function PATCH(req: NextRequest) {
+export const PATCH = withApiAuth(async (req: NextRequest, ctx: ApiContext) => {
   try {
-    const session = await getServerSession()
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const body = await req.json()
     const parsed = updateSettingsSchema.safeParse(body)
 
@@ -92,7 +80,7 @@ export async function PATCH(req: NextRequest) {
     // Update user profile
     if (parsed.data.name) {
       await db.user.update({
-        where: { id: session.user.id },
+        where: { id: ctx.auth.userId },
         data: { name: parsed.data.name },
       })
       updates.name = parsed.data.name
@@ -109,7 +97,7 @@ export async function PATCH(req: NextRequest) {
       }
 
       // Check ownership
-      if (project.ownerId !== session.user.id) {
+      if (project.ownerId !== ctx.auth.userId) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
       }
 
@@ -142,4 +130,4 @@ export async function PATCH(req: NextRequest) {
     console.error('Failed to update settings:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+})

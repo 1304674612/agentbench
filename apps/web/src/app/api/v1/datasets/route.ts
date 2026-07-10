@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { withRateLimit } from '@/shared/lib/api-middleware'
+import { withApiAuth, withRateLimit, type ApiContext } from '@/shared/lib/api-middleware'
 import { db } from '@/shared/lib/db'
 import { handleApiError } from '@/shared/lib/error-handler'
 import { z } from 'zod'
@@ -30,7 +30,7 @@ const createDatasetSchema = z.object({
   tags: z.array(z.string()).optional().default([]),
 })
 
-export const POST = withRateLimit(async (req: NextRequest) => {
+export const POST = withRateLimit(withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
   try {
     const body = await req.json()
     const parsed = createDatasetSchema.parse(body)
@@ -73,9 +73,9 @@ export const POST = withRateLimit(async (req: NextRequest) => {
   } catch (error) {
     return handleApiError(error)
   }
-})
+}, { requireWrite: true }))
 
-export const GET = async (req: NextRequest) => {
+export const GET = withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
   try {
     const { searchParams } = new URL(req.url)
     const params = Object.fromEntries(searchParams.entries())
@@ -117,4 +117,4 @@ export const GET = async (req: NextRequest) => {
   } catch (error) {
     return handleApiError(error)
   }
-}
+})

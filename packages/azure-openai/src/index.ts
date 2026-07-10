@@ -11,8 +11,6 @@
 
 import {
   OpenAICompatibleProvider,
-  tokenCounter,
-  costCalculator,
 } from '@agentbench/provider-utils'
 import type {
   ProviderCapabilities,
@@ -21,10 +19,6 @@ import type {
   ChatCompletionResult,
   StreamChunk,
   ToolCall,
-  TokenCountParams,
-  TokenCountResult,
-  Usage,
-  CostBreakdown,
   HealthStatus,
 } from '@agentbench/provider-utils'
 
@@ -172,15 +166,6 @@ export class AzureOpenAIProvider extends OpenAICompatibleProvider {
     }
   }
 
-  async countTokens(params: TokenCountParams): Promise<TokenCountResult> {
-    return tokenCounter.countTokens(params)
-  }
-
-  calculateCost(usage: Usage, model: string): CostBreakdown {
-    // Azure pricing is same as OpenAI
-    return costCalculator.calculateCost(usage, model)
-  }
-
   async healthCheck(): Promise<HealthStatus> {
     const start = Date.now()
     try {
@@ -265,7 +250,10 @@ export class AzureOpenAIProvider extends OpenAICompatibleProvider {
           if (data === '[DONE]') return
           try {
             yield JSON.parse(data) as StreamChunk
-          } catch { /* skip malformed chunks */ }
+          } catch (error) {
+            console.error('[AZURE-OPENAI] Failed to parse stream chunk:', error)
+            /* skip malformed chunks */
+          }
         }
       }
     } finally {

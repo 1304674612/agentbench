@@ -11,7 +11,10 @@ import { db } from '@/shared/lib/db'
  *
  * Headers:
  * - X-Webhook-Source: "github" | "gitlab" | "ci"
- * - X-Webhook-Secret: shared secret for verification
+ * - X-Webhook-Secret: shared secret for verification (REQUIRED)
+ *
+ * The WEBHOOK_SECRET environment variable MUST be set.
+ * Requests without a valid secret will be rejected with 401.
  */
 
 export async function POST(req: NextRequest) {
@@ -19,10 +22,14 @@ export async function POST(req: NextRequest) {
     const source = req.headers.get('x-webhook-source') ?? 'ci'
     const secret = req.headers.get('x-webhook-secret')
 
-    // Verify secret if configured
+    // Verify secret — MANDATORY
     const webhookSecret = process.env.WEBHOOK_SECRET
-    if (webhookSecret && secret !== webhookSecret) {
-      return NextResponse.json({ error: 'Invalid webhook secret' }, { status: 401 })
+    if (!webhookSecret) {
+      console.error('WEBHOOK_SECRET is not configured')
+      return NextResponse.json({ error: 'Webhook secret not configured on server' }, { status: 500 })
+    }
+    if (!secret || secret !== webhookSecret) {
+      return NextResponse.json({ error: 'Invalid or missing webhook secret' }, { status: 401 })
     }
 
     const body = await req.json() as Record<string, unknown>

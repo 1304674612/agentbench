@@ -66,7 +66,8 @@ export async function POST(req: Request) {
       { success: true, message: 'Account created successfully' },
       { status: 201 },
     )
-  } catch {
+  } catch (error) {
+    console.error('[REGISTER] Failed to create user:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 },

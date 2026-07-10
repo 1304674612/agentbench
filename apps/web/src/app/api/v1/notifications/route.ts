@@ -1,7 +1,7 @@
 import type { NotificationType } from '@prisma/client'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { getServerSession } from '@/shared/lib/auth-config'
+import { withApiAuth, type ApiContext } from '@/shared/lib/api-middleware'
 import { handleApiError } from '@/shared/lib/error-handler'
 import {
   createNotification,
@@ -49,13 +49,8 @@ const querySchema = z.object({
 // GET — List notifications for authenticated user
 // ============================================================
 
-export async function GET(req: NextRequest) {
+export const GET = withApiAuth(async (req: NextRequest, ctx: ApiContext) => {
   try {
-    const session = await getServerSession()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { searchParams } = new URL(req.url)
     const params = Object.fromEntries(searchParams.entries())
     const parsed = querySchema.safeParse(params)
@@ -69,21 +64,21 @@ export async function GET(req: NextRequest) {
     const { limit, offset, unreadOnly } = parsed.data
 
     const [notifications, total] = await Promise.all([
-      getNotifications(session.user.id, { limit, offset, unreadOnly }),
-      getNotificationCount(session.user.id, unreadOnly),
+      getNotifications(ctx.auth.userId, { limit, offset, unreadOnly }),
+      getNotificationCount(ctx.auth.userId, unreadOnly),
     ])
 
     return NextResponse.json({ notifications, total, limit, offset })
   } catch (error) {
     return handleApiError(error)
   }
-}
+})
 
 // ============================================================
 // POST — Create a notification (internal/system use)
 // ============================================================
 
-export async function POST(req: NextRequest) {
+export const POST = withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
   try {
     const body = await req.json()
     const parsed = createNotificationBodySchema.safeParse(body)
@@ -109,19 +104,14 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     return handleApiError(error)
   }
-}
+}, { requireWrite: true })
 
 // ============================================================
 // PATCH — Mark notifications as read
 // ============================================================
 
-export async function PATCH(req: NextRequest) {
+export const PATCH = withApiAuth(async (req: NextRequest, ctx: ApiContext) => {
   try {
-    const session = await getServerSession()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const body = await req.json()
     const parsed = readBodySchema.safeParse(body)
     if (!parsed.success) {
@@ -134,7 +124,7 @@ export async function PATCH(req: NextRequest) {
     const { action, notificationId } = parsed.data
 
     if (action === 'mark_all_read') {
-      const count = await markAllAsRead(session.user.id)
+      const count = await markAllAsRead(ctx.auth.userId)
       return NextResponse.json({ markedRead: count })
     }
 
@@ -150,4 +140,4 @@ export async function PATCH(req: NextRequest) {
   } catch (error) {
     return handleApiError(error)
   }
-}
+})

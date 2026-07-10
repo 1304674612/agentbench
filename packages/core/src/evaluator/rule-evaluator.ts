@@ -212,7 +212,8 @@ function evalJsonSchema(
   let parsed: unknown
   try {
     parsed = JSON.parse(ctx.output.trim())
-  } catch {
+  } catch (error) {
+    console.error('[RULE-EVALUATOR] Failed to parse output as JSON:', error)
     return { passed: false, score: 0, maxScore: 1, reason: 'Output is not valid JSON' }
   }
 

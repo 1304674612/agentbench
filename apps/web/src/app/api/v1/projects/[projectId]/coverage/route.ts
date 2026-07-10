@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withApiAuth } from '@/shared/lib/api-middleware'
 import { db } from '@/shared/lib/db'
 
-export async function GET(
+export const GET = withApiAuth(async (
   _req: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> },
-) {
+  ctx: { params: Promise<{ projectId: string }> },
+) => {
+  const { params } = ctx
   try {
     const { projectId } = await params
 
@@ -148,4 +150,4 @@ export async function GET(
     console.error('Failed to get coverage:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+})

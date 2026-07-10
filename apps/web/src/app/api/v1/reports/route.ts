@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withApiAuth, type ApiContext } from '@/shared/lib/api-middleware'
 import { db } from '@/shared/lib/db'
 import { z } from 'zod'
 
 const formatEnum = z.enum(['json', 'markdown', 'html', 'junit'])
 
-export async function GET(req: NextRequest) {
+export const GET = withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
   try {
     const { searchParams } = new URL(req.url)
     const runId = searchParams.get('runId')
@@ -99,7 +100,7 @@ export async function GET(req: NextRequest) {
     console.error('Failed to generate report:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+})
 
 function buildMarkdown(data: Record<string, unknown>): string {
   const metrics = (data.metrics ?? {}) as Record<string, number>

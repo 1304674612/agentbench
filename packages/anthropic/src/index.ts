@@ -426,6 +426,19 @@ interface AnthropicAPIResponse {
   usage?: { input_tokens: number; output_tokens: number }
 }
 
-export function createAnthropicClient(config: AgentBenchAnthropicConfig): AgentBenchAnthropic {
+// ============================================================
+// Type alias — Provider S suffix convention
+// ============================================================
+
+export { AgentBenchAnthropic as AnthropicProvider }
+
+// ============================================================
+// Factory function
+// ============================================================
+
+export function createAnthropicProvider(config: AgentBenchAnthropicConfig): AgentBenchAnthropic {
   return new AgentBenchAnthropic(config)
 }
+
+/** @deprecated Use {@link createAnthropicProvider} instead */
+export const createAnthropicClient = createAnthropicProvider

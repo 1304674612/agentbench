@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { withApiAuth, type ApiContext } from '@/shared/lib/api-middleware'
 import { db } from '@/shared/lib/db'
 
 const compareSchema = z.object({
@@ -7,7 +8,7 @@ const compareSchema = z.object({
   runBId: z.string(),
 })
 
-export async function POST(req: NextRequest) {
+export const POST = withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
   try {
     const body = await req.json()
     const parsed = compareSchema.safeParse(body)
@@ -196,4 +197,4 @@ export async function POST(req: NextRequest) {
     console.error('Failed to compare runs:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+})

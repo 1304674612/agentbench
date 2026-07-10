@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withApiAuth } from '@/shared/lib/api-middleware'
 import { db } from '@/shared/lib/db'
 import { z } from 'zod'
 
@@ -29,12 +30,14 @@ const createExperimentSchema = z.object({
   })).optional(),
 })
 
-export async function GET(
+type ParamsCtx = { params: Promise<{ projectId: string }> }
+
+export const GET = withApiAuth(async (
   _req: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> },
-) {
+  ctx: ParamsCtx,
+) => {
+  const { projectId } = await ctx.params
   try {
-    const { projectId } = await params
     const experiments = await db.experiment.findMany({
       where: { projectId },
       orderBy: { createdAt: 'desc' },
@@ -55,14 +58,14 @@ export async function GET(
     console.error('Failed to list experiments:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+})
 
-export async function POST(
+export const POST = withApiAuth(async (
   req: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> },
-) {
+  ctx: ParamsCtx,
+) => {
+  const { projectId } = await ctx.params
   try {
-    const { projectId } = await params
     const body = await req.json()
     const parsed = createExperimentSchema.safeParse(body)
     if (!parsed.success) {
@@ -110,4 +113,4 @@ export async function POST(
     console.error('Failed to create experiment:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+}, { requireWrite: true })

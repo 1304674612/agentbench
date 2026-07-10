@@ -224,6 +224,19 @@ export class AgentBenchMCP {
   }
 }
 
-export function createMCPClient(config: AgentBenchMCPConfig): AgentBenchMCP {
+// ============================================================
+// Type alias — Provider S suffix convention
+// ============================================================
+
+export { AgentBenchMCP as MCPProvider }
+
+// ============================================================
+// Factory function
+// ============================================================
+
+export function createMCPProvider(config: AgentBenchMCPConfig): AgentBenchMCP {
   return new AgentBenchMCP(config)
 }
+
+/** @deprecated Use {@link createMCPProvider} instead */
+export const createMCPClient = createMCPProvider

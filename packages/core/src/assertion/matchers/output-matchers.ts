@@ -108,7 +108,8 @@ export function outputToMatchSchema(
   let parsed: unknown
   try {
     parsed = JSON.parse(output.trim())
-  } catch {
+  } catch (error) {
+    console.error('[OUTPUT-MATCHERS] Failed to parse output as JSON:', error)
     return {
       type: 'matches_schema',
       status: 'failed',

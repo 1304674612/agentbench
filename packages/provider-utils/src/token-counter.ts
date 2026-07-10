@@ -65,7 +65,8 @@ async function tryLoadTiktoken(): Promise<boolean> {
       tiktokenModule = await import('tiktoken').catch(() => null)
     }
     return tiktokenModule !== null
-  } catch {
+  } catch (error) {
+    console.warn('[TOKEN-COUNTER] tiktoken not available:', error)
     return false
   }
 }
@@ -224,7 +225,8 @@ export class TokenCounter {
           encoder.free()
           return count
         }
-      } catch {
+      } catch (error) {
+        console.warn('[TOKEN-COUNTER] tiktoken encode failed, falling back to heuristic:', error)
         // tiktoken failed, fall back to heuristic
       }
     }

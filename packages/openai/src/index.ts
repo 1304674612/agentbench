@@ -789,12 +789,21 @@ interface RawOpenAIResponse {
 }
 
 // ============================================================
+// Type alias — Provider S suffix convention
+// ============================================================
+
+export { AgentBenchOpenAI as OpenAIProvider }
+
+// ============================================================
 // Factory function
 // ============================================================
 
-export function createOpenAIClient(config: AgentBenchOpenAIConfig): AgentBenchOpenAI {
+export function createOpenAIProvider(config: AgentBenchOpenAIConfig): AgentBenchOpenAI {
   return new AgentBenchOpenAI(config)
 }
+
+/** @deprecated Use {@link createOpenAIProvider} instead */
+export const createOpenAIClient = createOpenAIProvider
 
 export async function runWithOpenAI(params: {
   client: AgentBenchOpenAI

@@ -59,7 +59,8 @@ function discoverTestFiles(dir: string): string[] {
     let entries: nodeFs.Dirent[]
     try {
       entries = nodeFs.readdirSync(currentDir, { withFileTypes: true })
-    } catch {
+    } catch (error) {
+      console.error('[TEST] Failed to read directory entry:', error)
       return
     }
     for (const entry of entries) {
@@ -705,16 +706,18 @@ function startFileWatcher(
         },
       )
       watchers.push(watcher)
-    } catch {
+    } catch (error) {
       // skip unwatchable directories
+      console.error('[TEST] Failed to set up file watcher:', error)
     }
   }
 
   if (nodeFs.existsSync(configPath)) {
     try {
       watchers.push(nodeFs.watch(configPath, () => scheduleRerun()))
-    } catch {
+    } catch (error) {
       // skip
+      console.error('[TEST] Failed to watch config file:', error)
     }
   }
 

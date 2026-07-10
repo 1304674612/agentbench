@@ -11,7 +11,6 @@
 
 import {
   OpenAICompatibleProvider,
-  tokenCounter,
 } from '@agentbench/provider-utils'
 import type {
   ProviderCapabilities,
@@ -19,8 +18,6 @@ import type {
   ChatCompletionParams,
   ChatCompletionResult,
   ToolCall,
-  TokenCountParams,
-  TokenCountResult,
   Usage,
   CostBreakdown,
   HealthStatus,
@@ -85,7 +82,8 @@ export class OllamaProvider extends OpenAICompatibleProvider {
           signal: AbortSignal.timeout(3000),
         })
         if (res.ok) return url
-      } catch {
+      } catch (error) {
+        console.warn('[OLLAMA] Auto-detection failed for URL:', url, error)
         continue
       }
     }
@@ -178,10 +176,6 @@ export class OllamaProvider extends OpenAICompatibleProvider {
       created: r.created as number ?? Math.floor(Date.now() / 1000),
       provider: 'ollama',
     }
-  }
-
-  async countTokens(params: TokenCountParams): Promise<TokenCountResult> {
-    return tokenCounter.countTokens(params)
   }
 
   calculateCost(_usage: Usage, _model: string): CostBreakdown {

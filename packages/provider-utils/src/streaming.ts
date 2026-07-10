@@ -86,7 +86,8 @@ export function createSSEParser() {
       let parsed: Record<string, unknown> | null = null
       try {
         parsed = JSON.parse(data)
-      } catch {
+      } catch (error) {
+        console.error('[STREAMING] Failed to parse SSE data as JSON:', error)
         // Skip malformed JSON
         continue
       }

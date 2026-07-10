@@ -32,8 +32,9 @@ function watchFiles(
           watchedFiles.add(fullPath)
         }
       }
-    } catch {
+    } catch (error) {
       // Directory may not exist yet — ignore
+      console.error('[DEV] Failed to scan directory:', error)
     }
   }
 
@@ -50,8 +51,8 @@ function watchFiles(
   for (const f of watchedFiles) {
     try {
       fileMTimes.set(f, nodeFs.statSync(f).mtimeMs)
-    } catch {
-      // ignore
+    } catch (error) {
+      console.error('[DEV] Failed to stat file for mtime seeding:', error)
     }
   }
 
@@ -74,8 +75,9 @@ function watchFiles(
           fileMTimes.set(f, stat.mtimeMs)
           callback(f)
         }
-      } catch {
+      } catch (error) {
         // File may have been deleted
+        console.error('[DEV] Failed to stat watched file:', error)
         fileMTimes.delete(f)
       }
     }
@@ -151,8 +153,9 @@ export function registerDevCommand(program: Command): void {
             stdio: 'inherit',
             env: { ...process.env, FORCE_COLOR: '1' },
           })
-        } catch {
+        } catch (error) {
           // Test failures are expected in dev mode — don't kill the watcher
+          console.error('[DEV] Test execution failed:', error)
           console.log(chalk.yellow('  Tests failed — waiting for changes...'))
         }
 

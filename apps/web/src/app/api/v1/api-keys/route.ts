@@ -1,24 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withApiAuth, type ApiContext } from '@/shared/lib/api-middleware'
 import { db } from '@/shared/lib/db'
 import { z } from 'zod'
-import { getServerSession } from '@/shared/lib/auth-config'
 import { generateApiKey } from '@/shared/lib/auth'
 
 // ============================================================
 // GET /api/v1/api-keys — list user's API keys (masked)
 // ============================================================
 
-export async function GET() {
+export const GET = withApiAuth(async (_req: NextRequest, ctx: ApiContext) => {
   try {
-    const session = await getServerSession()
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const keys = await db.apiKey.findMany({
       where: {
-        userId: session.user.id,
+        userId: ctx.auth.userId,
         isRevoked: false,
       },
       orderBy: { createdAt: 'desc' },
@@ -39,7 +33,7 @@ export async function GET() {
     console.error('Failed to list API keys:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+})
 
 // ============================================================
 // POST /api/v1/api-keys — generate a new API key
@@ -54,14 +48,8 @@ const createApiKeySchema = z.object({
   expiresAt: z.string().datetime().optional(),
 })
 
-export async function POST(req: NextRequest) {
+export const POST = withApiAuth(async (req: NextRequest, ctx: ApiContext) => {
   try {
-    const session = await getServerSession()
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const body = await req.json()
     const parsed = createApiKeySchema.safeParse(body)
 
@@ -76,7 +64,7 @@ export async function POST(req: NextRequest) {
 
     await db.apiKey.create({
       data: {
-        userId: session.user.id,
+        userId: ctx.auth.userId,
         name: parsed.data.name,
         key: hashed,
         prefix,
@@ -99,4 +87,4 @@ export async function POST(req: NextRequest) {
     console.error('Failed to create API key:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+})

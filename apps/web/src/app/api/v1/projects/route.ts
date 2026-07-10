@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withApiAuth, type ApiContext } from '@/shared/lib/api-middleware'
 import { db } from '@/shared/lib/db'
 import { createProjectSchema, paginationSchema } from '@/shared/lib/validations'
 import { handleApiError } from '@/shared/lib/error-handler'
@@ -9,7 +10,7 @@ const projectQuerySchema = paginationSchema.extend({
   search: z.string().optional(),
 })
 
-export async function POST(req: NextRequest) {
+export const POST = withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
   try {
     const body = await req.json()
     const parsed = createProjectSchema.parse(body)
@@ -26,9 +27,9 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     return handleApiError(error)
   }
-}
+}, { requireWrite: true })
 
-export async function GET(req: NextRequest) {
+export const GET = withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
   try {
     const { searchParams } = new URL(req.url)
     const search = searchParams.get('search') ?? undefined
@@ -54,4 +55,4 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     return handleApiError(error)
   }
-}
+})

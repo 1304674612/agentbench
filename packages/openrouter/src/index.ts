@@ -11,7 +11,6 @@
 
 import {
   OpenAICompatibleProvider,
-  tokenCounter,
   costCalculator,
 } from '@agentbench/provider-utils'
 import type {
@@ -20,11 +19,8 @@ import type {
   ChatCompletionParams,
   ChatCompletionResult,
   ToolCall,
-  TokenCountParams,
-  TokenCountResult,
   Usage,
   CostBreakdown,
-  HealthStatus,
 } from '@agentbench/provider-utils'
 
 const OPENROUTER_MODELS = [
@@ -85,31 +81,7 @@ export class OpenRouterProvider extends OpenAICompatibleProvider {
   }
 
   protected adaptParams(params: ChatCompletionParams): Record<string, unknown> {
-    const body: Record<string, unknown> = {
-      model: params.model,
-      messages: params.messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-        ...(m.name ? { name: m.name } : {}),
-        ...(m.tool_call_id ? { tool_call_id: m.tool_call_id } : {}),
-      })),
-      stream: params.stream ?? false,
-    }
-
-    if (params.temperature !== undefined) body.temperature = params.temperature
-    if (params.maxTokens !== undefined) body.max_tokens = params.maxTokens
-    if (params.topP !== undefined) body.top_p = params.topP
-    if (params.stop) body.stop = params.stop
-    if (params.tools) {
-      body.tools = params.tools
-      body.tool_choice = params.toolChoice ?? 'auto'
-    }
-    if (params.responseFormat?.type === 'json_object') {
-      body.response_format = { type: 'json_object' }
-    }
-    if (params.frequencyPenalty !== undefined) body.frequency_penalty = params.frequencyPenalty
-    if (params.presencePenalty !== undefined) body.presence_penalty = params.presencePenalty
-    if (params.seed !== undefined) body.seed = params.seed
+    const body = super.adaptParams(params)
 
     // OpenRouter-specific: transforms array for provider routing preferences
     if (params.extra?.transforms) {
@@ -157,35 +129,10 @@ export class OpenRouterProvider extends OpenAICompatibleProvider {
     }
   }
 
-  async countTokens(params: TokenCountParams): Promise<TokenCountResult> {
-    return tokenCounter.countTokens(params)
-  }
-
   calculateCost(usage: Usage, model: string): CostBreakdown {
     // Strip OpenRouter prefix for pricing lookup
     const cleanModel = model.includes('/') ? model.split('/').slice(1).join('/') : model
     return costCalculator.calculateCost(usage, cleanModel)
-  }
-
-  async healthCheck(): Promise<HealthStatus> {
-    const start = Date.now()
-    try {
-      const res = await fetch(`${this.baseUrl}/models`, {
-        headers: this.buildHeaders(),
-        signal: AbortSignal.timeout(10000),
-      })
-      return {
-        healthy: res.ok,
-        latency: Date.now() - start,
-        message: res.ok ? 'Connected' : `HTTP ${res.status}`,
-      }
-    } catch (err) {
-      return {
-        healthy: false,
-        latency: Date.now() - start,
-        message: err instanceof Error ? err.message : 'Unknown error',
-      }
-    }
   }
 }
 
