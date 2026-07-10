@@ -17,6 +17,7 @@ import {
   EyeOff,
 } from 'lucide-react'
 import Link from 'next/link'
+import { apiFetch, apiGet, apiPost, apiDelete, ApiFetchError } from '@/shared/lib/client-fetch'
 
 interface ApiKeyRecord {
   id: string
@@ -144,15 +145,17 @@ function ApiKeysSection() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/v1/api-keys')
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || 'Failed to load API keys')
-      }
-      const data = await res.json()
+      const data = await apiGet<{ apiKeys: ApiKeyRecord[] }>('/api/v1/api-keys')
       setKeys(data.apiKeys || [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load API keys')
+      if (err instanceof ApiFetchError) {
+        if (err.status === 401) setError('Please sign in to continue')
+        else if (err.status === 403) setError('You do not have permission')
+        else setError(err.message)
+      } else {
+        setError('Failed to load API keys')
+      }
+      console.error('[ApiKeys] API error:', err)
     } finally {
       setLoading(false)
     }
@@ -167,22 +170,22 @@ function ApiKeysSection() {
     setGenerating(true)
     setError(null)
     try {
-      const res = await fetch('/api/v1/api-keys', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: keyName.trim() }),
+      const data = await apiPost<{ raw: string }>('/api/v1/api-keys', {
+        name: keyName.trim(),
       })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || 'Failed to generate API key')
-      }
-      const data = await res.json()
       setNewKey({ raw: data.raw, name: keyName.trim() })
       setKeyName('')
       setShowNewKeyInput(false)
       fetchKeys()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Generation failed')
+      if (err instanceof ApiFetchError) {
+        if (err.status === 401) setError('Please sign in to continue')
+        else if (err.status === 403) setError('You do not have permission')
+        else setError(err.message)
+      } else {
+        setError(err instanceof Error ? err.message : 'Generation failed')
+      }
+      console.error('[ApiKeys] Generate error:', err)
     } finally {
       setGenerating(false)
     }
@@ -192,16 +195,17 @@ function ApiKeysSection() {
     setDeletingId(keyId)
     setError(null)
     try {
-      const res = await fetch(`/api/v1/api-keys/${keyId}`, {
-        method: 'DELETE',
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || 'Failed to revoke key')
-      }
+      await apiDelete(`/api/v1/api-keys/${keyId}`)
       setKeys((prev) => prev.filter((k) => k.id !== keyId))
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to revoke key')
+      if (err instanceof ApiFetchError) {
+        if (err.status === 401) setError('Please sign in to continue')
+        else if (err.status === 403) setError('You do not have permission')
+        else setError(err.message)
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to revoke key')
+      }
+      console.error('[ApiKeys] Delete error:', err)
     } finally {
       setDeletingId(null)
     }
@@ -415,17 +419,28 @@ function ProjectSettingsSection() {
   const [maxRetries, setMaxRetries] = useState(3)
 
   useEffect(() => {
-    fetch('/api/v1/projects')
-      .then((res) => res.json())
-      .then((data) => {
+    async function loadProjects() {
+      try {
+        const data = await apiGet<{ projects: Project[] }>('/api/v1/projects')
         const projs = data.projects || []
         setProjects(projs)
         if (projs.length > 0) {
           setSelectedProjectId(projs[0].id)
         }
-      })
-      .catch(() => setError('Failed to load projects'))
-      .finally(() => setLoading(false))
+      } catch (err) {
+        if (err instanceof ApiFetchError) {
+          if (err.status === 401) setError('Please sign in to continue')
+          else if (err.status === 403) setError('You do not have permission')
+          else setError(err.message)
+        } else {
+          setError('Failed to load projects')
+        }
+        console.error('[ProjectSettings] API error:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadProjects()
   }, [])
 
   useEffect(() => {
@@ -445,9 +460,8 @@ function ProjectSettingsSection() {
     setError(null)
     setSuccess(false)
     try {
-      const res = await fetch('/api/v1/settings', {
+      await apiFetch('/api/v1/settings', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           projectId: selectedProjectId,
           projectName: projectName.trim(),
@@ -458,14 +472,17 @@ function ProjectSettingsSection() {
           },
         }),
       })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || 'Failed to save settings')
-      }
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save')
+      if (err instanceof ApiFetchError) {
+        if (err.status === 401) setError('Please sign in to continue')
+        else if (err.status === 403) setError('You do not have permission')
+        else setError(err.message)
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to save')
+      }
+      console.error('[ProjectSettings] Save error:', err)
     } finally {
       setSaving(false)
     }

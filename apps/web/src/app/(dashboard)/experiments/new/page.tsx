@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { FlaskConical, ChevronRight, Loader2, Save, Beaker } from 'lucide-react'
+import { apiGet, apiPost, ApiFetchError } from '@/shared/lib/client-fetch'
 
 interface Project {
   id: string
@@ -58,15 +59,30 @@ export default function NewExperimentPage() {
     maxTokens: 4096,
   })
 
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [variantAErrors, setVariantAErrors] = useState<Record<string, string>>({})
+  const [variantBErrors, setVariantBErrors] = useState<Record<string, string>>({})
+
   useEffect(() => {
-    fetch('/api/v1/projects')
-      .then((res) => res.json())
-      .then((data) => {
+    async function loadProjects() {
+      try {
+        const data = await apiGet<{ projects: Project[] }>('/api/v1/projects')
         setProjects(data.projects || [])
         if (data.projects?.length > 0) setProjectId(data.projects[0].id)
-      })
-      .catch(() => setError('Failed to load projects'))
-      .finally(() => setProjectsLoading(false))
+      } catch (err) {
+        if (err instanceof ApiFetchError) {
+          if (err.status === 401) setError('Please sign in to continue')
+          else if (err.status === 403) setError('You do not have permission')
+          else setError(err.message)
+        } else {
+          setError('Failed to load projects')
+        }
+        console.error('[NewExperiment] API error:', err)
+      } finally {
+        setProjectsLoading(false)
+      }
+    }
+    loadProjects()
   }, [])
 
   function updateVariant(
@@ -78,53 +94,107 @@ export default function NewExperimentPage() {
     setter((prev) => ({ ...prev, [field]: value }))
   }
 
+  function validateVariant(
+    variant: VariantConfig,
+  ): Record<string, string> {
+    const errors: Record<string, string> = {}
+
+    // Variant name: required
+    if (!variant.name.trim()) {
+      errors.name = 'Variant name is required.'
+    }
+
+    // System prompt: required, min 10 chars
+    const prompt = variant.systemPrompt.trim()
+    if (!prompt) {
+      errors.systemPrompt = 'System prompt is required.'
+    } else if (prompt.length < 10) {
+      errors.systemPrompt = 'System prompt must be at least 10 characters.'
+    }
+
+    // Temperature: must be between 0 and 2
+    if (variant.temperature < 0 || variant.temperature > 2) {
+      errors.temperature = 'Temperature must be between 0 and 2.'
+    }
+
+    // Max tokens: must be positive integer
+    if (!Number.isInteger(variant.maxTokens) || variant.maxTokens <= 0) {
+      errors.maxTokens = 'Max tokens must be a positive integer.'
+    }
+
+    return errors
+  }
+
+  function validate(): boolean {
+    const errors: Record<string, string> = {}
+
+    // Experiment name: required, 2-100 chars
+    const trimmedName = name.trim()
+    if (!trimmedName) {
+      errors.name = 'Experiment name is required.'
+    } else if (trimmedName.length < 2) {
+      errors.name = 'Experiment name must be at least 2 characters.'
+    } else if (trimmedName.length > 100) {
+      errors.name = 'Experiment name must be at most 100 characters.'
+    }
+
+    // Project
+    if (!projectId) {
+      errors.projectId = 'Please select a project.'
+    }
+
+    // Validate variants
+    const aErrors = validateVariant(variantA)
+    const bErrors = validateVariant(variantB)
+
+    setFieldErrors(errors)
+    setVariantAErrors(aErrors)
+    setVariantBErrors(bErrors)
+    return (
+      Object.keys(errors).length === 0 &&
+      Object.keys(aErrors).length === 0 &&
+      Object.keys(bErrors).length === 0
+    )
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
 
-    if (!name.trim()) {
-      setError('Experiment name is required.')
-      return
-    }
-    if (!projectId) {
-      setError('Please select a project.')
-      return
-    }
+    if (!validate()) return
 
     setLoading(true)
 
     try {
-      const res = await fetch(`/api/v1/projects/${projectId}/experiments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name.trim(),
-          description: description.trim() || undefined,
-          variantA: {
-            model: variantA.model || undefined,
-            temperature: variantA.temperature,
-            systemPrompt: variantA.systemPrompt.trim() || undefined,
-            maxTokens: variantA.maxTokens,
-          },
-          variantB: {
-            model: variantB.model || undefined,
-            temperature: variantB.temperature,
-            systemPrompt: variantB.systemPrompt.trim() || undefined,
-            maxTokens: variantB.maxTokens,
-          },
-          runsPerVariant,
-        }),
+      await apiPost(`/api/v1/projects/${projectId}/experiments`, {
+        name: name.trim(),
+        description: description.trim() || undefined,
+        variantA: {
+          model: variantA.model || undefined,
+          temperature: variantA.temperature,
+          systemPrompt: variantA.systemPrompt.trim() || undefined,
+          maxTokens: variantA.maxTokens,
+        },
+        variantB: {
+          model: variantB.model || undefined,
+          temperature: variantB.temperature,
+          systemPrompt: variantB.systemPrompt.trim() || undefined,
+          maxTokens: variantB.maxTokens,
+        },
+        runsPerVariant,
       })
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || 'Failed to create experiment')
-      }
 
       router.push('/experiments')
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      if (err instanceof ApiFetchError) {
+        if (err.status === 401) setError('Please sign in to continue')
+        else if (err.status === 403) setError('You do not have permission')
+        else setError(err.message)
+      } else {
+        setError(err instanceof Error ? err.message : 'Something went wrong')
+      }
+      console.error('[NewExperiment] API error:', err)
     } finally {
       setLoading(false)
     }
@@ -180,9 +250,11 @@ export default function NewExperimentPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. GPT-4o vs Claude on Support Tickets"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors"
-              required
+              className={`w-full rounded-lg border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors ${fieldErrors.name ? 'border-red-400' : 'border-border'}`}
             />
+            {fieldErrors.name && (
+              <p className="text-red-400 text-xs mt-1">{fieldErrors.name}</p>
+            )}
           </div>
 
           {/* Description */}
@@ -221,8 +293,7 @@ export default function NewExperimentPage() {
                 id="expProject"
                 value={projectId}
                 onChange={(e) => setProjectId(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors appearance-none"
-                required
+                className={`w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors appearance-none ${fieldErrors.projectId ? 'border-red-400' : 'border-border'}`}
               >
                 <option value="" disabled>
                   Select a project
@@ -233,6 +304,9 @@ export default function NewExperimentPage() {
                   </option>
                 ))}
               </select>
+            )}
+            {fieldErrors.projectId && (
+              <p className="text-red-400 text-xs mt-1">{fieldErrors.projectId}</p>
             )}
           </div>
 
@@ -265,6 +339,7 @@ export default function NewExperimentPage() {
         <VariantCard
           label="A"
           variant={variantA}
+          errors={variantAErrors}
           onChange={(field, value) => updateVariant('A', field, value)}
           accentClass="border-l-blue-500/30"
         />
@@ -273,6 +348,7 @@ export default function NewExperimentPage() {
         <VariantCard
           label="B"
           variant={variantB}
+          errors={variantBErrors}
           onChange={(field, value) => updateVariant('B', field, value)}
           accentClass="border-l-emerald-500/30"
         />
@@ -308,11 +384,13 @@ export default function NewExperimentPage() {
 function VariantCard({
   label,
   variant,
+  errors,
   onChange,
   accentClass,
 }: {
   label: string
   variant: VariantConfig
+  errors: Record<string, string>
   onChange: (field: keyof VariantConfig, value: string | number) => void
   accentClass: string
 }) {
@@ -335,8 +413,11 @@ function VariantCard({
           value={variant.name}
           onChange={(e) => onChange('name', e.target.value)}
           placeholder="Variant name"
-          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors"
+          className={`w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors ${errors.name ? 'border-red-400' : 'border-border'}`}
         />
+        {errors.name && (
+          <p className="text-red-400 text-xs mt-1">{errors.name}</p>
+        )}
       </div>
 
       {/* Model */}
@@ -374,20 +455,26 @@ function VariantCard({
           <span>0 (deterministic)</span>
           <span>2 (creative)</span>
         </div>
+        {errors.temperature && (
+          <p className="text-red-400 text-xs mt-1">{errors.temperature}</p>
+        )}
       </div>
 
       {/* System Prompt */}
       <div>
         <label className="block text-sm font-medium mb-1.5">
-          System Prompt
+          System Prompt <span className="text-red-400">*</span>
         </label>
         <textarea
           value={variant.systemPrompt}
           onChange={(e) => onChange('systemPrompt', e.target.value)}
           placeholder="You are a helpful assistant..."
           rows={4}
-          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors resize-none"
+          className={`w-full rounded-lg border bg-background px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors resize-none ${errors.systemPrompt ? 'border-red-400' : 'border-border'}`}
         />
+        {errors.systemPrompt && (
+          <p className="text-red-400 text-xs mt-1">{errors.systemPrompt}</p>
+        )}
       </div>
 
       {/* Max Tokens */}
@@ -404,8 +491,11 @@ function VariantCard({
           min={1}
           max={128000}
           step={256}
-          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors"
+          className={`w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors ${errors.maxTokens ? 'border-red-400' : 'border-border'}`}
         />
+        {errors.maxTokens && (
+          <p className="text-red-400 text-xs mt-1">{errors.maxTokens}</p>
+        )}
       </div>
     </div>
   )

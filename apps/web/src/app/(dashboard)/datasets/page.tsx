@@ -14,6 +14,7 @@ import {
   Clock,
   Layers,
 } from 'lucide-react'
+import { apiGet, apiPost, ApiFetchError } from '@/shared/lib/client-fetch'
 
 interface Project {
   id: string
@@ -53,8 +54,7 @@ export default function DatasetsPage() {
     setError(null)
     try {
       // Fetch all projects first
-      const projRes = await fetch('/api/v1/projects')
-      const projData = await projRes.json()
+      const projData = await apiGet<{ projects: Project[] }>('/api/v1/projects')
       const allProjects: Project[] = projData.projects || []
       setProjects(allProjects)
 
@@ -68,8 +68,7 @@ export default function DatasetsPage() {
       const datasetResults: Dataset[] = []
       for (const p of allProjects) {
         try {
-          const res = await fetch(`/api/v1/projects/${p.id}/datasets`)
-          const data = await res.json()
+          const data = await apiGet<{ datasets: Dataset[] }>(`/api/v1/projects/${p.id}/datasets`)
           if (data.datasets) {
             for (const ds of data.datasets) {
               datasetResults.push({
@@ -84,8 +83,15 @@ export default function DatasetsPage() {
       }
 
       setDatasets(datasetResults)
-    } catch {
-      setError('Failed to load datasets')
+    } catch (err) {
+      if (err instanceof ApiFetchError) {
+        if (err.status === 401) setError('Please sign in to continue')
+        else if (err.status === 403) setError('You do not have permission')
+        else setError(err.message)
+      } else {
+        setError('Failed to load datasets')
+      }
+      console.error('[DatasetsPage] API error:', err)
     } finally {
       setLoading(false)
     }
@@ -292,24 +298,22 @@ function ImportModal({
       }
 
       // Create the dataset with import action (API handles both creation + data import)
-      const res = await fetch(`/api/v1/projects/${projectId}/datasets`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'import',
-          format,
-          data,
-        }),
+      await apiPost(`/api/v1/projects/${projectId}/datasets`, {
+        action: 'import',
+        format,
+        data,
       })
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Failed to import dataset')
-      }
 
       onSuccess()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Import failed')
+      if (err instanceof ApiFetchError) {
+        if (err.status === 401) setError('Please sign in to continue')
+        else if (err.status === 403) setError('You do not have permission')
+        else setError(err.message)
+      } else {
+        setError(err instanceof Error ? err.message : 'Import failed')
+      }
+      console.error('[ImportModal] API error:', err)
     } finally {
       setLoading(false)
     }

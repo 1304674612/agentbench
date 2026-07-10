@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Plus, Trash2, ChevronRight, TestTube, Loader2, Save } from 'lucide-react'
+import { apiGet, apiPost, ApiFetchError } from '@/shared/lib/client-fetch'
 
 interface Project {
   id: string
@@ -35,16 +36,29 @@ export default function NewTestSuitePage() {
   const [cases, setCases] = useState<TestCaseRow[]>([
     { id: generateId(), name: '', input: '', expected: '' },
   ])
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [caseErrors, setCaseErrors] = useState<Record<string, Record<string, string>>>({})
 
   useEffect(() => {
-    fetch('/api/v1/projects')
-      .then((res) => res.json())
-      .then((data) => {
+    async function loadProjects() {
+      try {
+        const data = await apiGet<{ projects: Project[] }>('/api/v1/projects')
         setProjects(data.projects || [])
         if (data.projects?.length > 0) setProjectId(data.projects[0].id)
-      })
-      .catch(() => setError('Failed to load projects'))
-      .finally(() => setProjectsLoading(false))
+      } catch (err) {
+        if (err instanceof ApiFetchError) {
+          if (err.status === 401) setError('Please sign in to continue')
+          else if (err.status === 403) setError('You do not have permission')
+          else setError(err.message)
+        } else {
+          setError('Failed to load projects')
+        }
+        console.error('[NewTestSuite] API error:', err)
+      } finally {
+        setProjectsLoading(false)
+      }
+    }
+    loadProjects()
   }, [])
 
   function addTestCase() {
@@ -64,35 +78,84 @@ export default function NewTestSuitePage() {
     )
   }
 
+  function validate(): boolean {
+    const errors: Record<string, string> = {}
+    const cErrors: Record<string, Record<string, string>> = {}
+
+    // Suite name: required, 2-100 chars
+    const trimmedName = name.trim()
+    if (!trimmedName) {
+      errors.name = 'Suite name is required.'
+    } else if (trimmedName.length < 2) {
+      errors.name = 'Suite name must be at least 2 characters.'
+    } else if (trimmedName.length > 100) {
+      errors.name = 'Suite name must be at most 100 characters.'
+    }
+
+    // Project
+    if (!projectId) {
+      errors.projectId = 'Please select a project.'
+    }
+
+    // Validate each test case
+    for (const tc of cases) {
+      const tcErrors: Record<string, string> = {}
+
+      // If this row has any content, validate it
+      const hasContent = tc.name.trim() || tc.input.trim() || tc.expected.trim()
+      if (hasContent) {
+        // Test case name: required, 1-200 chars
+        const tcName = tc.name.trim()
+        if (!tcName) {
+          tcErrors.name = 'Test case name is required.'
+        } else if (tcName.length > 200) {
+          tcErrors.name = 'Test case name must be at most 200 characters.'
+        }
+
+        // Input: must be valid JSON if non-empty
+        if (tc.input.trim()) {
+          try {
+            JSON.parse(tc.input)
+          } catch {
+            tcErrors.input = 'Input must be valid JSON.'
+          }
+        }
+
+        // Expected: must be valid JSON if non-empty
+        if (tc.expected.trim()) {
+          try {
+            JSON.parse(tc.expected)
+          } catch {
+            tcErrors.expected = 'Expected must be valid JSON.'
+          }
+        }
+      }
+
+      if (Object.keys(tcErrors).length > 0) {
+        cErrors[tc.id] = tcErrors
+      }
+    }
+
+    setFieldErrors(errors)
+    setCaseErrors(cErrors)
+    return Object.keys(errors).length === 0 && Object.keys(cErrors).length === 0
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
 
-    if (!name.trim()) {
-      setError('Suite name is required.')
-      return
-    }
-    if (!projectId) {
-      setError('Please select a project.')
-      return
-    }
+    if (!validate()) return
 
     setLoading(true)
 
     try {
       // 1. Create the test suite
-      const suiteRes = await fetch('/api/v1/suites', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectId, name: name.trim(), description: description.trim() || undefined }),
+      const suite = await apiPost<{ id: string }>('/api/v1/suites', {
+        projectId,
+        name: name.trim(),
+        description: description.trim() || undefined,
       })
-
-      if (!suiteRes.ok) {
-        const data = await suiteRes.json().catch(() => ({}))
-        throw new Error(data.error || 'Failed to create test suite')
-      }
-
-      const suite = await suiteRes.json()
 
       // 2. Create each test case
       const validCases = cases.filter((c) => c.name.trim())
@@ -104,27 +167,30 @@ export default function NewTestSuitePage() {
           }
         }
 
-        const caseRes = await fetch(`/api/v1/suites/${suite.id}/cases`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        try {
+          await apiPost(`/api/v1/suites/${suite.id}/cases`, {
             name: tc.name.trim(),
             input: inputJson,
             assertions: tc.expected.trim()
               ? [{ type: 'contains', params: { expected: tc.expected.trim() } }]
               : [],
-          }),
-        })
-
-        if (!caseRes.ok) {
-          console.error('Failed to create test case:', tc.name)
+          })
+        } catch (caseErr) {
+          console.error('Failed to create test case:', tc.name, caseErr)
         }
       }
 
       router.push('/tests')
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      if (err instanceof ApiFetchError) {
+        if (err.status === 401) setError('Please sign in to continue')
+        else if (err.status === 403) setError('You do not have permission')
+        else setError(err.message)
+      } else {
+        setError(err instanceof Error ? err.message : 'Something went wrong')
+      }
+      console.error('[NewTestSuite] API error:', err)
     } finally {
       setLoading(false)
     }
@@ -174,9 +240,11 @@ export default function NewTestSuitePage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Customer Support Accuracy"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors"
-              required
+              className={`w-full rounded-lg border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors ${fieldErrors.name ? 'border-red-400' : 'border-border'}`}
             />
+            {fieldErrors.name && (
+              <p className="text-red-400 text-xs mt-1">{fieldErrors.name}</p>
+            )}
           </div>
 
           {/* Description */}
@@ -209,8 +277,7 @@ export default function NewTestSuitePage() {
                 id="project"
                 value={projectId}
                 onChange={(e) => setProjectId(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors appearance-none"
-                required
+                className={`w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors appearance-none ${fieldErrors.projectId ? 'border-red-400' : 'border-border'}`}
               >
                 <option value="" disabled>
                   Select a project
@@ -221,6 +288,9 @@ export default function NewTestSuitePage() {
                   </option>
                 ))}
               </select>
+            )}
+            {fieldErrors.projectId && (
+              <p className="text-red-400 text-xs mt-1">{fieldErrors.projectId}</p>
             )}
           </div>
         </div>
@@ -281,8 +351,11 @@ export default function NewTestSuitePage() {
                       value={tc.name}
                       onChange={(e) => updateTestCase(tc.id, 'name', e.target.value)}
                       placeholder="e.g. Greeting response should be friendly"
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors"
+                      className={`w-full rounded-lg border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors ${caseErrors[tc.id]?.name ? 'border-red-400' : 'border-border'}`}
                     />
+                    {caseErrors[tc.id]?.name && (
+                      <p className="text-red-400 text-xs mt-1">{caseErrors[tc.id].name}</p>
+                    )}
                   </div>
 
                   {/* Input (JSON) */}
@@ -295,8 +368,11 @@ export default function NewTestSuitePage() {
                       onChange={(e) => updateTestCase(tc.id, 'input', e.target.value)}
                       placeholder='{"messages": [{"role": "user", "content": "Hello"}]}'
                       rows={3}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors resize-none"
+                      className={`w-full rounded-lg border bg-background px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors resize-none ${caseErrors[tc.id]?.input ? 'border-red-400' : 'border-border'}`}
                     />
+                    {caseErrors[tc.id]?.input && (
+                      <p className="text-red-400 text-xs mt-1">{caseErrors[tc.id].input}</p>
+                    )}
                   </div>
 
                   {/* Expected output */}
