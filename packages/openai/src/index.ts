@@ -29,12 +29,9 @@ import type {
 } from '@agentbench/core'
 import { tokenCounter, costCalculator, StreamCapture } from '@agentbench/core'
 import type {
-  AgentBenchProvider,
+  ChatMessage,
   ProviderCapabilities,
   ProviderConfig,
-  ChatCompletionParams,
-  ChatCompletionResult as ProviderChatCompletionResult,
-  StreamChunk,
   TokenCountParams,
   TokenCountResult,
   Usage,
@@ -74,7 +71,7 @@ const OPENAI_MODELS = [
   'o1', 'o1-mini', 'o1-pro', 'o3', 'o3-mini', 'o4-mini',
 ]
 
-export class AgentBenchOpenAI implements AgentBenchProvider {
+export class AgentBenchOpenAI {
   // ── AgentBenchProvider identity ──────────────────────────────────────────
   readonly id = 'openai'
   readonly name = 'OpenAI'
@@ -284,7 +281,7 @@ export class AgentBenchOpenAI implements AgentBenchProvider {
       type: 'function'
       function: { name: string; description: string; parameters: Record<string, unknown> }
     }>
-  }): AsyncGenerator<StreamingChunk> {
+  }): AsyncGenerator<OpenAIStreamingChunk> {
     const startTime = Date.now()
     const requestBody = {
       model: params.model,
@@ -628,7 +625,6 @@ export class AgentBenchOpenAI implements AgentBenchProvider {
 
     return res.body
   }
-}
 
   // ── AgentBenchProvider Lifecycle ─────────────────────────────────────────
 
@@ -645,7 +641,7 @@ export class AgentBenchOpenAI implements AgentBenchProvider {
     return { tokens: await Promise.resolve(tokenCounter.estimateTokens(
       typeof params.text === 'string'
         ? params.text
-        : params.messages?.map((m) => typeof m.content === 'string' ? m.content : '').join('\n') ?? ''
+        : params.messages?.map((m: ChatMessage) => typeof m.content === 'string' ? m.content : '').join('\n') ?? ''
     )), model: params.model, method: 'heuristic' }
   }
 
@@ -735,7 +731,7 @@ export interface ChatCompletionResult {
   trace: TraceStep
 }
 
-export interface StreamingChunk {
+export interface OpenAIStreamingChunk {
   content: string
   fullContent: string
   finishReason: string | null

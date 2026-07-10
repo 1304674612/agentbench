@@ -27,8 +27,8 @@ export * from './experiment'
 export * from './coverage'
 // Reporter
 export * from './reporter'
-// Dataset
-export * from './dataset'
+// Dataset — the Dataset class + helpers (types are in ./types)
+export { Dataset } from './dataset'
 
 // Version
 export const VERSION = '0.3.0'

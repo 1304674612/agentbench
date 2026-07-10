@@ -13,7 +13,6 @@
 
 import { tokenCounter, costCalculator } from '@agentbench/provider-utils'
 import type {
-  AgentBenchProvider,
   ProviderCapabilities,
   ProviderConfig,
   ChatCompletionParams,
@@ -254,7 +253,7 @@ function mapGeminiFinishReason(reason: string): ChatCompletionResult['choices'][
 
 // ── The Provider Class ─────────────────────────────────────────────────────────
 
-export class GeminiProvider implements AgentBenchProvider {
+export class GeminiProvider {
   readonly id = 'gemini'
   readonly name = 'Google Gemini'
   readonly version = '0.3.0'

@@ -48,7 +48,7 @@ export class DeepSeekProvider extends OpenAICompatibleProvider {
     supportedModels: DEEPSEEK_MODELS,
   }
 
-  override async initialize(config: ProviderConfig): Promise<void> {
+  async initialize(config: ProviderConfig): Promise<void> {
     this.baseUrl = config.baseUrl ?? 'https://api.deepseek.com/v1'
     this.apiKey = config.apiKey ?? ''
     this.timeout = config.timeout ?? 60000
@@ -85,7 +85,7 @@ export class DeepSeekProvider extends OpenAICompatibleProvider {
     return body
   }
 
-  protected override adaptResponse(raw: unknown): ChatCompletionResult {
+  protected adaptResponse(raw: unknown): ChatCompletionResult {
     const r = raw as Record<string, unknown>
     const choices = (r.choices as Array<Record<string, unknown>>) ?? []
     const usage = r.usage as Record<string, number> | undefined
@@ -122,7 +122,7 @@ export class DeepSeekProvider extends OpenAICompatibleProvider {
     return costCalculator.calculateCost(usage, model)
   }
 
-  override async healthCheck(): Promise<HealthStatus> {
+  async healthCheck(): Promise<HealthStatus> {
     const start = Date.now()
     try {
       const res = await fetch(`${this.baseUrl}/models`, {

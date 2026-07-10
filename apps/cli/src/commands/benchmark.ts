@@ -557,11 +557,11 @@ function registerRunCommand(program: Command): void {
         }
 
         if (isMockMode(program)) {
-          spinner?.text = `Simulating benchmark run for ${slug}...`
+          if (spinner) spinner.text = `Simulating benchmark run for ${slug}...`
           await new Promise((resolve) => setTimeout(resolve, 1200))
           runResult = getMockRunResult(slug)
         } else {
-          spinner?.text = `Submitting benchmark run for ${slug}...`
+          if (spinner) spinner.text = `Submitting benchmark run for ${slug}...`
 
           const runBody: Record<string, unknown> = {
             agentPath: options.agent,

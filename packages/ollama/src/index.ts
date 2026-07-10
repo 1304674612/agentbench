@@ -55,7 +55,7 @@ export class OllamaProvider extends OpenAICompatibleProvider {
     supportedModels: OLLAMA_DEFAULT_MODELS,
   }
 
-  override async initialize(config: ProviderConfig): Promise<void> {
+  async initialize(config: ProviderConfig): Promise<void> {
     this.timeout = config.timeout ?? 120000 // Local models can be slow
     this.maxRetries = config.maxRetries ?? 1
     this.apiKey = 'ollama' // Ollama doesn't require auth
@@ -94,7 +94,7 @@ export class OllamaProvider extends OpenAICompatibleProvider {
     return 'http://localhost:11434/v1'
   }
 
-  protected override buildHeaders(): Record<string, string> {
+  protected buildHeaders(): Record<string, string> {
     return {
       'Content-Type': 'application/json',
       // Ollama doesn't require Authorization header
@@ -144,7 +144,7 @@ export class OllamaProvider extends OpenAICompatibleProvider {
     return body
   }
 
-  protected override adaptResponse(raw: unknown): ChatCompletionResult {
+  protected adaptResponse(raw: unknown): ChatCompletionResult {
     const r = raw as Record<string, unknown>
     const choices = (r.choices as Array<Record<string, unknown>>) ?? []
     const usage = r.usage as Record<string, number> | undefined
@@ -196,7 +196,7 @@ export class OllamaProvider extends OpenAICompatibleProvider {
     }
   }
 
-  override async healthCheck(): Promise<HealthStatus> {
+  async healthCheck(): Promise<HealthStatus> {
     const start = Date.now()
     try {
       const res = await fetch(`${this.baseUrl}/models`, {

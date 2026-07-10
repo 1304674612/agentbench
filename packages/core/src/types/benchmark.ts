@@ -7,7 +7,6 @@
  */
 
 import type { AssertionConfig } from './assertion'
-import type { Score, AgentConfig } from './run'
 
 // ── BenchmarkCategory ──────────────────────────────────────────────────
 

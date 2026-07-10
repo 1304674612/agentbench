@@ -65,7 +65,7 @@ export class OpenRouterProvider extends OpenAICompatibleProvider {
   private appName = 'agentbench'
   private siteUrl = ''
 
-  override async initialize(config: ProviderConfig): Promise<void> {
+  async initialize(config: ProviderConfig): Promise<void> {
     this.baseUrl = config.baseUrl ?? 'https://openrouter.ai/api/v1'
     this.apiKey = config.apiKey ?? ''
     this.timeout = config.timeout ?? 120000 // OpenRouter can be slower
@@ -74,7 +74,7 @@ export class OpenRouterProvider extends OpenAICompatibleProvider {
     this.siteUrl = (config.extra?.siteUrl as string) ?? ''
   }
 
-  protected override buildHeaders(): Record<string, string> {
+  protected buildHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${this.apiKey}`,
@@ -123,7 +123,7 @@ export class OpenRouterProvider extends OpenAICompatibleProvider {
     return body
   }
 
-  protected override adaptResponse(raw: unknown): ChatCompletionResult {
+  protected adaptResponse(raw: unknown): ChatCompletionResult {
     const r = raw as Record<string, unknown>
     const choices = (r.choices as Array<Record<string, unknown>>) ?? []
     const usage = r.usage as Record<string, number> | undefined
@@ -167,7 +167,7 @@ export class OpenRouterProvider extends OpenAICompatibleProvider {
     return costCalculator.calculateCost(usage, cleanModel)
   }
 
-  override async healthCheck(): Promise<HealthStatus> {
+  async healthCheck(): Promise<HealthStatus> {
     const start = Date.now()
     try {
       const res = await fetch(`${this.baseUrl}/models`, {

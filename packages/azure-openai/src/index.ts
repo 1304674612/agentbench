@@ -63,7 +63,7 @@ export class AzureOpenAIProvider extends OpenAICompatibleProvider {
   private apiVersion = '2024-12-01-preview'
   private useADAuth = false
 
-  override async initialize(config: ProviderConfig): Promise<void> {
+  async initialize(config: ProviderConfig): Promise<void> {
     this.apiKey = config.apiKey ?? ''
     this.timeout = config.timeout ?? 60000
     this.maxRetries = config.maxRetries ?? 3
@@ -82,7 +82,7 @@ export class AzureOpenAIProvider extends OpenAICompatibleProvider {
     }
   }
 
-  protected override buildHeaders(): Record<string, string> {
+  protected buildHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     }
@@ -142,7 +142,7 @@ export class AzureOpenAIProvider extends OpenAICompatibleProvider {
     return body
   }
 
-  protected override adaptResponse(raw: unknown): ChatCompletionResult {
+  protected adaptResponse(raw: unknown): ChatCompletionResult {
     const r = raw as Record<string, unknown>
     const choices = (r.choices as Array<Record<string, unknown>>) ?? []
     const usage = r.usage as Record<string, number> | undefined
@@ -181,7 +181,7 @@ export class AzureOpenAIProvider extends OpenAICompatibleProvider {
     return costCalculator.calculateCost(usage, model)
   }
 
-  override async healthCheck(): Promise<HealthStatus> {
+  async healthCheck(): Promise<HealthStatus> {
     const start = Date.now()
     try {
       const res = await fetch(this.getChatCompletionsUrl(), {
@@ -211,7 +211,7 @@ export class AzureOpenAIProvider extends OpenAICompatibleProvider {
   /**
    * Override createChatCompletion to use Azure-specific endpoint.
    */
-  override async createChatCompletion(params: ChatCompletionParams): Promise<ChatCompletionResult> {
+  async createChatCompletion(params: ChatCompletionParams): Promise<ChatCompletionResult> {
     const body = this.adaptParams({ ...params, stream: false })
     const response = await this.fetchWithRetry(this.getChatCompletionsUrl(), {
       method: 'POST',
@@ -231,7 +231,7 @@ export class AzureOpenAIProvider extends OpenAICompatibleProvider {
   /**
    * Override streaming to use Azure-specific endpoint.
    */
-  override async *createStreamingChatCompletion(
+  async *createStreamingChatCompletion(
     params: ChatCompletionParams
   ): AsyncGenerator<StreamChunk, void, undefined> {
     const body = this.adaptParams({ ...params, stream: true })

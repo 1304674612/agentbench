@@ -8,7 +8,7 @@
 import type { TraceStep } from '@agentbench/core'
 import { tokenCounter, costCalculator, StreamCapture } from '@agentbench/core'
 import type {
-  AgentBenchProvider,
+  ChatMessage,
   ProviderCapabilities,
   ProviderConfig,
   TokenCountParams,
@@ -41,7 +41,7 @@ const ANTHROPIC_MODELS = [
   'claude-3-5-sonnet', 'claude-3-5-haiku', 'claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku',
 ]
 
-export class AgentBenchAnthropic implements AgentBenchProvider {
+export class AgentBenchAnthropic {
   // ── AgentBenchProvider identity ──────────────────────────────────────────
   readonly id = 'anthropic'
   readonly name = 'Anthropic'
@@ -87,10 +87,6 @@ export class AgentBenchAnthropic implements AgentBenchProvider {
       }
       const response = await this._callAnthropic(requestBody)
       const endTime = Date.now()
-
-      // Extract thinking content if present
-      const thinkingBlocks = response.content?.filter((b) => b.type === 'thinking') ?? []
-      const thinkingText = thinkingBlocks.map((b) => b.thinking ?? '').join('\n')
 
       // Count tokens
       const inputText = params.messages.map((m) => m.content).join('\n') + (params.system ?? '')
@@ -304,7 +300,7 @@ export class AgentBenchAnthropic implements AgentBenchProvider {
   async countTokens(params: TokenCountParams): Promise<TokenCountResult> {
     const text = typeof params.text === 'string'
       ? params.text
-      : params.messages?.map((m) => typeof m.content === 'string' ? m.content : '').join('\n') ?? ''
+      : params.messages?.map((m: ChatMessage) => typeof m.content === 'string' ? m.content : '').join('\n') ?? ''
     return { tokens: tokenCounter.estimateTokens(text, 'anthropic'), model: params.model, method: 'heuristic' }
   }
 
