@@ -397,10 +397,9 @@ export default function NewTestSuitePage() {
             disabled={loading}
             className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-background hover:bg-foreground/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span className="flex items-center gap-2">
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              {loading ? 'Creating...' : 'Create Test Suite'}
-            </span>
+            <Save className={`h-4 w-4 ${loading ? 'hidden' : ''}`} />
+            <Loader2 className={`h-4 w-4 animate-spin ${loading ? '' : 'hidden'}`} />
+            <span>{loading ? 'Creating...' : 'Create Test Suite'}</span>
           </button>
           <Link
             href="/tests"

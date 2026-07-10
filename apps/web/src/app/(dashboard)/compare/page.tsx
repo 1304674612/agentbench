@@ -127,8 +127,9 @@ export default function ComparePage() {
           disabled={loading || !runAId.trim() || !runBId.trim()}
           className="mt-4 inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRightLeft className="h-4 w-4" />}
-          {loading ? 'Comparing...' : 'Compare'}
+          <ArrowRightLeft className={`h-4 w-4 ${loading ? 'hidden' : ''}`} />
+          <Loader2 className={`h-4 w-4 animate-spin ${loading ? '' : 'hidden'}`} />
+          <span>{loading ? 'Comparing...' : 'Compare'}</span>
         </button>
         {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
       </div>
