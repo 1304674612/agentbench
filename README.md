@@ -423,6 +423,7 @@ agentbench/
 | Document | |
 |----------|--|
 | [Documentation Hub](https://agentbench.dev/docs) | Full docs site built with VitePress |
+| [Web Dashboard Guide](docs/guides/web-dashboard-guide.md) | New user walkthrough -- setup, test runs, and reading results |
 | [Getting Started](docs/GETTING_STARTED.md) | Step-by-step tutorial |
 | [API Reference](docs/API_REFERENCE.md) | 18 endpoints with curl examples |
 | [CLI Reference](docs/CLI_REFERENCE.md) | 12 commands with all options |
