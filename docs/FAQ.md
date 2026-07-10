@@ -5,11 +5,32 @@
 ### Q: AgentBench 是什么？
 A: AgentBench 是一个 AI Agent 的回归测试框架。它让你像测试软件一样测试 Agent——回放、评估、对比、断言、检测回归。类比 Playwright + Jest + LangSmith 的组合。
 
+### Q: How is AgentBench different from LangSmith?
+A: LangSmith is an observability platform -- it helps you monitor and debug LLM calls. AgentBench is a testing framework -- it helps you assert what *should* happen and gate on it in CI. You use LangSmith to understand what happened. You use AgentBench to catch regressions before they ship.
+
 ### Q: AgentBench 和 LangSmith / Braintrust 有什么区别？
-A: LangSmith 和 Braintrust 侧重于 LLM 调用的监控和调试。AgentBench 侧重于**测试和回归**——它提供快照、回放、A/B 实验、覆盖率分析、断言 DSL 等测试框架特有的能力。
+A: LangSmith 和 Braintrust 侧重于 LLM 调用的监控和调试。AgentBench 侧重于**测试和回归**——它提供快照、回放、A/B 实验、覆盖率分析、断言 DSL 等测试框架特有的能力。LangSmith 帮你观察，AgentBench 帮你断言和把关。
 
 ### Q: 支持哪些 LLM 提供商？
-A: 通过 SDK 原生支持 OpenAI 和 Anthropic。MCP 协议支持任意 MCP 兼容的工具服务器。通用适配器可对接任意 Agent。
+A: v0.3.0 支持 12+ 提供商：OpenAI、Anthropic、Gemini、DeepSeek、Azure OpenAI、OpenRouter、Groq、Mistral、Cohere、Ollama（本地模型）、vLLM、LM Studio。通过 MCP 协议支持任意兼容的工具服务器。第三方可通过 `@agentbench/provider-utils` SDK 添加自定义提供商。
+
+### Q: Can I test agents without an API key?
+A: Yes. Two options: (1) **Ollama** -- use `@agentbench/ollama` to run tests against models on your own machine with zero API cost. (2) **Replay mode** -- record a run once with an API key, then replay it deterministically without any LLM calls: `agentbench test --replay`.
+
+### Q: How do I add support for a new LLM provider?
+A: Extend the `OpenAICompatibleProvider` base class from `@agentbench/provider-utils`, implement three methods (`adaptParams`, `adaptResponse`, `countTokens`), then register it in `agentbench.config.ts`. See the [Custom Providers Guide](guides/custom-providers.md) for a step-by-step walkthrough.
+
+### Q: Does AgentBench work with streaming?
+A: Yes. AgentBench has full SSE (Server-Sent Events) support. All providers that support streaming are automatically intercepted and traced, including per-chunk latency, time-to-first-token, and streaming-specific assertions. See `tracer/stream-capture.ts` in the core package.
+
+### Q: How much does it cost to run tests?
+A: AgentBench tracks cost for every run and displays it in the terminal. Replay mode costs $0 -- run it as often as you want. With live LLM calls, cost depends on your model and number of tests. A typical suite of 20 tests with gpt-4o-mini costs under $0.10. You can also use cheaper models for judging (gpt-4o-mini is the default judge model). Set a cost budget per run with `maxCost` in your config.
+
+### Q: Can I use AgentBench in CI/CD?
+A: Yes. AgentBench has first-class CI support. `agentbench init` generates a GitHub Actions workflow automatically. Use `agentbench test --ci --json --junit` for machine-readable output. JUnit XML is compatible with GitLab CI, CircleCI, Jenkins, and any tool that consumes JUnit format. The GitHub integration posts rich PR comments with regression detection, metric comparisons, and cost impact analysis.
+
+### Q: How do I migrate from v0.2.0 to v0.3.0?
+A: See the [Migration Guide](guides/migration.md) for a step-by-step walkthrough. Key changes: (1) replace manual project setup with `agentbench init`, (2) wrap your config in `defineConfig`, (3) update test files to use the new `expect().status().tool().score().run()` assertion chain, (4) use `--replay` instead of manual snapshot management. The v0.2.0 REST API is fully backward-compatible.
 
 ---
 

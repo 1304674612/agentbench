@@ -1,82 +1,129 @@
-# AgentBench 文档中心
+# AgentBench Documentation (v0.3.0)
 
-欢迎来到 AgentBench 文档！这里是你了解和使用 AgentBench 的完整指南。
+Welcome to the AgentBench documentation. AgentBench is the regression testing framework for AI agents -- replay, evaluate, assert, and catch regressions in CI.
 
-## 📖 快速导航
+This documentation follows the [Diataxis](https://diataxis.fr/) framework, organizing content by what it does for you.
 
-| 你想要... | 阅读 |
-|-----------|------|
-| 5 分钟快速上手 | [→ 快速入门](GETTING_STARTED.md) |
-| 了解系统架构 | [→ 架构设计](ARCHITECTURE.md) |
-| 查看数据库表结构 | [→ 数据库 Schema](SCHEMA.md) |
-| 查阅 API 接口 | [→ API 参考](API_REFERENCE.md) |
-| 查阅 CLI 命令 | [→ CLI 参考](CLI_REFERENCE.md) |
-| 使用 SDK 开发 | [→ SDK 指南](SDK_GUIDE.md) |
-| 部署到生产环境 | [→ 部署指南](DEPLOYMENT.md) |
-| 查看版本规划 | [→ 路线图](ROADMAP.md) |
-| 了解术语定义 | [→ 术语表](GLOSSARY.md) |
-| 常见问题 | [→ FAQ](FAQ.md) |
+## Tutorials
 
-## 🗂️ 文档结构
+Step-by-step guides that teach you the basics by doing.
 
-```
-docs/
-├── INDEX.md              # 👈 文档中心（本页）
-├── GETTING_STARTED.md    # 快速入门教程
-├── ARCHITECTURE.md        # 系统架构设计
-├── SCHEMA.md              # 数据库 Schema 设计
-├── API_REFERENCE.md       # REST API 完整参考
-├── CLI_REFERENCE.md       # CLI 命令行参考
-├── SDK_GUIDE.md           # SDK 使用指南
-├── DEPLOYMENT.md          # 部署指南
-├── FAQ.md                 # 常见问题
-├── GLOSSARY.md            # 术语表
-├── ROADMAP.md             # 版本路线图
-└── TASKS.md               # 开发任务清单
-```
+| Document | Description |
+|----------|-------------|
+| [Quick Start](GETTING_STARTED.md) | Install, init, and run your first test in 5 minutes |
+| [Installation](v0.3/installation.md) | Detailed install options: npm, pnpm, yarn, Docker |
+| [Your First Test](v0.3/your-first-test.md) | Write your first assertion, run it, understand the output |
 
-## 🎯 按角色阅读
+## Core Concepts
 
-### 新手开发者
-1. [快速入门](GETTING_STARTED.md) — 了解基本概念和安装部署
-2. [CLI 参考](CLI_REFERENCE.md) — 学习命令行工具
-3. [FAQ](FAQ.md) — 查看常见问题
+Explanations that build understanding. Read these to understand *why* AgentBench works the way it does.
 
-### Agent 测试工程师
-1. [快速入门](GETTING_STARTED.md) — 安装配置
-2. [API 参考](API_REFERENCE.md) — 了解所有端点
-3. [SDK 指南](SDK_GUIDE.md) — 用 SDK 写测试
-4. [术语表](GLOSSARY.md) — 理解关键概念
+| Document | Description |
+|----------|-------------|
+| Agent Testing | Why agents need testing, and how AgentBench approaches it |
+| Replay | How deterministic replay works, cross-model replay, and snapshot storage |
+| Assertions | The chainable assertion DSL, 14 rule evaluators, and how to compose them |
+| Evaluation | LLM-as-Judge, 8 quality dimensions, hybrid judging, and judge model selection |
+| Coverage | Prompt, workflow, tool, and edge-case coverage dimensions |
+| Snapshots | How snapshots work, when to update them, and diff reviewing |
+| Non-Determinism | How AgentBench handles LLM non-determinism: retries, score thresholds, and seeds |
+| [Architecture](ARCHITECTURE.md) | Full system architecture: packages, provider plugins, data flow |
 
-### 平台管理员
-1. [部署指南](DEPLOYMENT.md) — 生产部署
-2. [架构设计](ARCHITECTURE.md) — 了解系统结构
-3. [数据库 Schema](SCHEMA.md) — 数据库设计
+## How-To Guides
 
-### 贡献者
-1. [架构设计](ARCHITECTURE.md) — 系统架构
-2. [路线图](ROADMAP.md) — 版本规划
-3. [开发任务](TASKS.md) — 待做任务
+Practical step-by-step instructions for accomplishing specific tasks.
 
-## 🔗 外部资源
+| Document | Description |
+|----------|-------------|
+| Testing OpenAI Agents | How to test agents built with the OpenAI SDK |
+| Testing Anthropic Agents | How to test agents built with the Anthropic SDK |
+| CI/CD Integration | Set up AgentBench in your CI pipeline with examples for major providers |
+| GitHub Actions | Deep dive into the GitHub Actions workflow, PR comments, and check runs |
+| Custom Providers | Build and publish your own LLM provider plugin |
+| Custom Judges | Create custom LLM judges for domain-specific quality dimensions |
+| Dataset Management | Import, export, split, version, and diff test datasets |
+| Migration | Migrate from v0.2.0 to v0.3.0, or from other testing tools |
 
-- [GitHub 仓库](https://github.com/1304674612/agentbench)
-- [Release 页面](https://github.com/1304674612/agentbench/releases)
-- [Issue 跟踪](https://github.com/1304674612/agentbench/issues)
+## Reference
+
+Technical specifications and API documentation.
+
+| Document | Description |
+|----------|-------------|
+| [CLI Reference](CLI_REFERENCE.md) | Every CLI command and flag: `init`, `test`, `replay`, `compare`, `dataset`, `snapshot` |
+| [Configuration](v0.3/configuration.md) | All `defineConfig` options with defaults and descriptions |
+| [Assertion DSL](v0.3/assertion-dsl.md) | Complete chainable assertion API reference |
+| [REST API](API_REFERENCE.md) | All REST endpoints, request/response schemas, and authentication |
+| [SDK Guide](SDK_GUIDE.md) | Programmatic API for TypeScript and Python |
+| Types | Core TypeScript type definitions |
+| Errors | Error codes, messages, and troubleshooting |
+
+## Cookbook
+
+Real-world recipes for common testing scenarios. Copy, adapt, and run.
+
+| Recipe | Description |
+|--------|-------------|
+| Prompt Regression Detection | Catch regressions when you change system prompts |
+| Model Migration Testing | Compare model performance when switching from GPT-4o to Claude |
+| Cost Budget Enforcement | Set and enforce token and cost budgets per test |
+| Safety Testing | Detect harmful outputs with safety judges and forbidden-tool assertions |
+| A/B Experimentation | Run statistical experiments comparing two agent variants |
+| Multi-Turn Conversation Testing | Test agents that maintain state across multiple turns |
+| Streaming Response Testing | Assert on streaming behavior: time-to-first-token, partial output |
+
+## Examples
+
+Production-quality reference implementations. Each is a complete, runnable project.
+
+| Example | Difficulty | What It Demonstrates |
+|---------|-----------|---------------------|
+| [Hello Agent](examples/index.md#hello-agent) | Beginner | Minimal setup, basic assertions, replay |
+| [Customer Support Agent](examples/index.md#customer-support-agent) | Intermediate | Multi-turn, tool-calling, RAG, regression |
+| [RAG Agent](examples/index.md#rag-agent) | Intermediate | Retrieval quality, grounding, context windows |
+| [Tool-Calling Agent](examples/index.md#tool-calling-agent) | Intermediate | 8-tool orchestration, parallel calls, error handling |
+| [SQL Agent](examples/index.md#sql-agent) | Intermediate | Text-to-SQL, schema awareness, injection safety |
+| [Research Agent](examples/index.md#research-agent) | Advanced | Multi-step research, source verification, citations |
+| [Code Review Agent](examples/index.md#code-review-agent) | Advanced | Code analysis, security review, false positives |
+| [Coding Agent](examples/index.md#coding-agent) | Advanced | Code generation, edit-apply loop, test-driven |
+| [MCP Agent](examples/index.md#mcp-agent) | Intermediate | MCP protocol, tool server testing |
+| [OpenAI Agent SDK](examples/index.md#openai-agent-sdk) | Intermediate | OpenAI Agents SDK native integration |
+| [LangGraph Agent](examples/index.md#langgraph-agent) | Advanced | State graphs, conditional routing, human-in-the-loop |
+| [LlamaIndex Agent](examples/index.md#llamaindex-agent) | Intermediate | RAG with LlamaIndex, index-based retrieval |
+| [CrewAI Agent](examples/index.md#crewai-agent) | Advanced | Multi-agent collaboration, role-based agents |
+| [Multi-Agent Workflow](examples/index.md#multi-agent-workflow) | Advanced | Orchestration, handoffs, consensus, failure recovery |
+
+See the [full Examples Index](examples/index.md) for details on each example.
+
+## Project Info
+
+| Document | Description |
+|----------|-------------|
+| [FAQ](FAQ.md) | Frequently asked questions |
+| [Glossary](GLOSSARY.md) | Terminology used throughout AgentBench |
+| [Roadmap](ROADMAP.md) | Version roadmap and upcoming features |
+| [Contributing](CONTRIBUTING.md) | How to contribute to AgentBench |
+| [Best Practices](BEST_PRACTICES.md) | Testing best practices for AI agents |
+| [Deployment](DEPLOYMENT.md) | Production deployment guide |
+| [Database Schema](SCHEMA.md) | Database table structure (Prisma) |
+
+## External Resources
+
+- [GitHub Repository](https://github.com/1304674612/agentbench)
+- [Release Notes](https://github.com/1304674612/agentbench/releases)
+- [Issue Tracker](https://github.com/1304674612/agentbench/issues)
 - [README (English)](../README.md)
-- [README (中文)](../README_CN.md)
-- [更新日志](../CHANGELOG.md)
+- [README (Chinese)](../README_CN.md)
+- [Changelog](../CHANGELOG.md)
 
-## 📊 项目状态
+## Project Status
 
-| 指标 | 当前值 |
-|------|--------|
-| 版本 | v0.2.0 (Production) |
-| TypeScript 文件 | 150+ |
-| 代码行数 | 22,000+ |
-| 包数量 | 9 |
-| API 端点 | 20 |
-| CLI 命令 | 11 |
-| 单元测试 | 391+ |
-| Python SDK | v0.1.0 (49 tests) |
-| 类型错误 | 0 (strict mode) |
+| Metric | Value |
+|--------|-------|
+| Version | v0.3.0 |
+| Packages | 15 (up from 8 in v0.2.0) |
+| Provider Support | 12+ (OpenAI, Anthropic, Gemini, DeepSeek, Azure, OpenRouter, Groq, Ollama, + more) |
+| Official Examples | 14 production-quality reference implementations |
+| API Endpoints | 40+ |
+| CLI Commands | 15+ |
+| TypeScript | 0 errors (strict mode) |
