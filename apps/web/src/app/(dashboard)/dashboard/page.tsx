@@ -63,6 +63,9 @@ export default async function DashboardPage() {
         <p className="text-sm text-muted-foreground mt-1">
           Overview of your agent testing pipeline.
         </p>
+        <p className="text-xs text-muted-foreground/60 mt-1">
+          New here? Read the <a href="https://github.com/1304674612/agentbench/blob/main/docs/guides/web-dashboard-guide.md" className="underline hover:text-foreground" target="_blank">Web Dashboard Guide</a> to understand how everything fits together.
+        </p>
       </div>
 
       {/* Stat Cards */}

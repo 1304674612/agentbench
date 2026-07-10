@@ -1,5 +1,24 @@
 # 常见问题（FAQ）
 
+## 新手入门
+
+### Q: 我刚打开 Dashboard，什么都不知道，从哪开始？
+A: 先读 [Web Dashboard 使用指南](guides/web-dashboard-guide.md)。一句话总结：**Web Dashboard 是「看结果」的，真正「跑测试」需要通过 CLI 命令 `agentbench test`。**
+
+### Q: Web Dashboard 和 CLI 是什么关系？
+A: Web Dashboard = 管理测试定义 + 查看结果。CLI = 真正执行测试。类比 Jest：Dashboard 是 HTML Report，CLI 是 `jest` 命令。两者配合使用。
+
+### Q: 为什么我创建的 Test Suite 在 Runs 里看不到？
+A: 创建 Test Suite 只是「定义」了要测什么。真正执行测试需要运行 `agentbench test`，执行后才会创建 Run 记录。
+
+### Q: 为什么所有 Run 都显示 PENDING / 数据都是 0？
+A: PENDING 状态表示「已创建但未执行」。这些 Run 没有真正调用过 LLM，所以没有 Token 用量、耗时、评分数据。
+
+### Q: 可以只用 Web Dashboard，不用 CLI 吗？
+A: 目前不行。Web Dashboard 不执行 Agent 代码——它需要你的 API Key 和 Agent 运行环境。CLI 在本地执行，调用 LLM，然后把结果写入数据库供 Dashboard 展示。
+
+---
+
 ## 基础
 
 ### Q: AgentBench 是什么？
