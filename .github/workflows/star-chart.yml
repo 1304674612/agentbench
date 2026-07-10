@@ -18,7 +18,7 @@ jobs:
         run: |
           # Get all stargazers with dates
           PAGE=1
-          echo "date,stars" > star-history.csv
+          echo "date,stars" > assets/star-history.csv
           TOTAL=0
           while true; do
             DATA=$(curl -s -H "Accept: application/vnd.github.v3.star+json" \
@@ -28,11 +28,12 @@ jobs:
             if [ "$COUNT" = "0" ] || [ -z "$COUNT" ]; then break; fi
             echo "$DATA" | jq -r '.[].starred_at' | while read d; do
               TOTAL=$((TOTAL + 1))
-              echo "${d},${TOTAL}" >> star-history.csv
+              echo "${d},${TOTAL}" >> assets/star-history.csv
             done
             PAGE=$((PAGE + 1))
             sleep 1
           done
+          mkdir -p assets
           echo "Total stars: $TOTAL"
 
       - name: Generate SVG chart
@@ -42,7 +43,7 @@ jobs:
           from datetime import datetime
 
           dates, stars = [], []
-          with open('star-history.csv') as f:
+          with open('assets/star-history.csv') as f:
               for row in csv.DictReader(f):
                   dates.append(row['date'][:10])
                   stars.append(int(row['stars']))
@@ -77,7 +78,7 @@ jobs:
             <polyline points=\"{polyline}\" fill=\"none\" stroke=\"#fbbf24\" stroke-width=\"2\"/>
             {''.join(f'<circle cx=\"{x}\" cy=\"{y}\" r=\"2\" fill=\"#fbbf24\"/>' for x, y in [p.split(',') for p in points[-1:]])}
           </svg>'''
-          with open('star-chart.svg', 'w') as f:
+          with open('assets/star-history.svg', 'w') as f:
               f.write(svg)
           print('Chart generated')
           "
@@ -86,7 +87,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add star-chart.svg star-history.csv
+          git add assets/star-history.svg assets/star-history.csv
           if ! git diff --staged --quiet; then
             git commit -m "chore: update star chart ($(date +%Y-%m-%d))"
             git push

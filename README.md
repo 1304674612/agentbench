@@ -447,9 +447,9 @@ AgentBench is open source and community-driven. We welcome all contributions.
 | **Security Policy** | [SECURITY.md](SECURITY.md) |
 | **Code of Conduct** | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) |
 
-## Star History
+## ⭐ Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=1304674612/agentbench&type=Date)](https://star-history.com/#1304674612/agentbench&Date)
+[![Star History Chart](https://raw.githubusercontent.com/1304674612/agentbench/main/assets/star-history.svg)](https://star-history.com/#1304674612/agentbench&Date)
 
 ---
 
