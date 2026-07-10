@@ -558,9 +558,10 @@ function ProjectSettingsSection() {
           onChange={(e) => setDefaultModel(e.target.value)}
           className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors appearance-none"
         >
+          <option value="gpt-5">GPT-5</option>
+          <option value="gpt-5-mini">GPT-5 Mini</option>
           <option value="gpt-4o">GPT-4o</option>
           <option value="gpt-4o-mini">GPT-4o Mini</option>
-          <option value="gpt-4-turbo">GPT-4 Turbo</option>
           <option value="claude-sonnet-4-5">Claude Sonnet</option>
           <option value="claude-haiku-4-5">Claude Haiku</option>
           <option value="claude-opus-4-8">Claude Opus</option>

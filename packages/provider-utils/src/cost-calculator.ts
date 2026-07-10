@@ -23,6 +23,9 @@ interface ModelPricing {
 
 const PRICING_TABLE: Record<string, ModelPricing> = {
   // ── OpenAI ───────────────────────────────────────────────────────────────
+  'gpt-5': { input: 2.5, output: 10.0 },
+  'gpt-5-mini': { input: 0.15, output: 0.6 },
+  'gpt-5-nano': { input: 0.075, output: 0.3 },
   'gpt-4o': { input: 2.5, output: 10.0 },
   'gpt-4o-mini': { input: 0.15, output: 0.6 },
   'gpt-4.1': { input: 2.5, output: 10.0 },
@@ -38,6 +41,7 @@ const PRICING_TABLE: Record<string, ModelPricing> = {
   'o1-pro': { input: 15.0, output: 60.0 },
   'o3': { input: 10.0, output: 40.0 },
   'o3-mini': { input: 1.1, output: 4.4 },
+  'o5': { input: 10.0, output: 40.0 },
   'o4-mini': { input: 1.1, output: 4.4 },
   'gpt-4o-realtime': { input: 5.0, output: 20.0 },
 

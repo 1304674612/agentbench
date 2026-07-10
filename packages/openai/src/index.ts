@@ -66,9 +66,9 @@ export interface OpenAIInterceptContext {
 // ============================================================
 
 const OPENAI_MODELS = [
+  'gpt-5', 'gpt-5-mini', 'gpt-5-nano',
   'gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano',
-  'gpt-4-turbo', 'gpt-4', 'gpt-4-32k', 'gpt-3.5-turbo',
-  'o1', 'o1-mini', 'o1-pro', 'o3', 'o3-mini', 'o4-mini',
+  'o5', 'o4-mini', 'o3', 'o3-mini', 'o1', 'o1-mini', 'o1-pro',
 ]
 
 export class AgentBenchOpenAI {

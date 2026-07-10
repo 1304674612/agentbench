@@ -12,9 +12,10 @@ interface Project {
 }
 
 const MODEL_OPTIONS = [
+  { value: 'gpt-5', label: 'GPT-5' },
+  { value: 'gpt-5-mini', label: 'GPT-5 Mini' },
   { value: 'gpt-4o', label: 'GPT-4o' },
   { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
-  { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
   { value: 'claude-sonnet-4-5', label: 'Claude Sonnet' },
   { value: 'claude-haiku-4-5', label: 'Claude Haiku' },
   { value: 'claude-opus-4-8', label: 'Claude Opus' },
