@@ -449,7 +449,7 @@ AgentBench is open source and community-driven. We welcome all contributions.
 
 ## ⭐ Star History
 
-[![Star History Chart](https://raw.githubusercontent.com/1304674612/agentbench/main/assets/star-history.svg)](https://star-history.com/#1304674612/agentbench&Date)
+[![Star History Chart](https://raw.githubusercontent.com/1304674612/agentbench/main/assets/star-history-2026710.png)](https://star-history.com/#1304674612/agentbench&Date)
 
 ---
 
