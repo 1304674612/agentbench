@@ -460,8 +460,8 @@ AgentBench is open source and community-driven. We welcome all contributions.
   ## ⭐ Star History
 
   <a href="https://www.star-history.com/?type=date&repos=1304674612%2Fagentbench">
-    <img src="https://img.shields.io/github/stars/1304674612/agentbench?style=social" alt="Stars" />
+    <img src="https://raw.githubusercontent.com/1304674612/agentbench/main/star-chart.svg" alt="Star History Chart" width="500" />
   </a>
   <br/>
-  <sub><a href="https://www.star-history.com/?type=date&repos=1304674612%2Fagentbench">View full star history chart →</a> (requires GitHub login)</sub>
+  <sub>Auto-updated daily · <a href="https://www.star-history.com/?type=date&repos=1304674612%2Fagentbench">View interactive chart →</a></sub>
 </div>

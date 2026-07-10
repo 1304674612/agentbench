@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="200">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="200" fill="transparent"/>
+  <text x="40" y="18" fill="#8b949e" font-size="12" font-family="sans-serif">Star History</text>
+  <text x="560" y="18" fill="#fbbf24" font-size="12" font-family="sans-serif" text-anchor="end">11 stars</text>
+  <polygon points="40.0,149.1 92.0,138.2 144.0,127.3 196.0,116.4 248.0,105.5 300.0,94.5 352.0,83.6 404.0,72.7 456.0,61.8 508.0,50.9 560.0,40.0 560,160 40,160" fill="url(#g)" opacity="0.15"/>
+  <polyline points="40.0,149.1 92.0,138.2 144.0,127.3 196.0,116.4 248.0,105.5 300.0,94.5 352.0,83.6 404.0,72.7 456.0,61.8 508.0,50.9 560.0,40.0" fill="none" stroke="#fbbf24" stroke-width="2"/>
+  <circle cx="560.0" cy="40.0" r="3" fill="#fbbf24"/>
+</svg>

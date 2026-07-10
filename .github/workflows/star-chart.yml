@@ -1,32 +1,93 @@
-name: Update Star History Chart
+name: Generate Star History Chart
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Daily at midnight
+    - cron: '0 6 * * *'  # Daily at 6am UTC
   workflow_dispatch:       # Manual trigger
 
 permissions:
   contents: write
 
 jobs:
-  update-chart:
+  generate-chart:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Generate Star Chart
+      - name: Fetch star history from GitHub API
         run: |
-          # Fetch star data from GitHub API (GITHUB_TOKEN auto-provided)
-          STARS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}" | jq '.stargazers_count')
+          # Get all stargazers with dates
+          PAGE=1
+          echo "date,stars" > star-history.csv
+          TOTAL=0
+          while true; do
+            DATA=$(curl -s -H "Accept: application/vnd.github.v3.star+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/stargazers?per_page=100&page=$PAGE")
+            COUNT=$(echo "$DATA" | jq 'length')
+            if [ "$COUNT" = "0" ] || [ -z "$COUNT" ]; then break; fi
+            echo "$DATA" | jq -r '.[].starred_at' | while read d; do
+              TOTAL=$((TOTAL + 1))
+              echo "${d},${TOTAL}" >> star-history.csv
+            done
+            PAGE=$((PAGE + 1))
+            sleep 1
+          done
+          echo "Total stars: $TOTAL"
 
-          echo "Current stars: $STARS"
-          echo "{\"stars\": $STARS, \"date\": \"$(date -u +%Y-%m-%d)\"}" >> star-data.jsonl
+      - name: Generate SVG chart
+        run: |
+          python3 -c "
+          import csv
+          from datetime import datetime
 
-      - name: Commit updated chart data
+          dates, stars = [], []
+          with open('star-history.csv') as f:
+              for row in csv.DictReader(f):
+                  dates.append(row['date'][:10])
+                  stars.append(int(row['stars']))
+
+          if not dates:
+              print('No data')
+              exit()
+
+          max_stars = stars[-1]
+          width, height, pad = 600, 200, 40
+          pw, ph = width - 2 * pad, height - 2 * pad
+
+          points = []
+          for i, (d, s) in enumerate(zip(dates, stars)):
+              x = pad + (i / max(1, len(dates) - 1)) * pw
+              y = height - pad - (s / max(1, max_stars)) * ph
+              points.append(f'{x:.1f},{y:.1f}')
+
+          polyline = ' '.join(points)
+
+          svg = f'''<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{width}\" height=\"{height}\">
+            <defs>
+              <linearGradient id=\"g\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\">
+                <stop offset=\"0%\" stop-color=\"#fbbf24\"/>
+                <stop offset=\"100%\" stop-color=\"#fbbf24\" stop-opacity=\"0\"/>
+              </linearGradient>
+            </defs>
+            <rect width=\"{width}\" height=\"{height}\" fill=\"transparent\"/>
+            <text x=\"{pad}\" y=\"18\" fill=\"#8b949e\" font-size=\"12\" font-family=\"sans-serif\">Star History</text>
+            <text x=\"{width - pad}\" y=\"18\" fill=\"#fbbf24\" font-size=\"12\" font-family=\"sans-serif\" text-anchor=\"end\">{max_stars} stars</text>
+            <polygon points=\"{polyline} {width - pad},{height - pad} {pad},{height - pad}\" fill=\"url(#g)\" opacity=\"0.2\"/>
+            <polyline points=\"{polyline}\" fill=\"none\" stroke=\"#fbbf24\" stroke-width=\"2\"/>
+            {''.join(f'<circle cx=\"{x}\" cy=\"{y}\" r=\"2\" fill=\"#fbbf24\"/>' for x, y in [p.split(',') for p in points[-1:]])}
+          </svg>'''
+          with open('star-chart.svg', 'w') as f:
+              f.write(svg)
+          print('Chart generated')
+          "
+
+      - name: Commit chart
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add star-data.jsonl
-          git diff --staged --quiet || git commit -m "chore: update star chart data ($(date +%Y-%m-%d))"
-          git push
+          git add star-chart.svg star-history.csv
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: update star chart ($(date +%Y-%m-%d))"
+            git push
+          fi
