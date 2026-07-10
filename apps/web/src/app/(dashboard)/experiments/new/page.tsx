@@ -20,8 +20,8 @@ const MODEL_OPTIONS = [
   { value: 'claude-opus-4-5', label: 'Claude Opus 4.5' },
   { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
   { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-  { value: 'deepseek-chat', label: 'DeepSeek Chat (V3)' },
-  { value: 'deepseek-reasoner', label: 'DeepSeek Reasoner (R1)' },
+  { value: 'deepseek-chat', label: 'DeepSeek Chat' },
+  { value: 'deepseek-reasoner', label: 'DeepSeek Reasoner' },
 ]
 
 interface VariantConfig {
