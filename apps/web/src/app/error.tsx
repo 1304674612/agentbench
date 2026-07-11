@@ -20,12 +20,9 @@ export default function ErrorPage({
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/10 mx-auto">
           <AlertTriangle className="h-8 w-8 text-red-500" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Something went wrong
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight">Something went wrong</h1>
         <p className="text-muted-foreground max-w-sm">
-          An unexpected error occurred. Please try again or contact support if
-          the issue persists.
+          An unexpected error occurred. Please try again or contact support if the issue persists.
         </p>
         <button
           type="button"

@@ -161,7 +161,10 @@ export async function rateLimit(
 /**
  * Get the default rate limit headers for a response.
  */
-export function getRateLimitHeaders(result: RateLimitResult, options?: RateLimitOptions): Record<string, string> {
+export function getRateLimitHeaders(
+  result: RateLimitResult,
+  options?: RateLimitOptions
+): Record<string, string> {
   const maxRequests = options?.maxRequests ?? DEFAULT_MAX_REQUESTS
   return {
     'X-RateLimit-Limit': String(maxRequests),

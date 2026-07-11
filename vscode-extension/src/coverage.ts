@@ -1,5 +1,5 @@
-import * as vscode from 'vscode';
-import type { CoverageReport } from './types';
+import * as vscode from 'vscode'
+import type { CoverageReport } from './types'
 
 /**
  * Coverage visualization provider.
@@ -7,14 +7,14 @@ import type { CoverageReport } from './types';
  * falls back to a custom decorator-based visualization.
  */
 
-let coverageDecorations: vscode.TextEditorDecorationType | undefined;
+let coverageDecorations: vscode.TextEditorDecorationType | undefined
 
 /**
  * Show coverage in a new editor tab using a generated report.
  */
 export async function showCoverageReport(): Promise<void> {
   // Generate a sample coverage report
-  const report = await generateCoverageReport();
+  const report = await generateCoverageReport()
 
   const panel = vscode.window.createWebviewPanel(
     'agentbenchCoverage',
@@ -23,26 +23,26 @@ export async function showCoverageReport(): Promise<void> {
     {
       enableScripts: true,
       retainContextWhenHidden: true,
-    },
-  );
+    }
+  )
 
-  panel.webview.html = generateCoverageHtml(report);
+  panel.webview.html = generateCoverageHtml(report)
 }
 
 /**
  * Show coverage as decorations in the active editor.
  */
 export async function showCoverageDecorations(): Promise<void> {
-  const editor = vscode.window.activeTextEditor;
+  const editor = vscode.window.activeTextEditor
   if (!editor) {
-    vscode.window.showInformationMessage('No active editor to show coverage for.');
-    return;
+    vscode.window.showInformationMessage('No active editor to show coverage for.')
+    return
   }
 
   // Clear previous decorations
   if (coverageDecorations) {
-    editor.setDecorations(coverageDecorations, []);
-    coverageDecorations.dispose();
+    editor.setDecorations(coverageDecorations, [])
+    coverageDecorations.dispose()
   }
 
   coverageDecorations = vscode.window.createTextEditorDecorationType({
@@ -50,16 +50,16 @@ export async function showCoverageDecorations(): Promise<void> {
     isWholeLine: true,
     overviewRulerColor: new vscode.ThemeColor('testing.iconPassed'),
     overviewRulerLane: vscode.OverviewRulerLane.Right,
-  });
+  })
 
-  const document = editor.document;
-  const text = document.getText();
-  const lines = text.split('\n');
+  const document = editor.document
+  const text = document.getText()
+  const lines = text.split('\n')
 
-  const coveredRanges: vscode.Range[] = [];
+  const coveredRanges: vscode.Range[] = []
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+    const line = lines[i]
 
     // Consider lines with test definitions as covered
     if (
@@ -68,19 +68,18 @@ export async function showCoverageDecorations(): Promise<void> {
       /expect\s*\(/.test(line) ||
       /\.run\s*\(\s*\)/.test(line)
     ) {
-      coveredRanges.push(new vscode.Range(i, 0, i, line.length));
+      coveredRanges.push(new vscode.Range(i, 0, i, line.length))
     }
   }
 
-  editor.setDecorations(coverageDecorations, coveredRanges);
+  editor.setDecorations(coverageDecorations, coveredRanges)
 
-  const coveragePercent = lines.length > 0
-    ? Math.round((coveredRanges.length / lines.length) * 100)
-    : 0;
+  const coveragePercent =
+    lines.length > 0 ? Math.round((coveredRanges.length / lines.length) * 100) : 0
 
   vscode.window.showInformationMessage(
-    `AgentBench Coverage: ${coveredRanges.length}/${lines.length} lines covered (${coveragePercent}%)`,
-  );
+    `AgentBench Coverage: ${coveredRanges.length}/${lines.length} lines covered (${coveragePercent}%)`
+  )
 }
 
 /**
@@ -90,56 +89,54 @@ async function generateCoverageReport(): Promise<CoverageReport> {
   const files = await vscode.workspace.findFiles(
     '**/*.test.{ts,js,mjs,tsx,jsx}',
     '**/node_modules/**',
-    200,
-  );
+    200
+  )
 
-  let totalSuites = 0;
-  let totalTests = 0;
-  let totalAssertions = 0;
-  let evaluatedTests = 0;
-  const uncovered: Array<{ suite: string; test: string; assertion: string }> = [];
+  let totalSuites = 0
+  let totalTests = 0
+  let totalAssertions = 0
+  let evaluatedTests = 0
+  const uncovered: Array<{ suite: string; test: string; assertion: string }> = []
 
   for (const file of files) {
     try {
-      const document = await vscode.workspace.openTextDocument(file);
-      const text = document.getText();
-      const relativePath = vscode.workspace.asRelativePath(file);
+      const document = await vscode.workspace.openTextDocument(file)
+      const text = document.getText()
+      const relativePath = vscode.workspace.asRelativePath(file)
 
-      const suiteMatch = text.match(/(?:suite|describe)\s*\(\s*['"`](.+?)['"`]/g);
+      const suiteMatch = text.match(/(?:suite|describe)\s*\(\s*['"`](.+?)['"`]/g)
       if (suiteMatch) {
-        totalSuites += suiteMatch.length;
+        totalSuites += suiteMatch.length
       }
 
-      const testMatches = text.match(/(?:test|it)\s*\(\s*['"`](.+?)['"`]/g);
+      const testMatches = text.match(/(?:test|it)\s*\(\s*['"`](.+?)['"`]/g)
       if (testMatches) {
-        totalTests += testMatches.length;
-        evaluatedTests += testMatches.length;
+        totalTests += testMatches.length
+        evaluatedTests += testMatches.length
       }
 
       // Also count export async function patterns
-      const funcMatches = text.match(
-        /export\s+(?:async\s+)?function\s+(\w*(?:Test|Spec)\w*)\s*\(/g,
-      );
+      const funcMatches = text.match(/export\s+(?:async\s+)?function\s+(\w*(?:Test|Spec)\w*)\s*\(/g)
       if (funcMatches) {
-        totalTests += funcMatches.length;
-        evaluatedTests += funcMatches.length;
+        totalTests += funcMatches.length
+        evaluatedTests += funcMatches.length
       }
 
-      const assertionMatches = text.match(/expect\s*\(/g);
+      const assertionMatches = text.match(/expect\s*\(/g)
       if (assertionMatches) {
-        totalAssertions += assertionMatches.length;
+        totalAssertions += assertionMatches.length
       }
 
       // If file has fewer than 3 assertions, mark as potentially under-tested
       if (assertionMatches && assertionMatches.length < 3 && testMatches) {
         for (const match of testMatches) {
-          const nameMatch = match.match(/['"`](.+?)['"`]/);
+          const nameMatch = match.match(/['"`](.+?)['"`]/)
           if (nameMatch) {
             uncovered.push({
               suite: relativePath,
               test: nameMatch[1],
               assertion: `Only ${assertionMatches.length} assertion(s)`,
-            });
+            })
           }
         }
       }
@@ -148,8 +145,7 @@ async function generateCoverageReport(): Promise<CoverageReport> {
     }
   }
 
-  const coverage =
-    totalTests > 0 ? Math.round((evaluatedTests / totalTests) * 100) : 0;
+  const coverage = totalTests > 0 ? Math.round((evaluatedTests / totalTests) * 100) : 0
 
   return {
     suites: totalSuites,
@@ -158,7 +154,7 @@ async function generateCoverageReport(): Promise<CoverageReport> {
     evaluated: evaluatedTests,
     coverage,
     uncovered,
-  };
+  }
 }
 
 /**
@@ -166,11 +162,7 @@ async function generateCoverageReport(): Promise<CoverageReport> {
  */
 function generateCoverageHtml(report: CoverageReport): string {
   const coverageColor =
-    report.coverage >= 80
-      ? '#4caf50'
-      : report.coverage >= 50
-      ? '#ff9800'
-      : '#f44336';
+    report.coverage >= 80 ? '#4caf50' : report.coverage >= 50 ? '#ff9800' : '#f44336'
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -321,22 +313,24 @@ function generateCoverageHtml(report: CoverageReport): string {
 
     <div class="uncovered-section">
       <h3>Potentially Under-Tested</h3>
-      ${report.uncovered.length === 0
-        ? '<div class="no-uncovered">All tests have adequate assertion coverage!</div>'
-        : report.uncovered
-            .map(
-              (item) => `
+      ${
+        report.uncovered.length === 0
+          ? '<div class="no-uncovered">All tests have adequate assertion coverage!</div>'
+          : report.uncovered
+              .map(
+                (item) => `
         <div class="uncovered-item">
           <div class="uncovered-suite">${escapeHtml(item.suite)}</div>
           <div class="uncovered-test">${escapeHtml(item.test)}</div>
           <div class="uncovered-issue">${escapeHtml(item.assertion)}</div>
-        </div>`,
-            )
-            .join('')}
+        </div>`
+              )
+              .join('')
+      }
     </div>
   </div>
 </body>
-</html>`;
+</html>`
 }
 
 function escapeHtml(str: string): string {
@@ -345,13 +339,13 @@ function escapeHtml(str: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/'/g, '&#039;')
 }
 
 /**
  * Dispose of coverage decorations.
  */
 export function disposeCoverage(): void {
-  coverageDecorations?.dispose();
-  coverageDecorations = undefined;
+  coverageDecorations?.dispose()
+  coverageDecorations = undefined
 }

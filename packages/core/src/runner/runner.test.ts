@@ -110,7 +110,7 @@ const successfulExecute = vi.fn().mockImplementation(async (ctx: RunContext) => 
       content: 'Hi there!',
       finishReason: 'stop',
       usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
-    }),
+    })
   )
   ctx.tracer.recordResponse('Hi there!')
 })
@@ -208,11 +208,11 @@ describe('Runner', () => {
 
       expect(storage.updateRun).toHaveBeenCalledWith(
         expect.any(String),
-        expect.objectContaining({ status: 'running' }),
+        expect.objectContaining({ status: 'running' })
       )
       expect(storage.updateRun).toHaveBeenCalledWith(
         expect.any(String),
-        expect.objectContaining({ status: 'passed' }),
+        expect.objectContaining({ status: 'passed' })
       )
     })
   })
@@ -234,7 +234,7 @@ describe('Runner', () => {
             content: 'Hey',
             finishReason: 'stop',
             usage: { prompt_tokens: 5, completion_tokens: 3, total_tokens: 8 },
-          }),
+          })
         )
       })
 
@@ -254,14 +254,15 @@ describe('Runner', () => {
           throw new Error('Batch item failure')
         }
         await ctx.tracer.traceLLMCall(
-          'openai', 'gpt-4o',
+          'openai',
+          'gpt-4o',
           { messages: [{ role: 'user', content: 'Hi' }] },
           async () => ({ choices: [{ message: { content: 'Hey' } }] }),
           (result) => ({
             content: 'Hey',
             finishReason: 'stop',
             usage: { prompt_tokens: 5, completion_tokens: 3, total_tokens: 8 },
-          }),
+          })
         )
       })
 

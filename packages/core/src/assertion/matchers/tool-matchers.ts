@@ -14,10 +14,7 @@ export interface ToolCallRecord {
 /**
  * Assert that a specific tool was called.
  */
-export function toolToBeCalled(
-  toolCalls: ToolCallRecord[],
-  toolName: string,
-): AssertionResult {
+export function toolToBeCalled(toolCalls: ToolCallRecord[], toolName: string): AssertionResult {
   const called = toolCalls.some((t) => t.name === toolName)
   return {
     type: 'tool_called',
@@ -33,18 +30,13 @@ export function toolToBeCalled(
 /**
  * Assert that a specific tool was NOT called.
  */
-export function toolNotToBeCalled(
-  toolCalls: ToolCallRecord[],
-  toolName: string,
-): AssertionResult {
+export function toolNotToBeCalled(toolCalls: ToolCallRecord[], toolName: string): AssertionResult {
   const called = toolCalls.some((t) => t.name === toolName)
   return {
     type: 'tool_not_called',
     status: called ? 'failed' : 'passed',
     expected: `Tool "${toolName}" not to be called`,
-    actual: called
-      ? `Tool "${toolName}" was called`
-      : `Tool "${toolName}" was not called`,
+    actual: called ? `Tool "${toolName}" was called` : `Tool "${toolName}" was not called`,
     message: called ? `Expected tool "${toolName}" not to be called` : undefined,
   }
 }
@@ -55,7 +47,7 @@ export function toolNotToBeCalled(
 export function toolToBeCalledWith(
   toolCalls: ToolCallRecord[],
   toolName: string,
-  expectedArgs: Record<string, unknown>,
+  expectedArgs: Record<string, unknown>
 ): AssertionResult {
   const toolCall = toolCalls.find((t) => t.name === toolName)
 
@@ -73,7 +65,9 @@ export function toolToBeCalledWith(
   for (const [key, expectedValue] of Object.entries(expectedArgs)) {
     const actualValue = toolCall.arguments[key]
     if (JSON.stringify(actualValue) !== JSON.stringify(expectedValue)) {
-      mismatches.push(`${key}: expected ${JSON.stringify(expectedValue)}, got ${JSON.stringify(actualValue)}`)
+      mismatches.push(
+        `${key}: expected ${JSON.stringify(expectedValue)}, got ${JSON.stringify(actualValue)}`
+      )
     }
   }
 
@@ -83,7 +77,9 @@ export function toolToBeCalledWith(
     status: passed ? 'passed' : 'failed',
     expected: expectedArgs,
     actual: toolCall.arguments,
-    message: passed ? undefined : `Tool "${toolName}" argument mismatches: ${mismatches.join('; ')}`,
+    message: passed
+      ? undefined
+      : `Tool "${toolName}" argument mismatches: ${mismatches.join('; ')}`,
   }
 }
 
@@ -93,7 +89,7 @@ export function toolToBeCalledWith(
 export function toolToBeCalledTimes(
   toolCalls: ToolCallRecord[],
   toolName: string,
-  expectedCount: number,
+  expectedCount: number
 ): AssertionResult {
   const count = toolCalls.filter((t) => t.name === toolName).length
   const passed = count === expectedCount

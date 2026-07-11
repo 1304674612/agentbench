@@ -92,7 +92,7 @@ export const POST = async (req: NextRequest) => {
           return {
             input: { messages: [{ role: 'user', content: obj.input ?? obj.question ?? line }] },
             expected:
-              obj.expected ?? obj.answer ?? obj.output
+              (obj.expected ?? obj.answer ?? obj.output)
                 ? { content: obj.expected ?? obj.answer ?? obj.output }
                 : undefined,
           }

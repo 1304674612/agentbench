@@ -65,8 +65,7 @@ export function registerExperimentCommand(program: Command): void {
             chalk.gray(`Status: ${exp.status}  Conclusion: ${exp.conclusion ?? 'pending'}\n`)
           )
           for (const [name, s] of Object.entries(exp.summary)) {
-            const icon =
-              s.passedCount === s.runCount ? chalk.green('✓') : chalk.yellow('⚠')
+            const icon = s.passedCount === s.runCount ? chalk.green('✓') : chalk.yellow('⚠')
             console.log(
               `  ${icon} Variant ${name}: ${s.passedCount}/${s.runCount} passed (avg ${s.avgDuration}ms)`
             )

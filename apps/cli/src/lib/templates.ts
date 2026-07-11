@@ -107,7 +107,7 @@ export function getTestTemplate(opts: TestTemplateOptions): string {
 
 function getHelloAgentTest(opts: TestTemplateOptions): string {
   return `import { defineSuite, defineTest } from '@agentbench/core'
-import { agent } from '../${opts.srcDir}/agent'
+import { agent } from '../${opts.srcDir}/agent.js'
 import { loadCsvDataset } from '@agentbench/core/dataset'
 
 const queries = loadCsvDataset('${opts.datasetDir}/hello-agent.queries.csv')
@@ -188,7 +188,7 @@ export default defineSuite({
 
 function getCustomerSupportTest(opts: TestTemplateOptions): string {
   return `import { defineSuite, defineTest } from '@agentbench/core'
-import { agent } from '../${opts.srcDir}/agent'
+import { agent } from '../${opts.srcDir}/agent.js'
 
 export default defineSuite({
   name: 'Customer Support Agent',
@@ -251,7 +251,7 @@ export default defineSuite({
 
 function getRagAgentTest(opts: TestTemplateOptions): string {
   return `import { defineSuite, defineTest } from '@agentbench/core'
-import { agent } from '../${opts.srcDir}/agent'
+import { agent } from '../${opts.srcDir}/agent.js'
 
 export default defineSuite({
   name: 'RAG Agent',
@@ -346,7 +346,7 @@ export default defineSuite({
 export function getAgentTemplate(
   _language: Language,
   template: TemplateKind,
-  _srcDir: string,
+  _srcDir: string
 ): string {
   switch (template) {
     case 'hello-agent':
@@ -599,12 +599,21 @@ reports/
 
 export function renderLogo(): string {
   const purple = chalk.hex('#6D28D9')
-  const colors = ['#7C3AED', '#8B5CF6', '#A78BFA', '#C4B5FD', '#DDD6FE', '#A78BFA',
-                  '#6D28D9', '#7C3AED', '#8B5CF6', '#A78BFA', '#C4B5FD'] as const
+  const colors = [
+    '#7C3AED',
+    '#8B5CF6',
+    '#A78BFA',
+    '#C4B5FD',
+    '#DDD6FE',
+    '#A78BFA',
+    '#6D28D9',
+    '#7C3AED',
+    '#8B5CF6',
+    '#A78BFA',
+    '#C4B5FD',
+  ] as const
   const letters = ['A', 'g', 'e', 'n', 't', '•', 'B', 'e', 'n', 'c', 'h']
-  const coloredLetters = letters
-    .map((l, i) => chalk.bold.hex(colors[i])(l))
-    .join('')
+  const coloredLetters = letters.map((l, i) => chalk.bold.hex(colors[i])(l)).join('')
 
   return [
     purple('    ╔═════════════════════════════════════════╗'),
@@ -638,7 +647,7 @@ export function getProviderLabel(provider: string): string {
 export function renderSuccessMessage(
   projectName: string,
   template: TemplateKind,
-  packageManager: string,
+  packageManager: string
 ): string {
   const runCmd = packageManager === 'npm' ? 'npx' : packageManager
 

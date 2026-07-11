@@ -38,7 +38,7 @@ function runVirtualTests(testFile: string): { passed: number; failed: number; ou
 
 export async function executeTool(
   name: string,
-  args: Record<string, unknown>,
+  args: Record<string, unknown>
 ): Promise<Record<string, unknown>> {
   switch (name) {
     case 'write_file': {
@@ -50,7 +50,9 @@ export async function executeTool(
     case 'read_file': {
       const path = String(args.path ?? '')
       const content = virtualFS.get(path)
-      return content ? { path, content, found: true } : { path, found: false, error: 'File not found' }
+      return content
+        ? { path, content, found: true }
+        : { path, found: false, error: 'File not found' }
     }
     case 'run_tests': {
       const testFile = String(args.testFile ?? '')
@@ -148,7 +150,11 @@ export async function runCodingAgent(params: RunCodingAgentParams): Promise<Codi
 - No placeholders — every line must be real, working code
 - Include proper error handling, type annotations, and comments`,
       tools: [
-        { name: 'write_file', description: 'Write code to file', parameters: { path: 'string', content: 'string' } },
+        {
+          name: 'write_file',
+          description: 'Write code to file',
+          parameters: { path: 'string', content: 'string' },
+        },
         { name: 'read_file', description: 'Read file contents', parameters: { path: 'string' } },
         { name: 'run_tests', description: 'Run test suite', parameters: { testFile: 'string' } },
       ],

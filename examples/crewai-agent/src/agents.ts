@@ -49,7 +49,9 @@ export async function runReviewer(output: string, criteria?: string[]): Promise<
   const result: AgentResult = {
     agent: 'reviewer',
     task: 'Review output quality',
-    output: `[Review] Quality assessment:\n${Object.entries(scores).map(([k, v]) => `- ${k}: ${(v * 100).toFixed(0)}%`).join('\n')}\n\nOverall: Output meets quality standards with minor improvements suggested.`,
+    output: `[Review] Quality assessment:\n${Object.entries(scores)
+      .map(([k, v]) => `- ${k}: ${(v * 100).toFixed(0)}%`)
+      .join('\n')}\n\nOverall: Output meets quality standards with minor improvements suggested.`,
     confidence: 0.9,
     timestamp: new Date().toISOString(),
   }

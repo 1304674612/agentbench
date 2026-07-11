@@ -18,12 +18,11 @@ export async function readThenActTest() {
     apiKey: API_KEY,
   })
 
-  const usedFileRead = await expect(result)
-    .tool('read_file').toBeCalled()
-    .run()
+  const usedFileRead = await expect(result).tool('read_file').toBeCalled().run()
 
   const mentionsPort = await expect(result)
-    .output().toMatchRegex(/3000|port/i)
+    .output()
+    .toMatchRegex(/3000|port/i)
     .run()
 
   return {
@@ -40,12 +39,11 @@ export async function queryThenCalculateTest() {
     apiKey: API_KEY,
   })
 
-  const usedDatabase = await expect(result)
-    .tool('query_database').toBeCalled()
-    .run()
+  const usedDatabase = await expect(result).tool('query_database').toBeCalled().run()
 
   const producedOutput = await expect(result)
-    .output().toMatchRegex(/.{20,}/)
+    .output()
+    .toMatchRegex(/.{20,}/)
     .run()
 
   return {
@@ -62,16 +60,13 @@ export async function calendarThenEmailTest() {
     apiKey: API_KEY,
   })
 
-  const usedCalendar = await expect(result)
-    .tool('check_calendar').toBeCalled()
-    .run()
+  const usedCalendar = await expect(result).tool('check_calendar').toBeCalled().run()
 
-  const usedEmail = await expect(result)
-    .tool('send_email').toBeCalled()
-    .run()
+  const usedEmail = await expect(result).tool('send_email').toBeCalled().run()
 
   const producedOutput = await expect(result)
-    .output().toMatchRegex(/.{30,}/)
+    .output()
+    .toMatchRegex(/.{30,}/)
     .run()
 
   return {

@@ -53,13 +53,12 @@ export async function securityReviewTest() {
   })
 
   // Assertion 1: Agent used check_best_practices tool (security category)
-  const usedBestPractices = await expect(result)
-    .tool('check_best_practices').toBeCalled()
-    .run()
+  const usedBestPractices = await expect(result).tool('check_best_practices').toBeCalled().run()
 
   // Assertion 2: Output mentions SQL injection or injection vulnerability
   const catchesSQLInjection = await expect(result)
-    .output().toMatchRegex(/sql.?injection|injection.?attack|parameterized|prepared statement/i)
+    .output()
+    .toMatchRegex(/sql.?injection|injection.?attack|parameterized|prepared statement/i)
     .run()
 
   // Assertion 3: Output mentions hardcoded secrets or credentials
@@ -74,7 +73,8 @@ export async function securityReviewTest() {
 
   // Assertion 4: Output mentions security concerns
   const mentionsSecurity = await expect(result)
-    .output().toMatchRegex(/security|vulnerab|exposed|unsafe|risk/i)
+    .output()
+    .toMatchRegex(/security|vulnerab|exposed|unsafe|risk/i)
     .run()
 
   // Assertion 5: Agent also suggests improvements (not just identifies issues)
@@ -91,6 +91,12 @@ export async function securityReviewTest() {
     catchesHardcodedSecrets: catchesHardcodedSecrets.allPassed,
     mentionsSecurity: mentionsSecurity.allPassed,
     suggestsFixes: suggestsFixes.allPassed,
-    details: { usedBestPractices, catchesSQLInjection, catchesHardcodedSecrets, mentionsSecurity, suggestsFixes },
+    details: {
+      usedBestPractices,
+      catchesSQLInjection,
+      catchesHardcodedSecrets,
+      mentionsSecurity,
+      suggestsFixes,
+    },
   }
 }

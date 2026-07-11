@@ -27,13 +27,5 @@ export function OptimizedImage({
   quality = 85,
   ...props
 }: OptimizedImageProps) {
-  return (
-    <Image
-      alt={alt}
-      sizes={sizes}
-      loading={loading}
-      quality={quality}
-      {...props}
-    />
-  )
+  return <Image alt={alt} sizes={sizes} loading={loading} quality={quality} {...props} />
 }

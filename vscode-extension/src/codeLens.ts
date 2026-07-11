@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import * as vscode from 'vscode'
 
 /**
  * CodeLens provider that adds Run | Debug | Replay actions above each
@@ -13,29 +13,29 @@ import * as vscode from 'vscode';
  */
 
 interface TestMatch {
-  name: string;
-  range: vscode.Range;
-  type: 'test' | 'suite';
+  name: string
+  range: vscode.Range
+  type: 'test' | 'suite'
 }
 
 export class AgentBenchCodeLensProvider implements vscode.CodeLensProvider {
-  private _onDidChangeCodeLenses = new vscode.EventEmitter<void>();
-  public readonly onDidChangeCodeLenses = this._onDidChangeCodeLenses.event;
+  private _onDidChangeCodeLenses = new vscode.EventEmitter<void>()
+  public readonly onDidChangeCodeLenses = this._onDidChangeCodeLenses.event
 
   /**
    * Provide CodeLens objects for the given document.
    */
   public provideCodeLenses(
     document: vscode.TextDocument,
-    _token: vscode.CancellationToken,
+    _token: vscode.CancellationToken
   ): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
-    const matches = findTestMatches(document);
+    const matches = findTestMatches(document)
 
     if (matches.length === 0) {
-      return [];
+      return []
     }
 
-    const lenses: vscode.CodeLens[] = [];
+    const lenses: vscode.CodeLens[] = []
 
     for (const match of matches) {
       // Run CodeLens
@@ -44,8 +44,8 @@ export class AgentBenchCodeLensProvider implements vscode.CodeLensProvider {
         command: 'agentbench.runCurrentTest',
         tooltip: `Run test: ${match.name}`,
         arguments: [match.name],
-      });
-      lenses.push(runLens);
+      })
+      lenses.push(runLens)
 
       // Debug CodeLens
       const debugLens = new vscode.CodeLens(match.range, {
@@ -53,8 +53,8 @@ export class AgentBenchCodeLensProvider implements vscode.CodeLensProvider {
         command: 'agentbench.debugTest',
         tooltip: `Debug test: ${match.name}`,
         arguments: [match.name],
-      });
-      lenses.push(debugLens);
+      })
+      lenses.push(debugLens)
 
       // Replay CodeLens
       const replayLens = new vscode.CodeLens(match.range, {
@@ -62,11 +62,11 @@ export class AgentBenchCodeLensProvider implements vscode.CodeLensProvider {
         command: 'agentbench.replaySelect',
         tooltip: `Replay last run of: ${match.name}`,
         arguments: [match.name],
-      });
-      lenses.push(replayLens);
+      })
+      lenses.push(replayLens)
     }
 
-    return lenses;
+    return lenses
   }
 
   /**
@@ -74,16 +74,16 @@ export class AgentBenchCodeLensProvider implements vscode.CodeLensProvider {
    */
   public resolveCodeLens(
     codeLens: vscode.CodeLens,
-    _token: vscode.CancellationToken,
+    _token: vscode.CancellationToken
   ): vscode.CodeLens {
-    return codeLens;
+    return codeLens
   }
 
   /**
    * Force refresh of all CodeLenses.
    */
   public refresh(): void {
-    this._onDidChangeCodeLenses.fire();
+    this._onDidChangeCodeLenses.fire()
   }
 }
 
@@ -91,46 +91,42 @@ export class AgentBenchCodeLensProvider implements vscode.CodeLensProvider {
  * Parse the document for test and suite definitions.
  */
 function findTestMatches(document: vscode.TextDocument): TestMatch[] {
-  const text = document.getText();
-  const lines = text.split('\n');
-  const matches: TestMatch[] = [];
+  const text = document.getText()
+  const lines = text.split('\n')
+  const matches: TestMatch[] = []
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const lineNumber = i;
+    const line = lines[i]
+    const lineNumber = i
 
     // Match: test('name', ...) or test("name", ...) or test(`name`, ...)
-    const testCallMatch = line.match(
-      /(?:test|it)\s*\(\s*['"`](.+?)['"`]\s*,/,
-    );
+    const testCallMatch = line.match(/(?:test|it)\s*\(\s*['"`](.+?)['"`]\s*,/)
     if (testCallMatch) {
-      const name = testCallMatch[1];
-      const range = new vscode.Range(lineNumber, 0, lineNumber, line.length);
-      matches.push({ name, range, type: 'test' });
-      continue;
+      const name = testCallMatch[1]
+      const range = new vscode.Range(lineNumber, 0, lineNumber, line.length)
+      matches.push({ name, range, type: 'test' })
+      continue
     }
 
     // Match: suite('name', ...) or describe('name', ...)
-    const suiteCallMatch = line.match(
-      /(?:suite|describe)\s*\(\s*['"`](.+?)['"`]\s*,/,
-    );
+    const suiteCallMatch = line.match(/(?:suite|describe)\s*\(\s*['"`](.+?)['"`]\s*,/)
     if (suiteCallMatch) {
-      const name = suiteCallMatch[1];
-      const range = new vscode.Range(lineNumber, 0, lineNumber, line.length);
-      matches.push({ name, range, type: 'suite' });
-      continue;
+      const name = suiteCallMatch[1]
+      const range = new vscode.Range(lineNumber, 0, lineNumber, line.length)
+      matches.push({ name, range, type: 'suite' })
+      continue
     }
 
     // Match: export async function xxxTest()
     const funcMatch = line.match(
-      /export\s+(?:async\s+)?function\s+(\w*(?:Test|Spec|Suite|Scenario)\w*)\s*\(/,
-    );
+      /export\s+(?:async\s+)?function\s+(\w*(?:Test|Spec|Suite|Scenario)\w*)\s*\(/
+    )
     if (funcMatch) {
-      const name = funcMatch[1];
-      const range = new vscode.Range(lineNumber, 0, lineNumber, line.length);
-      matches.push({ name, range, type: 'test' });
+      const name = funcMatch[1]
+      const range = new vscode.Range(lineNumber, 0, lineNumber, line.length)
+      matches.push({ name, range, type: 'test' })
     }
   }
 
-  return matches;
+  return matches
 }

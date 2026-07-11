@@ -13,9 +13,7 @@ import type { Tracer } from '../tracer'
 
 export interface WrappedAnthropic {
   messages: {
-    create: (
-      params: AnthropicMessageParams
-    ) => Promise<AnthropicMessageResponse>
+    create: (params: AnthropicMessageParams) => Promise<AnthropicMessageResponse>
   }
 }
 
@@ -116,12 +114,8 @@ export function wrapAnthropic(
         }))
 
         if (params.stream) {
-          return _traceStreamingCall(
-            tracer,
-            params,
-            normalizedMessages,
-            openAITools,
-            () => client.messages.create(params)
+          return _traceStreamingCall(tracer, params, normalizedMessages, openAITools, () =>
+            client.messages.create(params)
           )
         }
 
@@ -194,10 +188,7 @@ async function _traceStreamingCall(
 
   // Accumulators
   const textBlocks: Array<{ type: 'text'; text: string }> = []
-  const toolUseBlocks = new Map<
-    number,
-    { id: string; name: string; input_json: string }
-  >()
+  const toolUseBlocks = new Map<number, { id: string; name: string; input_json: string }>()
   let activeBlockIndex = -1
   let stopReason = 'end_turn'
   let inputTokens = 0

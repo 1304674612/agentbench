@@ -22,17 +22,11 @@ export async function capitalOfFranceTest() {
     apiKey: API_KEY,
   })
 
-  const completed = await expect(result)
-    .status().toBeCompleted()
-    .run()
+  const completed = await expect(result).status().toBeCompleted().run()
 
-  const correctAnswer = await expect(result)
-    .output().toContain('Paris')
-    .run()
+  const correctAnswer = await expect(result).output().toContain('Paris').run()
 
-  const tokensReasonable = await expect(result)
-    .tokens().toBeLessThan(500)
-    .run()
+  const tokensReasonable = await expect(result).tokens().toBeLessThan(500).run()
 
   return {
     completed: completed.allPassed,
@@ -49,17 +43,11 @@ export async function arithmeticTest() {
     apiKey: API_KEY,
   })
 
-  const completed = await expect(result)
-    .status().toBeCompleted()
-    .run()
+  const completed = await expect(result).status().toBeCompleted().run()
 
-  const correctAnswer = await expect(result)
-    .output().toContain('16')
-    .run()
+  const correctAnswer = await expect(result).output().toContain('16').run()
 
-  const tokensReasonable = await expect(result)
-    .tokens().toBeLessThan(500)
-    .run()
+  const tokensReasonable = await expect(result).tokens().toBeLessThan(500).run()
 
   return {
     completed: completed.allPassed,

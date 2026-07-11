@@ -271,7 +271,10 @@ export interface BenchmarkSearchParams {
 
 export interface BenchmarkPublishParams {
   /** Benchmark metadata */
-  meta: Omit<BenchmarkMeta, 'createdAt' | 'updatedAt' | 'downloads' | 'rating' | 'ratingsCount' | 'status'>
+  meta: Omit<
+    BenchmarkMeta,
+    'createdAt' | 'updatedAt' | 'downloads' | 'rating' | 'ratingsCount' | 'status'
+  >
 
   /** Test suites */
   suites: BenchmarkSuite[]

@@ -149,7 +149,10 @@ export function getNextNode(state: WorkflowState): NodeType | null {
 /**
  * Execute one step in the graph: run the current node and determine the next.
  */
-export function executeStep(state: WorkflowState): { state: WorkflowState; nextNode: NodeType | null } {
+export function executeStep(state: WorkflowState): {
+  state: WorkflowState
+  nextNode: NodeType | null
+} {
   const currentNode = state.currentNode as NodeType
   const executor = NODES[currentNode]
 
@@ -162,9 +165,7 @@ export function executeStep(state: WorkflowState): { state: WorkflowState; nextN
   const nextNode = getNextNode(nextState)
 
   // Set the next node in state if there is one
-  const finalState = nextNode
-    ? { ...nextState, currentNode: nextNode }
-    : nextState
+  const finalState = nextNode ? { ...nextState, currentNode: nextNode } : nextState
 
   return { state: finalState, nextNode }
 }

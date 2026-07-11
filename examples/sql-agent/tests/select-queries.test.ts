@@ -19,15 +19,18 @@ export async function simpleSelectTest() {
   })
 
   const hasSelect = await expect(result)
-    .output().toMatchRegex(/SELECT/i)
+    .output()
+    .toMatchRegex(/SELECT/i)
     .run()
 
   const usesUsersTable = await expect(result)
-    .output().toMatchRegex(/FROM\s+users/i)
+    .output()
+    .toMatchRegex(/FROM\s+users/i)
     .run()
 
   const hasWhereClause = await expect(result)
-    .output().toMatchRegex(/WHERE\s+.*status/i)
+    .output()
+    .toMatchRegex(/WHERE\s+.*status/i)
     .run()
 
   return {
@@ -46,15 +49,18 @@ export async function filteredSelectTest() {
   })
 
   const hasSelect = await expect(result)
-    .output().toMatchRegex(/SELECT/i)
+    .output()
+    .toMatchRegex(/SELECT/i)
     .run()
 
   const usesCondition = await expect(result)
-    .output().toMatchRegex(/WHERE.*price\s*>\s*50/i)
+    .output()
+    .toMatchRegex(/WHERE.*price\s*>\s*50/i)
     .run()
 
   const usesProducts = await expect(result)
-    .output().toMatchRegex(/FROM\s+products/i)
+    .output()
+    .toMatchRegex(/FROM\s+products/i)
     .run()
 
   return {
@@ -73,16 +79,16 @@ export async function sortedSelectTest() {
   })
 
   const hasOrderBy = await expect(result)
-    .output().toMatchRegex(/ORDER\s+BY/i)
+    .output()
+    .toMatchRegex(/ORDER\s+BY/i)
     .run()
 
   const hasLimit = await expect(result)
-    .output().toMatchRegex(/LIMIT\s+5/i)
+    .output()
+    .toMatchRegex(/LIMIT\s+5/i)
     .run()
 
-  const hasDesc = await expect(result)
-    .output().toMatchRegex(/DESC/i)
-    .run()
+  const hasDesc = await expect(result).output().toMatchRegex(/DESC/i).run()
 
   return {
     hasOrderBy: hasOrderBy.allPassed,

@@ -31,7 +31,10 @@ Write the refactored version to src/refactored-users.ts.`
   const result = await runCodingAgent({ task, apiKey: API_KEY })
 
   const completed = await expect(result).status().toBeCompleted().run()
-  const usesFunctional = await expect(result).output().toMatchRegex(/filter|map|reduce|\.filter|\.map/i).run()
+  const usesFunctional = await expect(result)
+    .output()
+    .toMatchRegex(/filter|map|reduce|\.filter|\.map/i)
+    .run()
 
   return {
     completed: completed.allPassed,
@@ -63,7 +66,10 @@ Extract validation into a function called validateOrder. Write to src/refactored
   const result = await runCodingAgent({ task, apiKey: API_KEY })
 
   const completed = await expect(result).status().toBeCompleted().run()
-  const extractedValidation = await expect(result).output().toMatchRegex(/validateOrder|validate.*function/i).run()
+  const extractedValidation = await expect(result)
+    .output()
+    .toMatchRegex(/validateOrder|validate.*function/i)
+    .run()
 
   return {
     completed: completed.allPassed,

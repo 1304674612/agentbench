@@ -13,8 +13,13 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md"],
-  "publishConfig": { "access": "public" },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -28,6 +33,11 @@
     "tsup": "^8.0.0",
     "typescript": "^5.7.0"
   },
-  "keywords": ["agentbench", "groq", "provider", "fast-inference"],
+  "keywords": [
+    "agentbench",
+    "groq",
+    "provider",
+    "fast-inference"
+  ],
   "license": "Apache-2.0"
 }

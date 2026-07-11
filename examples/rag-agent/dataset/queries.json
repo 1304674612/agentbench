@@ -1,22 +1,122 @@
 [
-  {"query": "How safe is Tesla Autopilot compared to human drivers?", "expected_doc": "Tesla Vehicle Safety Report Q4 2025", "expected_keywords": ["Autopilot", "crash", "miles"], "difficulty": "easy"},
-  {"query": "What new features were added in Python 3.13?", "expected_doc": "Python 3.13 Release Notes", "expected_keywords": ["GIL", "JIT", "free-threaded"], "difficulty": "medium"},
-  {"query": "What is the codename for Kubernetes v1.30?", "expected_doc": "Kubernetes v1.30 Release Notes", "expected_keywords": ["Uwubernetes", "enhancements"], "difficulty": "easy"},
-  {"query": "What does React 19 change about refs?", "expected_doc": "React 19 — A Complete Overview", "expected_keywords": ["forwardRef", "prop", "ref handling"], "difficulty": "medium"},
-  {"query": "How many people are vulnerable to climate change according to the IPCC?", "expected_doc": "IPCC AR6 Synthesis Report", "expected_keywords": ["3.3", "billion", "vulnerable"], "difficulty": "easy"},
-  {"query": "What is the Tesla Autopilot crash rate per mile?", "expected_doc": "Tesla Vehicle Safety Report Q4 2025", "expected_keywords": ["6.88", "million", "crash"], "difficulty": "medium"},
-  {"query": "How does the Python 3.13 JIT compiler work?", "expected_doc": "Python 3.13 Release Notes", "expected_keywords": ["copy-and-patch", "JIT", "speedups"], "difficulty": "hard"},
-  {"query": "What are Sidecar Containers in Kubernetes v1.30?", "expected_doc": "Kubernetes v1.30 Release Notes", "expected_keywords": ["restartable", "init containers", "sidecar"], "difficulty": "medium"},
-  {"query": "What is the use() API in React 19?", "expected_doc": "React 19 — A Complete Overview", "expected_keywords": ["use", "Promise", "Context"], "difficulty": "hard"},
-  {"query": "What emissions reductions are needed to limit warming to 1.5°C?", "expected_doc": "IPCC AR6 Synthesis Report", "expected_keywords": ["peak", "2030", "reduction", "43%"], "difficulty": "hard"},
-  {"query": "How many vehicles are in Tesla's fleet?", "expected_doc": "Tesla Vehicle Safety Report Q4 2025", "expected_keywords": ["5 million", "fleet"], "difficulty": "easy"},
-  {"query": "Which modules were removed in Python 3.13?", "expected_doc": "Python 3.13 Release Notes", "expected_keywords": ["lib2to3", "deprecated", "removed"], "difficulty": "medium"},
-  {"query": "What authentication feature graduated in Kubernetes v1.30?", "expected_doc": "Kubernetes v1.30 Release Notes", "expected_keywords": ["Structured", "Authentication", "Beta"], "difficulty": "hard"},
-  {"query": "What is useOptimistic in React 19?", "expected_doc": "React 19 — A Complete Overview", "expected_keywords": ["useOptimistic", "optimistic", "instant"], "difficulty": "medium"},
-  {"query": "How much has the Earth warmed since the 19th century?", "expected_doc": "IPCC AR6 Synthesis Report", "expected_keywords": ["1.1", "Celsius", "1850-1900"], "difficulty": "easy"},
-  {"query": "What driver monitoring system did Tesla introduce in 2025?", "expected_doc": "Tesla Vehicle Safety Report Q4 2025", "expected_keywords": ["vision-based", "cabin camera", "distracted"], "difficulty": "hard"},
-  {"query": "What is Pod Scheduling Readiness in Kubernetes?", "expected_doc": "Kubernetes v1.30 Release Notes", "expected_keywords": ["Pod", "Scheduling Readiness", "signal"], "difficulty": "medium"},
-  {"query": "What document metadata features does React 19 support?", "expected_doc": "React 19 — A Complete Overview", "expected_keywords": ["title", "meta", "link", "metadata"], "difficulty": "medium"},
-  {"query": "What happens if we delay climate mitigation according to the IPCC?", "expected_doc": "IPCC AR6 Synthesis Report", "expected_keywords": ["stranded assets", "lock in", "cost-escalation"], "difficulty": "hard"},
-  {"query": "Compare Tesla safety with the industry average.", "expected_doc": "Tesla Vehicle Safety Report Q4 2025", "expected_keywords": ["4.7x", "700,000", "average"], "difficulty": "medium"}
+  {
+    "query": "How safe is Tesla Autopilot compared to human drivers?",
+    "expected_doc": "Tesla Vehicle Safety Report Q4 2025",
+    "expected_keywords": ["Autopilot", "crash", "miles"],
+    "difficulty": "easy"
+  },
+  {
+    "query": "What new features were added in Python 3.13?",
+    "expected_doc": "Python 3.13 Release Notes",
+    "expected_keywords": ["GIL", "JIT", "free-threaded"],
+    "difficulty": "medium"
+  },
+  {
+    "query": "What is the codename for Kubernetes v1.30?",
+    "expected_doc": "Kubernetes v1.30 Release Notes",
+    "expected_keywords": ["Uwubernetes", "enhancements"],
+    "difficulty": "easy"
+  },
+  {
+    "query": "What does React 19 change about refs?",
+    "expected_doc": "React 19 — A Complete Overview",
+    "expected_keywords": ["forwardRef", "prop", "ref handling"],
+    "difficulty": "medium"
+  },
+  {
+    "query": "How many people are vulnerable to climate change according to the IPCC?",
+    "expected_doc": "IPCC AR6 Synthesis Report",
+    "expected_keywords": ["3.3", "billion", "vulnerable"],
+    "difficulty": "easy"
+  },
+  {
+    "query": "What is the Tesla Autopilot crash rate per mile?",
+    "expected_doc": "Tesla Vehicle Safety Report Q4 2025",
+    "expected_keywords": ["6.88", "million", "crash"],
+    "difficulty": "medium"
+  },
+  {
+    "query": "How does the Python 3.13 JIT compiler work?",
+    "expected_doc": "Python 3.13 Release Notes",
+    "expected_keywords": ["copy-and-patch", "JIT", "speedups"],
+    "difficulty": "hard"
+  },
+  {
+    "query": "What are Sidecar Containers in Kubernetes v1.30?",
+    "expected_doc": "Kubernetes v1.30 Release Notes",
+    "expected_keywords": ["restartable", "init containers", "sidecar"],
+    "difficulty": "medium"
+  },
+  {
+    "query": "What is the use() API in React 19?",
+    "expected_doc": "React 19 — A Complete Overview",
+    "expected_keywords": ["use", "Promise", "Context"],
+    "difficulty": "hard"
+  },
+  {
+    "query": "What emissions reductions are needed to limit warming to 1.5°C?",
+    "expected_doc": "IPCC AR6 Synthesis Report",
+    "expected_keywords": ["peak", "2030", "reduction", "43%"],
+    "difficulty": "hard"
+  },
+  {
+    "query": "How many vehicles are in Tesla's fleet?",
+    "expected_doc": "Tesla Vehicle Safety Report Q4 2025",
+    "expected_keywords": ["5 million", "fleet"],
+    "difficulty": "easy"
+  },
+  {
+    "query": "Which modules were removed in Python 3.13?",
+    "expected_doc": "Python 3.13 Release Notes",
+    "expected_keywords": ["lib2to3", "deprecated", "removed"],
+    "difficulty": "medium"
+  },
+  {
+    "query": "What authentication feature graduated in Kubernetes v1.30?",
+    "expected_doc": "Kubernetes v1.30 Release Notes",
+    "expected_keywords": ["Structured", "Authentication", "Beta"],
+    "difficulty": "hard"
+  },
+  {
+    "query": "What is useOptimistic in React 19?",
+    "expected_doc": "React 19 — A Complete Overview",
+    "expected_keywords": ["useOptimistic", "optimistic", "instant"],
+    "difficulty": "medium"
+  },
+  {
+    "query": "How much has the Earth warmed since the 19th century?",
+    "expected_doc": "IPCC AR6 Synthesis Report",
+    "expected_keywords": ["1.1", "Celsius", "1850-1900"],
+    "difficulty": "easy"
+  },
+  {
+    "query": "What driver monitoring system did Tesla introduce in 2025?",
+    "expected_doc": "Tesla Vehicle Safety Report Q4 2025",
+    "expected_keywords": ["vision-based", "cabin camera", "distracted"],
+    "difficulty": "hard"
+  },
+  {
+    "query": "What is Pod Scheduling Readiness in Kubernetes?",
+    "expected_doc": "Kubernetes v1.30 Release Notes",
+    "expected_keywords": ["Pod", "Scheduling Readiness", "signal"],
+    "difficulty": "medium"
+  },
+  {
+    "query": "What document metadata features does React 19 support?",
+    "expected_doc": "React 19 — A Complete Overview",
+    "expected_keywords": ["title", "meta", "link", "metadata"],
+    "difficulty": "medium"
+  },
+  {
+    "query": "What happens if we delay climate mitigation according to the IPCC?",
+    "expected_doc": "IPCC AR6 Synthesis Report",
+    "expected_keywords": ["stranded assets", "lock in", "cost-escalation"],
+    "difficulty": "hard"
+  },
+  {
+    "query": "Compare Tesla safety with the industry average.",
+    "expected_doc": "Tesla Vehicle Safety Report Q4 2025",
+    "expected_keywords": ["4.7x", "700,000", "average"],
+    "difficulty": "medium"
+  }
 ]

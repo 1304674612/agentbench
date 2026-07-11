@@ -78,33 +78,36 @@ export const GET = withApiAuth(async (req: NextRequest, ctx: ApiContext) => {
 // POST — Create a notification (internal/system use)
 // ============================================================
 
-export const POST = withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
-  try {
-    const body = await req.json()
-    const parsed = createNotificationBodySchema.safeParse(body)
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: parsed.error.flatten() },
-        { status: 400 }
+export const POST = withApiAuth(
+  async (req: NextRequest, _ctx: ApiContext) => {
+    try {
+      const body = await req.json()
+      const parsed = createNotificationBodySchema.safeParse(body)
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: 'Validation failed', details: parsed.error.flatten() },
+          { status: 400 }
+        )
+      }
+
+      const { userId, type, title, message, link, metadata } = parsed.data
+
+      const notification = await createNotification(
+        userId,
+        type as NotificationType,
+        title,
+        message,
+        link,
+        metadata as Record<string, unknown> | undefined
       )
+
+      return NextResponse.json(notification, { status: 201 })
+    } catch (error) {
+      return handleApiError(error)
     }
-
-    const { userId, type, title, message, link, metadata } = parsed.data
-
-    const notification = await createNotification(
-      userId,
-      type as NotificationType,
-      title,
-      message,
-      link,
-      metadata as Record<string, unknown> | undefined
-    )
-
-    return NextResponse.json(notification, { status: 201 })
-  } catch (error) {
-    return handleApiError(error)
-  }
-}, { requireWrite: true })
+  },
+  { requireWrite: true }
+)
 
 // ============================================================
 // PATCH — Mark notifications as read

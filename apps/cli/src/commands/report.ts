@@ -33,9 +33,7 @@ export function registerReportCommand(program: Command): void {
             console.log(`| Status | ${run.status} |`)
             console.log(`| Duration | ${run.duration ?? '—'}ms |`)
             console.log(`| Total Tokens | ${metrics.totalTokens ?? '—'} |`)
-            console.log(
-              `| Cost | $${(metrics.totalCost as number)?.toFixed(4) ?? '—'} |`
-            )
+            console.log(`| Cost | $${(metrics.totalCost as number)?.toFixed(4) ?? '—'} |`)
             console.log(`| Steps | ${metrics.stepCount ?? '—'} |`)
           }
         } else {

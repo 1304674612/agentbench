@@ -48,7 +48,17 @@ export type JudgeDimension =
   | 'tool_usage'
 
 export interface LLMJudgeConfig {
-  provider: 'openai' | 'anthropic' | 'gemini' | 'deepseek' | 'groq' | 'ollama' | 'openrouter' | 'azure-openai' | 'mcp' | 'custom'
+  provider:
+    | 'openai'
+    | 'anthropic'
+    | 'gemini'
+    | 'deepseek'
+    | 'groq'
+    | 'ollama'
+    | 'openrouter'
+    | 'azure-openai'
+    | 'mcp'
+    | 'custom'
   model: string
   dimensions: JudgeDimension[]
   temperature?: number

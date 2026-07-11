@@ -13,7 +13,10 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -32,6 +35,12 @@
     "tsup": "^8.0.0",
     "typescript": "^5.7.0"
   },
-  "keywords": ["agentbench", "openai", "agent", "testing", "tracing"],
+  "keywords": [
+    "agentbench",
+    "openai",
+    "agent",
+    "testing",
+    "tracing"
+  ],
   "license": "Apache-2.0"
 }

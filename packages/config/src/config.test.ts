@@ -349,7 +349,7 @@ describe('Zod schemas (runtime validation)', () => {
       expect(() =>
         ProviderConfigSchema.parse({
           provider: 'not-a-real-provider',
-        }),
+        })
       ).toThrow()
     })
 
@@ -358,7 +358,7 @@ describe('Zod schemas (runtime validation)', () => {
         ProviderConfigSchema.parse({
           provider: 'openai',
           apiBase: 'not-a-url',
-        }),
+        })
       ).toThrow()
     })
   })
@@ -375,21 +375,15 @@ describe('Zod schemas (runtime validation)', () => {
     })
 
     it('rejects temperature > 2', () => {
-      expect(() =>
-        AgentConfigSchema.parse({ temperature: 3.0 }),
-      ).toThrow()
+      expect(() => AgentConfigSchema.parse({ temperature: 3.0 })).toThrow()
     })
 
     it('rejects temperature < 0', () => {
-      expect(() =>
-        AgentConfigSchema.parse({ temperature: -1 }),
-      ).toThrow()
+      expect(() => AgentConfigSchema.parse({ temperature: -1 })).toThrow()
     })
 
     it('rejects negative maxTokens', () => {
-      expect(() =>
-        AgentConfigSchema.parse({ maxTokens: -100 }),
-      ).toThrow()
+      expect(() => AgentConfigSchema.parse({ maxTokens: -100 })).toThrow()
     })
   })
 
@@ -411,7 +405,7 @@ describe('Zod schemas (runtime validation)', () => {
           timeout: -1,
           retry: 0,
           maxConcurrency: 1,
-        }),
+        })
       ).toThrow()
     })
 
@@ -422,7 +416,7 @@ describe('Zod schemas (runtime validation)', () => {
           timeout: 1000,
           retry: -1,
           maxConcurrency: 1,
-        }),
+        })
       ).toThrow()
     })
   })
@@ -499,10 +493,10 @@ describe('Zod schemas (runtime validation)', () => {
   describe('AssertionDefaultsSchema', () => {
     it('rejects scoreThreshold outside 1-10 range', () => {
       expect(() =>
-        AssertionDefaultsSchema.parse({ scoreThreshold: 0, maxTokens: 100, maxLatency: 1000 }),
+        AssertionDefaultsSchema.parse({ scoreThreshold: 0, maxTokens: 100, maxLatency: 1000 })
       ).toThrow()
       expect(() =>
-        AssertionDefaultsSchema.parse({ scoreThreshold: 11, maxTokens: 100, maxLatency: 1000 }),
+        AssertionDefaultsSchema.parse({ scoreThreshold: 11, maxTokens: 100, maxLatency: 1000 })
       ).toThrow()
     })
   })
@@ -510,7 +504,11 @@ describe('Zod schemas (runtime validation)', () => {
   describe('EvaluationConfigSchema', () => {
     it('rejects non-array judges', () => {
       expect(() =>
-        EvaluationConfigSchema.parse({ judges: 'correctness', judgeModel: 'gpt-4o', scoreThreshold: 7 }),
+        EvaluationConfigSchema.parse({
+          judges: 'correctness',
+          judgeModel: 'gpt-4o',
+          scoreThreshold: 7,
+        })
       ).toThrow()
     })
   })

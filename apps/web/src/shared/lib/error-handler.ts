@@ -90,10 +90,7 @@ export function handleApiError(error: unknown): NextResponse {
       )
     }
     if (error.code === 'P2025') {
-      return NextResponse.json(
-        { error: 'Record not found', code: 'NOT_FOUND' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Record not found', code: 'NOT_FOUND' }, { status: 404 })
     }
   }
 

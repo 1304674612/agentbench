@@ -18,7 +18,9 @@ const program = new Command()
 
 program
   .name('agentbench')
-  .description('AgentBench — The AI Agent Regression Testing Framework. Write tests, run evals, compare models, and catch prompt regressions before they ship.')
+  .description(
+    'AgentBench — The AI Agent Regression Testing Framework. Write tests, run evals, compare models, and catch prompt regressions before they ship.'
+  )
   .version('0.3.0')
   .option('--debug', 'Enable debug output with full error stacks')
 

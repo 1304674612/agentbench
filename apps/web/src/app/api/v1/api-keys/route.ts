@@ -56,7 +56,7 @@ export const POST = withApiAuth(async (req: NextRequest, ctx: ApiContext) => {
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Validation failed', details: parsed.error.flatten() },
-        { status: 400 },
+        { status: 400 }
       )
     }
 
@@ -81,7 +81,7 @@ export const POST = withApiAuth(async (req: NextRequest, ctx: ApiContext) => {
         name: parsed.data.name,
         message: 'Store this key securely. It will not be shown again.',
       },
-      { status: 201 },
+      { status: 201 }
     )
   } catch (error) {
     console.error('Failed to create API key:', error)

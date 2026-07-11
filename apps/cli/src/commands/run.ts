@@ -52,10 +52,7 @@ export function registerRunCommand(program: Command): void {
           console.log(summaryLine('Run ID', result.id))
           console.log(summaryLine('Status', result.status))
           console.log(
-            summaryLine(
-              'View',
-              `${apiClient.apiBase.replace('/api/v1', '')}/runs/${result.id}`
-            )
+            summaryLine('View', `${apiClient.apiBase.replace('/api/v1', '')}/runs/${result.id}`)
           )
         }
       } catch (err) {

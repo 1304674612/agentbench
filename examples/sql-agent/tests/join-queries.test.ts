@@ -17,17 +17,14 @@ export async function innerJoinTest() {
     apiKey: API_KEY,
   })
 
-  const hasJoin = await expect(result)
-    .output().toMatchRegex(/JOIN/i)
-    .run()
+  const hasJoin = await expect(result).output().toMatchRegex(/JOIN/i).run()
 
   const hasOnCondition = await expect(result)
-    .output().toMatchRegex(/ON\s+.*=\s*.*/i)
+    .output()
+    .toMatchRegex(/ON\s+.*=\s*.*/i)
     .run()
 
-  const mentionsUsers = await expect(result)
-    .output().toMatchRegex(/users/i)
-    .run()
+  const mentionsUsers = await expect(result).output().toMatchRegex(/users/i).run()
 
   return {
     hasJoin: hasJoin.allPassed,
@@ -45,15 +42,18 @@ export async function leftJoinTest() {
   })
 
   const hasJoin = await expect(result)
-    .output().toMatchRegex(/LEFT\s+(OUTER\s+)?JOIN/i)
+    .output()
+    .toMatchRegex(/LEFT\s+(OUTER\s+)?JOIN/i)
     .run()
 
   const hasNullCheck = await expect(result)
-    .output().toMatchRegex(/IS\s+(NULL|NULL)/i)
+    .output()
+    .toMatchRegex(/IS\s+(NULL|NULL)/i)
     .run()
 
   const mentionsReviews = await expect(result)
-    .output().toMatchRegex(/reviews/i)
+    .output()
+    .toMatchRegex(/reviews/i)
     .run()
 
   return {
@@ -71,16 +71,16 @@ export async function multiJoinTest() {
     apiKey: API_KEY,
   })
 
-  const hasJoin = await expect(result)
-    .output().toMatchRegex(/JOIN/i)
-    .run()
+  const hasJoin = await expect(result).output().toMatchRegex(/JOIN/i).run()
 
   const hasCancelled = await expect(result)
-    .output().toMatchRegex(/cancelled/i)
+    .output()
+    .toMatchRegex(/cancelled/i)
     .run()
 
   const mentionsOrderItems = await expect(result)
-    .output().toMatchRegex(/order_items/i)
+    .output()
+    .toMatchRegex(/order_items/i)
     .run()
 
   return {

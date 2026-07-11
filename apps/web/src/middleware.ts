@@ -28,10 +28,7 @@ function isApiWriteRoute(pathname: string): boolean {
 }
 
 function isPublicRoute(pathname: string): boolean {
-  return (
-    pathname === '/' ||
-    PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix))
-  )
+  return pathname === '/' || PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix))
 }
 
 // ============================================================
@@ -66,10 +63,7 @@ export default auth(async function middleware(req) {
     const hasApiKey = req.headers.get('authorization')?.startsWith('Bearer ')
 
     if (isWriteMethod && !req.auth && !hasApiKey) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 },
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
     return NextResponse.next()
   }

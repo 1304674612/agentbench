@@ -2,20 +2,45 @@ import type { Metadata } from 'next'
 import { db } from '@/shared/lib/db'
 import Link from 'next/link'
 import {
-  TrendingUp, TrendingDown, Play, Activity, AlertTriangle,
-  Clock, DollarSign, Zap, BarChart3, CheckCircle2, XCircle, ArrowRight,
+  TrendingUp,
+  TrendingDown,
+  Play,
+  Activity,
+  AlertTriangle,
+  Clock,
+  DollarSign,
+  Zap,
+  BarChart3,
+  CheckCircle2,
+  XCircle,
+  ArrowRight,
   FlaskConical,
 } from 'lucide-react'
-import { formatNumber, formatCurrency, formatDuration, formatRelativeTime } from '@/shared/lib/utils'
+import {
+  formatNumber,
+  formatCurrency,
+  formatDuration,
+  formatRelativeTime,
+} from '@/shared/lib/utils'
 
 export const metadata: Metadata = {
   title: 'Dashboard',
-  description: 'Monitor your AI agent runs, pass rates, costs, and performance metrics at a glance.',
+  description:
+    'Monitor your AI agent runs, pass rates, costs, and performance metrics at a glance.',
 }
 
 export default async function DashboardPage() {
   // Real data from database
-  const [totalRuns, passedRuns, failedRuns, pendingRuns, recentRuns, totalProjects, totalSuites, totalCases] = await Promise.all([
+  const [
+    totalRuns,
+    passedRuns,
+    failedRuns,
+    pendingRuns,
+    recentRuns,
+    totalProjects,
+    totalSuites,
+    totalCases,
+  ] = await Promise.all([
     db.run.count(),
     db.run.count({ where: { status: 'PASSED' } }),
     db.run.count({ where: { status: { in: ['FAILED', 'ERROR'] } } }),
@@ -24,8 +49,13 @@ export default async function DashboardPage() {
       orderBy: { createdAt: 'desc' },
       take: 8,
       select: {
-        id: true, name: true, status: true, duration: true,
-        metrics: true, scores: true, createdAt: true,
+        id: true,
+        name: true,
+        status: true,
+        duration: true,
+        metrics: true,
+        scores: true,
+        createdAt: true,
         project: { select: { id: true, name: true } },
       },
     }),
@@ -39,21 +69,65 @@ export default async function DashboardPage() {
 
   // Aggregate metrics from recent runs
   const runsWithMetrics = recentRuns.filter((r) => r.metrics != null)
-  const avgTokens = runsWithMetrics.length > 0
-    ? Math.round(runsWithMetrics.reduce((s, r) => s + ((r.metrics as Record<string, number>).totalTokens ?? 0), 0) / runsWithMetrics.length)
-    : 0
-  const avgCost = runsWithMetrics.length > 0
-    ? runsWithMetrics.reduce((s, r) => s + ((r.metrics as Record<string, number>).totalCost ?? 0), 0) / runsWithMetrics.length
-    : 0
-  const avgLatency = runsWithMetrics.length > 0
-    ? Math.round(runsWithMetrics.reduce((s, r) => s + ((r.metrics as Record<string, number>).totalLatency ?? 0), 0) / runsWithMetrics.length)
-    : 0
+  const avgTokens =
+    runsWithMetrics.length > 0
+      ? Math.round(
+          runsWithMetrics.reduce(
+            (s, r) => s + ((r.metrics as Record<string, number>).totalTokens ?? 0),
+            0
+          ) / runsWithMetrics.length
+        )
+      : 0
+  const avgCost =
+    runsWithMetrics.length > 0
+      ? runsWithMetrics.reduce(
+          (s, r) => s + ((r.metrics as Record<string, number>).totalCost ?? 0),
+          0
+        ) / runsWithMetrics.length
+      : 0
+  const avgLatency =
+    runsWithMetrics.length > 0
+      ? Math.round(
+          runsWithMetrics.reduce(
+            (s, r) => s + ((r.metrics as Record<string, number>).totalLatency ?? 0),
+            0
+          ) / runsWithMetrics.length
+        )
+      : 0
 
   const statCards = [
-    { label: 'Pass Rate', value: passRate != null ? `${passRate}%` : 'N/A', icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-500/10', desc: `${passedRuns} passed · ${failedRuns} failed · ${pendingRuns} pending` },
-    { label: 'Test Suites', value: formatNumber(totalSuites), icon: FlaskConical, color: 'text-amber-400', bg: 'bg-amber-500/10', desc: `${totalCases} test cases across ${totalProjects} projects` },
-    { label: 'Total Runs', value: formatNumber(totalRuns), icon: Play, color: 'text-indigo-400', bg: 'bg-indigo-500/10', desc: `${completedRuns} completed · ${pendingRuns} pending` },
-    { label: 'Avg Cost', value: avgCost > 0 ? `$${avgCost.toFixed(4)}` : 'N/A', icon: DollarSign, color: 'text-purple-400', bg: 'bg-purple-500/10', desc: avgTokens > 0 ? `${formatNumber(avgTokens)} avg tokens` : 'Run tests to see cost data' },
+    {
+      label: 'Pass Rate',
+      value: passRate != null ? `${passRate}%` : 'N/A',
+      icon: CheckCircle2,
+      color: 'text-emerald-400',
+      bg: 'bg-emerald-500/10',
+      desc: `${passedRuns} passed · ${failedRuns} failed · ${pendingRuns} pending`,
+    },
+    {
+      label: 'Test Suites',
+      value: formatNumber(totalSuites),
+      icon: FlaskConical,
+      color: 'text-amber-400',
+      bg: 'bg-amber-500/10',
+      desc: `${totalCases} test cases across ${totalProjects} projects`,
+    },
+    {
+      label: 'Total Runs',
+      value: formatNumber(totalRuns),
+      icon: Play,
+      color: 'text-indigo-400',
+      bg: 'bg-indigo-500/10',
+      desc: `${completedRuns} completed · ${pendingRuns} pending`,
+    },
+    {
+      label: 'Avg Cost',
+      value: avgCost > 0 ? `$${avgCost.toFixed(4)}` : 'N/A',
+      icon: DollarSign,
+      color: 'text-purple-400',
+      bg: 'bg-purple-500/10',
+      desc: avgTokens > 0 ? `${formatNumber(avgTokens)} avg tokens` : 'Run tests to see cost data',
+    },
   ]
 
   return (
@@ -64,14 +138,25 @@ export default async function DashboardPage() {
           Overview of your agent testing pipeline.
         </p>
         <p className="text-xs text-muted-foreground/60 mt-1">
-          New here? Read the <a href="https://github.com/1304674612/agentbench/blob/main/docs/guides/web-dashboard-guide.md" className="underline hover:text-foreground" target="_blank">Web Dashboard Guide</a> to understand how everything fits together.
+          New here? Read the{' '}
+          <a
+            href="https://github.com/1304674612/agentbench/blob/main/docs/guides/web-dashboard-guide.md"
+            className="underline hover:text-foreground"
+            target="_blank"
+          >
+            Web Dashboard Guide
+          </a>{' '}
+          to understand how everything fits together.
         </p>
       </div>
 
       {/* Stat Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((s) => (
-          <div key={s.label} className="rounded-xl border border-border bg-card p-4 hover:border-foreground/10 transition-colors">
+          <div
+            key={s.label}
+            className="rounded-xl border border-border bg-card p-4 hover:border-foreground/10 transition-colors"
+          >
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-muted-foreground">{s.label}</span>
               <div className={`rounded-lg p-1.5 ${s.bg}`}>
@@ -98,7 +183,12 @@ export default async function DashboardPage() {
             <div className="space-y-3">
               <BarRow label="Passed" value={passedRuns} total={totalRuns} color="bg-emerald-500" />
               <BarRow label="Failed" value={failedRuns} total={totalRuns} color="bg-red-500" />
-              <BarRow label="Pending" value={pendingRuns} total={totalRuns} color="bg-muted-foreground/30" />
+              <BarRow
+                label="Pending"
+                value={pendingRuns}
+                total={totalRuns}
+                color="bg-muted-foreground/30"
+              />
             </div>
           )}
         </div>
@@ -122,7 +212,9 @@ export default async function DashboardPage() {
                     className="flex items-center justify-between rounded-lg p-2 hover:bg-muted/30 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className={`shrink-0 w-2 h-2 rounded-full ${run.status === 'PASSED' ? 'bg-emerald-400' : run.status === 'FAILED' || run.status === 'ERROR' ? 'bg-red-400' : 'bg-amber-400'}`} />
+                      <span
+                        className={`shrink-0 w-2 h-2 rounded-full ${run.status === 'PASSED' ? 'bg-emerald-400' : run.status === 'FAILED' || run.status === 'ERROR' ? 'bg-red-400' : 'bg-amber-400'}`}
+                      />
                       <span className="text-sm truncate">{run.name}</span>
                     </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0 ml-3">
@@ -132,7 +224,10 @@ export default async function DashboardPage() {
                   </Link>
                 )
               })}
-              <Link href="/runs" className="flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground py-2 transition-colors">
+              <Link
+                href="/runs"
+                className="flex items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground py-2 transition-colors"
+              >
                 View all runs <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
@@ -145,25 +240,55 @@ export default async function DashboardPage() {
         <h3 className="font-semibold text-sm mb-4">Quick Actions</h3>
         <div className="grid gap-3 sm:grid-cols-4">
           <ActionCard href="/runs" icon={Play} label="New Run" desc="Execute an agent" />
-          <ActionCard href="/tests" icon={CheckCircle2} label="Test Suites" desc="Manage test cases" />
-          <ActionCard href="/experiments" icon={FlaskConical} label="Experiments" desc="A/B test agents" />
-          <ActionCard href="/coverage" icon={BarChart3} label="Coverage" desc="View test coverage" />
+          <ActionCard
+            href="/tests"
+            icon={CheckCircle2}
+            label="Test Suites"
+            desc="Manage test cases"
+          />
+          <ActionCard
+            href="/experiments"
+            icon={FlaskConical}
+            label="Experiments"
+            desc="A/B test agents"
+          />
+          <ActionCard
+            href="/coverage"
+            icon={BarChart3}
+            label="Coverage"
+            desc="View test coverage"
+          />
         </div>
       </div>
     </div>
   )
 }
 
-function BarRow({ label, value, total, color }: { label: string; value: number; total: number; color: string }) {
+function BarRow({
+  label,
+  value,
+  total,
+  color,
+}: {
+  label: string
+  value: number
+  total: number
+  color: string
+}) {
   const pct = total > 0 ? Math.round((value / total) * 100) : 0
   return (
     <div>
       <div className="flex items-center justify-between mb-1 text-xs">
         <span className="text-muted-foreground">{label}</span>
-        <span className="font-mono">{value} <span className="text-muted-foreground">({pct}%)</span></span>
+        <span className="font-mono">
+          {value} <span className="text-muted-foreground">({pct}%)</span>
+        </span>
       </div>
       <div className="h-2 rounded-full bg-muted overflow-hidden">
-        <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${Math.max(pct, 3)}%` }} />
+        <div
+          className={`h-full rounded-full ${color} transition-all`}
+          style={{ width: `${Math.max(pct, 3)}%` }}
+        />
       </div>
     </div>
   )
@@ -177,7 +302,17 @@ function EmptyInCard({ message }: { message: string }) {
   )
 }
 
-function ActionCard({ href, icon: Icon, label, desc }: { href: string; icon: React.ComponentType<{ className?: string }>; label: string; desc: string }) {
+function ActionCard({
+  href,
+  icon: Icon,
+  label,
+  desc,
+}: {
+  href: string
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  desc: string
+}) {
   return (
     <Link
       href={href}
@@ -193,4 +328,3 @@ function ActionCard({ href, icon: Icon, label, desc }: { href: string; icon: Rea
     </Link>
   )
 }
-

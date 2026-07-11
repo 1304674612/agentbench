@@ -62,9 +62,7 @@ export function separator(char = '─', length = 60): string {
 }
 
 export function tableRow(cells: string[], widths?: number[]): string {
-  return cells
-    .map((c, i) => (widths ? c.padEnd(widths[i]) : c))
-    .join(' | ')
+  return cells.map((c, i) => (widths ? c.padEnd(widths[i]) : c)).join(' | ')
 }
 
 export function section(title: string, width = 60): string {

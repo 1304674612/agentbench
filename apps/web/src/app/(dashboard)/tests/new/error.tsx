@@ -12,10 +12,16 @@ export default function NewTestSuiteError({ error, reset }: { error: Error; rese
         {error.message || 'An unexpected error occurred.'}
       </p>
       <div className="flex gap-3">
-        <button onClick={reset} className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-foreground/90">
+        <button
+          onClick={reset}
+          className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-foreground/90"
+        >
           <RefreshCw className="h-4 w-4" /> Try Again
         </button>
-        <Link href="/tests" className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm hover:bg-muted">
+        <Link
+          href="/tests"
+          className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm hover:bg-muted"
+        >
           Back to Tests
         </Link>
       </div>

@@ -42,10 +42,26 @@ export const GET = withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
           llmCallCount: metrics.llmCallCount ?? 0,
           toolCallCount: metrics.toolCallCount ?? 0,
         },
-        scores: run.scores.map((s: { evaluator: string; score: number; maxScore: number }) => ({ evaluator: s.evaluator, score: s.score, maxScore: s.maxScore })),
-        assertionResults: run.assertionResults.map((a: { type: string; status: string; message?: string | null; expected?: unknown; actual?: unknown }) => ({
-          type: a.type, status: a.status, message: a.message, expected: a.expected, actual: a.actual,
+        scores: run.scores.map((s: { evaluator: string; score: number; maxScore: number }) => ({
+          evaluator: s.evaluator,
+          score: s.score,
+          maxScore: s.maxScore,
         })),
+        assertionResults: run.assertionResults.map(
+          (a: {
+            type: string
+            status: string
+            message?: string | null
+            expected?: unknown
+            actual?: unknown
+          }) => ({
+            type: a.type,
+            status: a.status,
+            message: a.message,
+            expected: a.expected,
+            actual: a.actual,
+          })
+        ),
         summary: run.summary,
         config: run.config,
         generatedAt: new Date().toISOString(),
@@ -57,15 +73,30 @@ export const GET = withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
           return NextResponse.json(data)
         case 'markdown': {
           const md = buildMarkdown(data)
-          return new NextResponse(md, { headers: { 'Content-Type': 'text/markdown', 'Content-Disposition': `attachment; filename="report-${runId.slice(0, 8)}.md"` } })
+          return new NextResponse(md, {
+            headers: {
+              'Content-Type': 'text/markdown',
+              'Content-Disposition': `attachment; filename="report-${runId.slice(0, 8)}.md"`,
+            },
+          })
         }
         case 'html': {
           const html = buildHTML(data)
-          return new NextResponse(html, { headers: { 'Content-Type': 'text/html', 'Content-Disposition': `attachment; filename="report-${runId.slice(0, 8)}.html"` } })
+          return new NextResponse(html, {
+            headers: {
+              'Content-Type': 'text/html',
+              'Content-Disposition': `attachment; filename="report-${runId.slice(0, 8)}.html"`,
+            },
+          })
         }
         case 'junit': {
           const xml = buildJUnitXML(data)
-          return new NextResponse(xml, { headers: { 'Content-Type': 'application/xml', 'Content-Disposition': `attachment; filename="report-${runId.slice(0, 8)}.xml"` } })
+          return new NextResponse(xml, {
+            headers: {
+              'Content-Type': 'application/xml',
+              'Content-Disposition': `attachment; filename="report-${runId.slice(0, 8)}.xml"`,
+            },
+          })
         }
         default:
           return NextResponse.json(data)
@@ -80,20 +111,34 @@ export const GET = withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
       include: { scores: true, assertionResults: true },
     })
 
-    const summaries = runs.map((r: { id: string; name: string; status: string; duration?: number | null; metrics?: unknown }) => {
-      const m = (r.metrics ?? {}) as Record<string, number>
-      return {
-        id: r.id, name: r.name, status: r.status, duration: r.duration,
-        totalTokens: m.totalTokens ?? 0, totalCost: m.totalCost ?? 0, totalLatency: m.totalLatency ?? 0,
+    const summaries = runs.map(
+      (r: {
+        id: string
+        name: string
+        status: string
+        duration?: number | null
+        metrics?: unknown
+      }) => {
+        const m = (r.metrics ?? {}) as Record<string, number>
+        return {
+          id: r.id,
+          name: r.name,
+          status: r.status,
+          duration: r.duration,
+          totalTokens: m.totalTokens ?? 0,
+          totalCost: m.totalCost ?? 0,
+          totalLatency: m.totalLatency ?? 0,
+        }
       }
-    })
+    )
 
     return NextResponse.json({
       projectId,
       generatedAt: new Date().toISOString(),
       totalRuns: runs.length,
       passed: runs.filter((r: { status: string }) => r.status === 'PASSED').length,
-      failed: runs.filter((r: { status: string }) => r.status === 'FAILED' || r.status === 'ERROR').length,
+      failed: runs.filter((r: { status: string }) => r.status === 'FAILED' || r.status === 'ERROR')
+        .length,
       runs: summaries,
     })
   } catch (error) {
@@ -104,8 +149,16 @@ export const GET = withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
 
 function buildMarkdown(data: Record<string, unknown>): string {
   const metrics = (data.metrics ?? {}) as Record<string, number>
-  const scores = (data.scores ?? []) as Array<{ evaluator: string; score: number; maxScore: number }>
-  const assertions = (data.assertionResults ?? []) as Array<{ type: string; status: string; message?: string | null }>
+  const scores = (data.scores ?? []) as Array<{
+    evaluator: string
+    score: number
+    maxScore: number
+  }>
+  const assertions = (data.assertionResults ?? []) as Array<{
+    type: string
+    status: string
+    message?: string | null
+  }>
   const lines = [
     `# ${data.name ?? 'Run Report'}`,
     '',
@@ -136,10 +189,25 @@ function buildMarkdown(data: Record<string, unknown>): string {
 
 function buildHTML(data: Record<string, unknown>): string {
   const metrics = (data.metrics ?? {}) as Record<string, number>
-  const scores = (data.scores ?? []) as Array<{ evaluator: string; score: number; maxScore: number }>
-  const assertions = (data.assertionResults ?? []) as Array<{ type: string; status: string; message?: string | null }>
-  const scoreRows = scores.map((s) => `<tr><td>${s.evaluator}</td><td>${s.score.toFixed(1)}/${s.maxScore}</td></tr>`).join('')
-  const assertionRows = assertions.map((a) => `<tr class="${a.status.toLowerCase()}"><td>${a.type}</td><td>${a.status}</td><td>${a.message ?? ''}</td></tr>`).join('')
+  const scores = (data.scores ?? []) as Array<{
+    evaluator: string
+    score: number
+    maxScore: number
+  }>
+  const assertions = (data.assertionResults ?? []) as Array<{
+    type: string
+    status: string
+    message?: string | null
+  }>
+  const scoreRows = scores
+    .map((s) => `<tr><td>${s.evaluator}</td><td>${s.score.toFixed(1)}/${s.maxScore}</td></tr>`)
+    .join('')
+  const assertionRows = assertions
+    .map(
+      (a) =>
+        `<tr class="${a.status.toLowerCase()}"><td>${a.type}</td><td>${a.status}</td><td>${a.message ?? ''}</td></tr>`
+    )
+    .join('')
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>${data.name ?? 'Report'} — AgentBench</title>
 <style>body{font-family:system-ui,sans-serif;max-width:800px;margin:2rem auto;padding:0 1rem;background:#0a0a0a;color:#e5e5e5}h1{border-bottom:1px solid #27272a;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid #27272a}th{background:#18181b;font-size:.75rem;text-transform:uppercase;color:#a1a1aa}.passed{color:#34d399}.failed{color:#f87171}.card{background:#18181b;border-radius:.75rem;padding:1rem;margin:1rem 0}.metric{display:inline-block;width:23%;text-align:center}.metric-value{font-size:1.5rem;font-weight:700}.metric-label{font-size:.75rem;color:#a1a1aa}</style></head><body>
 <h1>${data.name ?? 'Run Report'}</h1><p>Status: <strong class="${data.status === 'PASSED' || data.status === 'passed' ? 'passed' : 'failed'}">${String(data.status).toUpperCase()}</strong> · Duration: ${data.duration ?? 'N/A'}ms</p>
@@ -150,7 +218,11 @@ ${assertions.length ? `<h2>Assertions</h2><table><tr><th>Type</th><th>Status</th
 }
 
 function buildJUnitXML(data: Record<string, unknown>): string {
-  const assertions = (data.assertionResults ?? []) as Array<{ type: string; status: string; message?: string | null }>
+  const assertions = (data.assertionResults ?? []) as Array<{
+    type: string
+    status: string
+    message?: string | null
+  }>
   const duration = (data.duration as number) ?? 0
   let cases = ''
   if (assertions.length === 0) {

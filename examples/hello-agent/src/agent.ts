@@ -37,12 +37,7 @@ export interface HelloAgentResult {
 }
 
 export async function runHelloAgent(params: RunHelloAgentParams): Promise<HelloAgentResult> {
-  const {
-    message,
-    apiKey,
-    model = 'gpt-4o-mini',
-    temperature = 0.3,
-  } = params
+  const { message, apiKey, model = 'gpt-4o-mini', temperature = 0.3 } = params
 
   const client = createOpenAIClient({
     apiKey,

@@ -23,9 +23,7 @@ export async function simpleQueryLatencyTest() {
 
   const underBudget = elapsed < 20000
 
-  const completed = await expect(result)
-    .status().toBeCompleted()
-    .run()
+  const completed = await expect(result).status().toBeCompleted().run()
 
   return {
     underBudget,
@@ -48,9 +46,7 @@ export async function complexQueryLatencyTest() {
 
   const underBudget = elapsed < 30000
 
-  const completed = await expect(result)
-    .status().toBeCompleted()
-    .run()
+  const completed = await expect(result).status().toBeCompleted().run()
 
   return {
     underBudget,

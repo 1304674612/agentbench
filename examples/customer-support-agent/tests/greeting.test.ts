@@ -18,14 +18,10 @@ export async function greetingTest() {
   })
 
   // Assertion 1: Agent completed successfully without errors or timeouts
-  const completed = await expect(result)
-    .status().toBeCompleted()
-    .run()
+  const completed = await expect(result).status().toBeCompleted().run()
 
   // Assertion 2: Agent output contains a friendly greeting
-  const friendly = await expect(result)
-    .output().toContain('hello')
-    .run()
+  const friendly = await expect(result).output().toContain('hello').run()
 
   // Fallback: check for alternative greetings if 'hello' not found
   const alternativeGreeting = await expect(result)
@@ -38,14 +34,10 @@ export async function greetingTest() {
     .run()
 
   // Assertion 3: Token usage is reasonable for a simple greeting
-  const tokens = await expect(result)
-    .tokens().toBeLessThan(1000)
-    .run()
+  const tokens = await expect(result).tokens().toBeLessThan(1000).run()
 
   // Assertion 4: Response time is under 10 seconds
-  const latency = await expect(result)
-    .latency().toBeLessThan(10000)
-    .run()
+  const latency = await expect(result).latency().toBeLessThan(10000).run()
 
   return {
     completed: completed.allPassed,

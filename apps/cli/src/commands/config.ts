@@ -1,10 +1,6 @@
 import type { Command } from 'commander'
 import chalk from 'chalk'
-import {
-  configFileExists,
-  getEnvConfigValue,
-  writeEnvConfig,
-} from '../lib/config'
+import { configFileExists, getEnvConfigValue, writeEnvConfig } from '../lib/config'
 
 export function registerConfigCommand(program: Command): void {
   const configCmd = program.command('config').description('Configuration management')

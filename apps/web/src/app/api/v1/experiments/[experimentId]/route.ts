@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ experimentId: string }> },
+  { params }: { params: Promise<{ experimentId: string }> }
 ) {
   try {
     const { experimentId } = await params
@@ -15,7 +15,14 @@ export async function GET(
         runs: {
           include: {
             run: {
-              select: { id: true, name: true, status: true, metrics: true, scores: true, duration: true },
+              select: {
+                id: true,
+                name: true,
+                status: true,
+                metrics: true,
+                scores: true,
+                duration: true,
+              },
             },
           },
         },
@@ -27,20 +34,29 @@ export async function GET(
     }
 
     // Compute summary
-    const variantRuns = new Map<string, Array<{ metrics: unknown; scores: unknown; status: string }>>()
+    const variantRuns = new Map<
+      string,
+      Array<{ metrics: unknown; scores: unknown; status: string }>
+    >()
     for (const er of experiment.runs) {
-      const name = experiment.variants.find((v: { id: string; name: string }) => v.id === er.variantId)?.name ?? 'unknown'
+      const name =
+        experiment.variants.find((v: { id: string; name: string }) => v.id === er.variantId)
+          ?.name ?? 'unknown'
       if (!variantRuns.has(name)) variantRuns.set(name, [])
       variantRuns.get(name)!.push(er.run)
     }
 
-    const summary: Record<string, { runCount: number; passedCount: number; avgDuration: number }> = {}
+    const summary: Record<string, { runCount: number; passedCount: number; avgDuration: number }> =
+      {}
     for (const [name, runs] of variantRuns) {
       const durations = runs.map((r) => (r as { duration?: number }).duration ?? 0)
       summary[name] = {
         runCount: runs.length,
         passedCount: runs.filter((r) => r.status === 'PASSED').length,
-        avgDuration: runs.length > 0 ? Math.round(durations.reduce((s: number, d: number) => s + d, 0) / runs.length) : 0,
+        avgDuration:
+          runs.length > 0
+            ? Math.round(durations.reduce((s: number, d: number) => s + d, 0) / runs.length)
+            : 0,
       }
     }
 
@@ -58,14 +74,17 @@ const runExperimentSchema = z.object({
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ experimentId: string }> },
+  { params }: { params: Promise<{ experimentId: string }> }
 ) {
   try {
     const { experimentId } = await params
     const body = await req.json()
     const parsed = runExperimentSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsed.error.flatten() },
+        { status: 400 }
+      )
     }
 
     const experiment = await db.experiment.findUnique({
@@ -129,10 +148,13 @@ export async function POST(
       data: { status: 'RUNNING', startedAt: new Date() },
     })
 
-    return NextResponse.json({
-      message: `Created ${createdRuns.length} runs across ${experiment.variants.length} variants`,
-      runs: createdRuns,
-    }, { status: 201 })
+    return NextResponse.json(
+      {
+        message: `Created ${createdRuns.length} runs across ${experiment.variants.length} variants`,
+        runs: createdRuns,
+      },
+      { status: 201 }
+    )
   } catch (error) {
     console.error('Failed to run experiment:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -141,7 +163,7 @@ export async function POST(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: Promise<{ experimentId: string }> },
+  { params }: { params: Promise<{ experimentId: string }> }
 ) {
   try {
     const { experimentId } = await params

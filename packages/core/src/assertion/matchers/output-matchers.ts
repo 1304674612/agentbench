@@ -11,7 +11,7 @@ import { validateJsonNode, truncate } from '../../utils/json-validator'
 export function outputToContain(
   output: string,
   substring: string,
-  caseSensitive = true,
+  caseSensitive = true
 ): AssertionResult {
   const searchIn = caseSensitive ? output : output.toLowerCase()
   const searchFor = caseSensitive ? substring : substring.toLowerCase()
@@ -31,7 +31,7 @@ export function outputToContain(
 export function outputNotToContain(
   output: string,
   substring: string,
-  caseSensitive = true,
+  caseSensitive = true
 ): AssertionResult {
   const searchIn = caseSensitive ? output : output.toLowerCase()
   const searchFor = caseSensitive ? substring : substring.toLowerCase()
@@ -51,7 +51,7 @@ export function outputNotToContain(
 export function outputToMatchRegex(
   output: string,
   pattern: string,
-  flags?: string,
+  flags?: string
 ): AssertionResult {
   try {
     const regex = new RegExp(pattern, flags)
@@ -80,7 +80,7 @@ export function outputToMatchRegex(
 export function outputToEqual(
   output: string,
   expected: string,
-  normalize = false,
+  normalize = false
 ): AssertionResult {
   let actual = output
   let exp = expected
@@ -103,7 +103,7 @@ export function outputToEqual(
  */
 export function outputToMatchSchema(
   output: string,
-  schema: Record<string, unknown>,
+  schema: Record<string, unknown>
 ): AssertionResult {
   let parsed: unknown
   try {
@@ -135,10 +135,7 @@ export function outputToMatchSchema(
 /**
  * Assert output matches a snapshot (shallow compare).
  */
-export function outputToMatchSnapshot(
-  output: string,
-  snapshot: string,
-): AssertionResult {
+export function outputToMatchSnapshot(output: string, snapshot: string): AssertionResult {
   const passed = output === snapshot
   return {
     type: 'matches_snapshot',

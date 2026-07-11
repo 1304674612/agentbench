@@ -2,13 +2,7 @@
  * Execution Tracer — captures complete agent execution traces.
  * Intercepts LLM calls, tool invocations, and responses.
  */
-import type {
-  ExecutionTrace,
-  TraceStep,
-  TraceStepType,
-  StepStatus,
-  TraceMetadata,
-} from '../types'
+import type { ExecutionTrace, TraceStep, TraceStepType, StepStatus, TraceMetadata } from '../types'
 import { tokenCounter, costCalculator } from '../utils/token-counter'
 import { StreamCapture, type AssembledStreamResponse } from './stream-capture'
 
@@ -68,10 +62,7 @@ export class Tracer {
     const stepStart = new Date()
 
     // Estimate tokens for request
-    const estimatedPromptTokens = tokenCounter.estimateMessagesTokens(
-      request.messages,
-      provider
-    )
+    const estimatedPromptTokens = tokenCounter.estimateMessagesTokens(request.messages, provider)
 
     // Create the step
     const step: TraceStep = {
@@ -85,7 +76,7 @@ export class Tracer {
         ? {
             provider,
             model,
-            messages: request.messages.map(m => ({
+            messages: request.messages.map((m) => ({
               role: m.role as 'system' | 'user' | 'assistant' | 'tool',
               content: m.content,
             })),
@@ -126,7 +117,7 @@ export class Tracer {
       step.llmResponse = this.captureRequestData
         ? {
             content: response.content,
-            toolCalls: response.toolCalls?.map(tc => ({
+            toolCalls: response.toolCalls?.map((tc) => ({
               id: tc.id,
               type: tc.type as 'function',
               function: {
@@ -186,10 +177,7 @@ export class Tracer {
     const stepStart = new Date()
 
     // Estimate tokens for request
-    const estimatedPromptTokens = tokenCounter.estimateMessagesTokens(
-      request.messages,
-      provider
-    )
+    const estimatedPromptTokens = tokenCounter.estimateMessagesTokens(request.messages, provider)
 
     // Create initial step
     const step: TraceStep = {
@@ -241,7 +229,8 @@ export class Tracer {
 
       // Use actual usage from stream, or estimates
       const promptTokens = assembled.usage?.promptTokens ?? estimatedPromptTokens
-      const completionTokens = assembled.usage?.completionTokens ??
+      const completionTokens =
+        assembled.usage?.completionTokens ??
         tokenCounter.estimateTokens(assembled.fullText, provider)
       const totalTokens = promptTokens + completionTokens
       const cost = costCalculator.calculate(model, promptTokens, completionTokens)
@@ -311,9 +300,7 @@ export class Tracer {
       type: 'tool_call' as TraceStepType,
       startedAt: stepStart,
       toolName,
-      toolRequest: this.captureRequestData
-        ? { name: toolName, arguments: args }
-        : undefined,
+      toolRequest: this.captureRequestData ? { name: toolName, arguments: args } : undefined,
       cost: 0,
       status: 'success' as StepStatus,
       metadata: {},
@@ -325,9 +312,7 @@ export class Tracer {
 
       step.endedAt = stepEnd
       step.duration = stepEnd.getTime() - stepStart.getTime()
-      step.toolResponse = this.captureRequestData
-        ? { result, error: undefined }
-        : undefined
+      step.toolResponse = this.captureRequestData ? { result, error: undefined } : undefined
       step.status = 'success'
 
       this.steps.push(step)
@@ -429,9 +414,9 @@ export class Tracer {
    * Get summary statistics.
    */
   getStats() {
-    const llmSteps = this.steps.filter(s => s.type === 'llm_call')
-    const toolSteps = this.steps.filter(s => s.type === 'tool_call')
-    const errorSteps = this.steps.filter(s => s.status === 'error')
+    const llmSteps = this.steps.filter((s) => s.type === 'llm_call')
+    const toolSteps = this.steps.filter((s) => s.type === 'tool_call')
+    const errorSteps = this.steps.filter((s) => s.status === 'error')
 
     return {
       totalSteps: this.steps.length,

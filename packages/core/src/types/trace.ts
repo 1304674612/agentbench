@@ -61,16 +61,9 @@ export interface TraceStep {
   metadata?: Record<string, unknown>
 }
 
-export type TraceStepType =
-  | 'llm_call'
-  | 'tool_call'
-  | 'response'
-  | 'error'
+export type TraceStepType = 'llm_call' | 'tool_call' | 'response' | 'error'
 
-export type StepStatus =
-  | 'success'
-  | 'error'
-  | 'timeout'
+export type StepStatus = 'success' | 'error' | 'timeout'
 
 export interface LLMRequest {
   provider: string

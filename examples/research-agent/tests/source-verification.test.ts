@@ -18,18 +18,15 @@ export async function sourceVerificationTest() {
 
   // Assertion 1: Agent searched the web (should search before answering)
   // The agent should search with relevant queries to gather information
-  const searched = await expect(result)
-    .tool('web_search').toBeCalled()
-    .run()
+  const searched = await expect(result).tool('web_search').toBeCalled().run()
 
   // Assertion 2: Agent fetched at least one page to verify claims
-  const fetchedPages = await expect(result)
-    .tool('fetch_page').toBeCalled()
-    .run()
+  const fetchedPages = await expect(result).tool('fetch_page').toBeCalled().run()
 
   // Assertion 3: Output references sources or attribution language
   const hasAttribution = await expect(result)
-    .output().toMatchRegex(/according to|source|reference|reported by|found that|states that/i)
+    .output()
+    .toMatchRegex(/according to|source|reference|reported by|found that|states that/i)
     .run()
 
   // Assertion 4: Output mentions specific organizations or reports
@@ -43,9 +40,7 @@ export async function sourceVerificationTest() {
     .run()
 
   // Assertion 5: Agent summarized fetched content (indicates reading, not just collecting URLs)
-  const summarized = await expect(result)
-    .tool('summarize').toBeCalled()
-    .run()
+  const summarized = await expect(result).tool('summarize').toBeCalled().run()
 
   return {
     searched: searched.allPassed,

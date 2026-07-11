@@ -37,13 +37,33 @@ Rules:
 - For calculations, use the calculator tool — do not compute manually
 - Verify tool results before presenting them to the user`,
     tools: [
-      { name: 'get_weather', description: 'Get weather', parameters: { city: 'string', units: 'string' } },
+      {
+        name: 'get_weather',
+        description: 'Get weather',
+        parameters: { city: 'string', units: 'string' },
+      },
       { name: 'calculator', description: 'Evaluate math', parameters: { expression: 'string' } },
-      { name: 'search_docs', description: 'Search documents', parameters: { query: 'string', maxResults: 'number' } },
+      {
+        name: 'search_docs',
+        description: 'Search documents',
+        parameters: { query: 'string', maxResults: 'number' },
+      },
       { name: 'query_database', description: 'Run SQL query', parameters: { sql: 'string' } },
-      { name: 'send_email', description: 'Send email', parameters: { to: 'string', subject: 'string', body: 'string' } },
-      { name: 'check_calendar', description: 'Check calendar', parameters: { date: 'string', days: 'number' } },
-      { name: 'translate_text', description: 'Translate text', parameters: { text: 'string', targetLanguage: 'string' } },
+      {
+        name: 'send_email',
+        description: 'Send email',
+        parameters: { to: 'string', subject: 'string', body: 'string' },
+      },
+      {
+        name: 'check_calendar',
+        description: 'Check calendar',
+        parameters: { date: 'string', days: 'number' },
+      },
+      {
+        name: 'translate_text',
+        description: 'Translate text',
+        parameters: { text: 'string', targetLanguage: 'string' },
+      },
       { name: 'read_file', description: 'Read file', parameters: { path: 'string' } },
     ],
   },

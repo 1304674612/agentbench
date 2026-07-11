@@ -48,7 +48,9 @@ export class AgentBenchMCP {
     this.config = { tracing: true, timeout: 30000, ...config }
   }
 
-  setContext(ctx: MCPInterceptContext): void { this._context = ctx }
+  setContext(ctx: MCPInterceptContext): void {
+    this._context = ctx
+  }
 
   /**
    * Connect to the MCP server and initialize.
@@ -73,11 +75,17 @@ export class AgentBenchMCP {
       if (this._context.onStep) {
         this._context.onStep({
           id: `step-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          sequence: 0, type: 'error',
-          startedAt: new Date(startTime), endedAt: new Date(),
+          sequence: 0,
+          type: 'error',
+          startedAt: new Date(startTime),
+          endedAt: new Date(),
           duration: Date.now() - startTime,
           status: 'error',
-          error: { message: err instanceof Error ? err.message : String(err), type: 'api_error', retryable: true },
+          error: {
+            message: err instanceof Error ? err.message : String(err),
+            type: 'api_error',
+            retryable: true,
+          },
         } as TraceStep)
       }
       throw err
@@ -141,11 +149,17 @@ export class AgentBenchMCP {
       const duration = Date.now() - startTime
       const errorTrace: TraceStep = {
         id: stepId,
-        sequence: 0, type: 'error',
-        startedAt: new Date(startTime), endedAt: new Date(),
+        sequence: 0,
+        type: 'error',
+        startedAt: new Date(startTime),
+        endedAt: new Date(),
         duration,
         status: 'error',
-        error: { message: err instanceof Error ? err.message : String(err), type: 'api_error', retryable: true },
+        error: {
+          message: err instanceof Error ? err.message : String(err),
+          type: 'api_error',
+          retryable: true,
+        },
       } as TraceStep
 
       this._context.onStep?.(errorTrace)
@@ -164,7 +178,9 @@ export class AgentBenchMCP {
   /**
    * Access an MCP resource with tracing.
    */
-  async readResource(uri: string): Promise<{ contents: unknown[]; duration: number; trace: TraceStep }> {
+  async readResource(
+    uri: string
+  ): Promise<{ contents: unknown[]; duration: number; trace: TraceStep }> {
     const startTime = Date.now()
     try {
       const response = await this._sendMCPRequest('resources/read', { uri })
@@ -172,8 +188,11 @@ export class AgentBenchMCP {
 
       const traceStep: TraceStep = {
         id: `step-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        sequence: 0, type: 'tool_call',
-        startedAt: new Date(startTime), endedAt: new Date(), duration,
+        sequence: 0,
+        type: 'tool_call',
+        startedAt: new Date(startTime),
+        endedAt: new Date(),
+        duration,
         toolName: 'resources/read',
         toolRequest: { name: 'resources/read', arguments: { uri } },
         toolResponse: { result: response.contents },
@@ -192,18 +211,30 @@ export class AgentBenchMCP {
     if (this._context.onStep) {
       this._context.onStep({
         id: `step-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        sequence: 0, type: 'error',
-        startedAt: new Date(startTime), endedAt: new Date(),
+        sequence: 0,
+        type: 'error',
+        startedAt: new Date(startTime),
+        endedAt: new Date(),
         duration: Date.now() - startTime,
         status: 'error',
-        error: { message: err instanceof Error ? err.message : String(err), type: 'api_error', retryable: true },
+        error: {
+          message: err instanceof Error ? err.message : String(err),
+          type: 'api_error',
+          retryable: true,
+        },
       } as TraceStep)
     }
   }
 
-  disconnect(): void { this._connected = false; this._tools = [] }
+  disconnect(): void {
+    this._connected = false
+    this._tools = []
+  }
 
-  private async _sendMCPRequest(method: string, params: Record<string, unknown>): Promise<Record<string, unknown>> {
+  private async _sendMCPRequest(
+    method: string,
+    params: Record<string, unknown>
+  ): Promise<Record<string, unknown>> {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), this.config.timeout)
     try {
@@ -217,10 +248,15 @@ export class AgentBenchMCP {
         signal: controller.signal,
       })
       if (!res.ok) throw new Error(`MCP error ${res.status}: ${res.statusText}`)
-      const data = (await res.json()) as { result?: Record<string, unknown>; error?: { message: string } }
+      const data = (await res.json()) as {
+        result?: Record<string, unknown>
+        error?: { message: string }
+      }
       if (data.error) throw new Error(`MCP method error: ${data.error.message}`)
       return data.result ?? {}
-    } finally { clearTimeout(timeoutId) }
+    } finally {
+      clearTimeout(timeoutId)
+    }
   }
 }
 

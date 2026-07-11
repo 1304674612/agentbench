@@ -307,7 +307,7 @@ export function buildJudgeUserPrompt(
     expected?: string
     tools?: string
     tool_calls?: string
-  },
+  }
 ): string {
   return prompt.userPromptTemplate
     .replace('{input}', vars.input)

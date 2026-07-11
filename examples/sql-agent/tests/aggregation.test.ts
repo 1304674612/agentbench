@@ -17,16 +17,16 @@ export async function countGroupByTest() {
     apiKey: API_KEY,
   })
 
-  const hasCount = await expect(result)
-    .output().toMatchRegex(/COUNT/i)
-    .run()
+  const hasCount = await expect(result).output().toMatchRegex(/COUNT/i).run()
 
   const hasGroupBy = await expect(result)
-    .output().toMatchRegex(/GROUP\s+BY/i)
+    .output()
+    .toMatchRegex(/GROUP\s+BY/i)
     .run()
 
   const usesCategories = await expect(result)
-    .output().toMatchRegex(/categories/i)
+    .output()
+    .toMatchRegex(/categories/i)
     .run()
 
   return {
@@ -44,16 +44,16 @@ export async function avgGroupByTest() {
     apiKey: API_KEY,
   })
 
-  const hasAvg = await expect(result)
-    .output().toMatchRegex(/AVG/i)
-    .run()
+  const hasAvg = await expect(result).output().toMatchRegex(/AVG/i).run()
 
   const hasGroupBy = await expect(result)
-    .output().toMatchRegex(/GROUP\s+BY/i)
+    .output()
+    .toMatchRegex(/GROUP\s+BY/i)
     .run()
 
   const usesReviews = await expect(result)
-    .output().toMatchRegex(/reviews/i)
+    .output()
+    .toMatchRegex(/reviews/i)
     .run()
 
   return {
@@ -71,16 +71,16 @@ export async function havingClauseTest() {
     apiKey: API_KEY,
   })
 
-  const hasCount = await expect(result)
-    .output().toMatchRegex(/COUNT/i)
-    .run()
+  const hasCount = await expect(result).output().toMatchRegex(/COUNT/i).run()
 
   const hasHaving = await expect(result)
-    .output().toMatchRegex(/HAVING/i)
+    .output()
+    .toMatchRegex(/HAVING/i)
     .run()
 
   const usesOrders = await expect(result)
-    .output().toMatchRegex(/orders/i)
+    .output()
+    .toMatchRegex(/orders/i)
     .run()
 
   return {

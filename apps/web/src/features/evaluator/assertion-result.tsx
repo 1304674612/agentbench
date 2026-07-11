@@ -9,7 +9,10 @@ export interface AssertionResultProps {
   className?: string
 }
 
-const statusConfig: Record<string, { icon: typeof CheckCircle2; label: string; className: string }> = {
+const statusConfig: Record<
+  string,
+  { icon: typeof CheckCircle2; label: string; className: string }
+> = {
   PASSED: {
     icon: CheckCircle2,
     label: 'Passed',
@@ -32,7 +35,14 @@ const statusConfig: Record<string, { icon: typeof CheckCircle2; label: string; c
   },
 }
 
-export function AssertionResult({ type, status, expected, actual, message, className = '' }: AssertionResultProps) {
+export function AssertionResult({
+  type,
+  status,
+  expected,
+  actual,
+  message,
+  className = '',
+}: AssertionResultProps) {
   const config = statusConfig[status] ?? statusConfig.SKIPPED
   const Icon = config.icon
 
@@ -58,9 +68,7 @@ export function AssertionResult({ type, status, expected, actual, message, class
             </span>
           </div>
         </div>
-        {message && (
-          <p className="text-xs text-muted-foreground mt-1">{message}</p>
-        )}
+        {message && <p className="text-xs text-muted-foreground mt-1">{message}</p>}
       </div>
     </div>
   )

@@ -31,10 +31,7 @@ describe('LLM Judge', () => {
 
   describe('buildJudgePrompt', () => {
     it('builds a prompt for a given dimension', () => {
-      const { systemPrompt, userPrompt } = buildJudgePrompt(
-        'correctness',
-        defaultContext,
-      )
+      const { systemPrompt, userPrompt } = buildJudgePrompt('correctness', defaultContext)
 
       expect(systemPrompt).toBeDefined()
       expect(systemPrompt.length).toBeGreaterThan(0)
@@ -85,7 +82,7 @@ describe('LLM Judge', () => {
     it('parses a valid JSON response', () => {
       const result = parseJudgeResponse(
         '{"score": 8, "reasoning": "Good answer, minor omission."}',
-        'correctness',
+        'correctness'
       )
 
       expect(result.dimension).toBe('correctness')
@@ -97,7 +94,7 @@ describe('LLM Judge', () => {
     it('parses JSON from markdown code block', () => {
       const result = parseJudgeResponse(
         '```json\n{"score": 6, "reasoning": "Partially correct."}\n```',
-        'correctness',
+        'correctness'
       )
 
       expect(result.score).toBe(6)
@@ -107,7 +104,7 @@ describe('LLM Judge', () => {
     it('extracts JSON from markdown code block', () => {
       const result = parseJudgeResponse(
         '```json\n{"score": 9, "reasoning": "Excellent answer."}\n```',
-        'faithfulness',
+        'faithfulness'
       )
 
       expect(result.score).toBe(9)
@@ -115,24 +112,15 @@ describe('LLM Judge', () => {
     })
 
     it('clamps score to 0-10 range', () => {
-      const tooHigh = parseJudgeResponse(
-        '{"score": 15, "reasoning": "test"}',
-        'correctness',
-      )
+      const tooHigh = parseJudgeResponse('{"score": 15, "reasoning": "test"}', 'correctness')
       expect(tooHigh.score).toBe(10)
 
-      const tooLow = parseJudgeResponse(
-        '{"score": -5, "reasoning": "test"}',
-        'correctness',
-      )
+      const tooLow = parseJudgeResponse('{"score": -5, "reasoning": "test"}', 'correctness')
       expect(tooLow.score).toBe(0)
     })
 
     it('handles invalid JSON gracefully', () => {
-      const result = parseJudgeResponse(
-        'Not JSON at all, just some text.',
-        'correctness',
-      )
+      const result = parseJudgeResponse('Not JSON at all, just some text.', 'correctness')
 
       expect(result.score).toBe(0)
       expect(result.reasoning).toBe('No reasoning provided')
@@ -147,10 +135,7 @@ describe('LLM Judge', () => {
     })
 
     it('handles NaN score', () => {
-      const result = parseJudgeResponse(
-        '{"score": null, "reasoning": "test"}',
-        'correctness',
-      )
+      const result = parseJudgeResponse('{"score": null, "reasoning": "test"}', 'correctness')
 
       expect(result.score).toBe(0)
     })
@@ -158,7 +143,7 @@ describe('LLM Judge', () => {
     it('preserves confidence when provided', () => {
       const result = parseJudgeResponse(
         '{"score": 8, "reasoning": "Good.", "confidence": 0.95}',
-        'correctness',
+        'correctness'
       )
 
       expect(result.confidence).toBe(0.95)
@@ -169,12 +154,7 @@ describe('LLM Judge', () => {
     it('evaluates correctness with a mock LLM', async () => {
       mockCallLLM.mockResolvedValue('{"score": 9, "reasoning": "Accurate and complete answer."}')
 
-      const result = await runLLMJudge(
-        'correctness',
-        defaultContext,
-        defaultConfig,
-        mockCallLLM,
-      )
+      const result = await runLLMJudge('correctness', defaultContext, defaultConfig, mockCallLLM)
 
       expect(result.dimension).toBe('correctness')
       expect(result.score).toBe(9)
@@ -182,21 +162,19 @@ describe('LLM Judge', () => {
       expect(result.reasoning).toContain('Accurate')
       expect(result.duration).toBeGreaterThanOrEqual(0)
       expect(mockCallLLM).toHaveBeenCalledTimes(1)
-      expect(mockCallLLM).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.any(String),
-        'gpt-4o',
-      )
+      expect(mockCallLLM).toHaveBeenCalledWith(expect.any(String), expect.any(String), 'gpt-4o')
     })
 
     it('evaluates faithfulness', async () => {
-      mockCallLLM.mockResolvedValue('{"score": 8, "reasoning": "Mostly faithful with minor extrapolation."}')
+      mockCallLLM.mockResolvedValue(
+        '{"score": 8, "reasoning": "Mostly faithful with minor extrapolation."}'
+      )
 
       const result = await runLLMJudge(
         'faithfulness',
         { input: 'Tell me about dogs', output: 'Dogs are mammals.' },
         defaultConfig,
-        mockCallLLM,
+        mockCallLLM
       )
 
       expect(result.dimension).toBe('faithfulness')
@@ -206,12 +184,7 @@ describe('LLM Judge', () => {
     it('handles LLM API errors gracefully', async () => {
       mockCallLLM.mockRejectedValue(new Error('API rate limit exceeded'))
 
-      const result = await runLLMJudge(
-        'correctness',
-        defaultContext,
-        defaultConfig,
-        mockCallLLM,
-      )
+      const result = await runLLMJudge('correctness', defaultContext, defaultConfig, mockCallLLM)
 
       expect(result.score).toBe(0)
       expect(result.reasoning).toContain('failed')
@@ -221,16 +194,21 @@ describe('LLM Judge', () => {
     it('uses default model from config if not specified', async () => {
       mockCallLLM.mockResolvedValue('{"score": 7, "reasoning": "OK."}')
 
-      await runLLMJudge('correctness', defaultContext, {
-        provider: 'openai',
-        model: 'gpt-4o-mini',
-        dimensions: ['correctness'],
-      }, mockCallLLM)
+      await runLLMJudge(
+        'correctness',
+        defaultContext,
+        {
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+          dimensions: ['correctness'],
+        },
+        mockCallLLM
+      )
 
       expect(mockCallLLM).toHaveBeenCalledWith(
         expect.any(String),
         expect.any(String),
-        'gpt-4o-mini',
+        'gpt-4o-mini'
       )
     })
   })
@@ -246,7 +224,7 @@ describe('LLM Judge', () => {
         ['correctness', 'faithfulness', 'relevance'],
         defaultContext,
         defaultConfig,
-        mockCallLLM,
+        mockCallLLM
       )
 
       expect(results).toHaveLength(3)
@@ -258,15 +236,18 @@ describe('LLM Judge', () => {
 
     it('runs evaluations in parallel', async () => {
       const start = Date.now()
-      mockCallLLM.mockImplementation(() =>
-        new Promise((resolve) => setTimeout(() => resolve('{"score": 8, "reasoning": "OK."}'), 10)),
+      mockCallLLM.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve('{"score": 8, "reasoning": "OK."}'), 10)
+          )
       )
 
       await runMultiDimensionJudge(
         ['correctness', 'faithfulness', 'safety'],
         defaultContext,
         defaultConfig,
-        mockCallLLM,
+        mockCallLLM
       )
 
       const elapsed = Date.now() - start
@@ -337,8 +318,14 @@ describe('LLM Judge', () => {
   describe('getJudgePrompt', () => {
     it('returns prompt for each dimension', () => {
       const dimensions: JudgeDimension[] = [
-        'correctness', 'faithfulness', 'safety', 'relevance',
-        'completeness', 'reasoning', 'conciseness', 'tool_usage',
+        'correctness',
+        'faithfulness',
+        'safety',
+        'relevance',
+        'completeness',
+        'reasoning',
+        'conciseness',
+        'tool_usage',
       ]
 
       for (const dim of dimensions) {

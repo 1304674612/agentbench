@@ -21,7 +21,8 @@ export async function stateProgressionTest() {
   const notIdle = result.workflowState.status !== 'idle'
 
   const hasOutput = await expect(result)
-    .output().toMatchRegex(/.{50,}/)
+    .output()
+    .toMatchRegex(/.{50,}/)
     .run()
 
   const hasRetrievedContext = result.workflowState.retrievedContext.length > 0
@@ -61,13 +62,15 @@ export async function messagesAccumulationTest() {
 
   const hasMessages = result.workflowState.messages.length >= 2
 
-  const hasAssistantMessage = result.workflowState.messages.some(
-    (m) => m.role === 'assistant',
-  )
+  const hasAssistantMessage = result.workflowState.messages.some((m) => m.role === 'assistant')
 
   return {
     hasMessages,
     hasAssistantMessage,
-    details: { hasMessages, hasAssistantMessage, messageCount: result.workflowState.messages.length },
+    details: {
+      hasMessages,
+      hasAssistantMessage,
+      messageCount: result.workflowState.messages.length,
+    },
   }
 }

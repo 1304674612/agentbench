@@ -96,7 +96,11 @@ function extractContent(msg: unknown): string | null {
       return m.content
         .map((block: unknown) => {
           if (typeof block === 'string') return block
-          if (typeof block === 'object' && block !== null && 'text' in (block as Record<string, unknown>))
+          if (
+            typeof block === 'object' &&
+            block !== null &&
+            'text' in (block as Record<string, unknown>)
+          )
             return (block as Record<string, unknown>).text
           return ''
         })
@@ -117,14 +121,9 @@ function extractToolCalls(
   function pushToolCall(tc: Record<string, unknown>): void {
     const func = tc.function as Record<string, unknown> | undefined
     results.push({
-      name:
-        (tc.name as string) ||
-        (typeof func?.name === 'string' ? func.name : '') ||
-        'unknown',
+      name: (tc.name as string) || (typeof func?.name === 'string' ? func.name : '') || 'unknown',
       args:
-        (tc.args as Record<string, unknown>) ||
-        (func?.arguments as Record<string, unknown>) ||
-        {},
+        (tc.args as Record<string, unknown>) || (func?.arguments as Record<string, unknown>) || {},
       id: tc.id as string | undefined,
     })
   }
@@ -214,8 +213,7 @@ export class LangGraphAdapter {
 
       // Process the result messages
       const resultObj = result as Record<string, unknown> | undefined
-      const outputMessages: unknown[] =
-        (resultObj?.messages as unknown[]) ?? []
+      const outputMessages: unknown[] = (resultObj?.messages as unknown[]) ?? []
 
       let outputText = ''
       let llmCallCount = 0
@@ -391,7 +389,10 @@ export class LangGraphAdapter {
   }> {
     const graph = this.config.graph as Record<string, unknown>
     const graphStream = graph?.stream as
-      | ((state: Record<string, unknown>, config?: Record<string, unknown>) => AsyncIterable<unknown>)
+      | ((
+          state: Record<string, unknown>,
+          config?: Record<string, unknown>
+        ) => AsyncIterable<unknown>)
       | undefined
 
     if (typeof graphStream !== 'function') {

@@ -65,11 +65,7 @@ export function Sidebar() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
             <FlaskConical className="h-4 w-4 text-primary-foreground" />
           </div>
-          {!collapsed && (
-            <span className="font-semibold text-sm tracking-tight">
-              AgentBench
-            </span>
-          )}
+          {!collapsed && <span className="font-semibold text-sm tracking-tight">AgentBench</span>}
         </Link>
       </div>
 
@@ -126,11 +122,7 @@ export function Sidebar() {
         onClick={() => setCollapsed(!collapsed)}
         className="flex h-10 items-center justify-center border-t border-border text-muted-foreground hover:text-foreground transition-colors"
       >
-        {collapsed ? (
-          <ChevronRight className="h-4 w-4" />
-        ) : (
-          <ChevronLeft className="h-4 w-4" />
-        )}
+        {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
       </button>
     </aside>
   )

@@ -86,9 +86,7 @@ export function TraceTimeline({ steps, formatDuration, formatNumber }: TraceTime
                 <td className="px-4 py-2.5">
                   <div className="text-sm">
                     {step.type === 'llm_call' && llmReq && (
-                      <span className="text-muted-foreground">
-                        {llmReq.model as string}
-                      </span>
+                      <span className="text-muted-foreground">{llmReq.model as string}</span>
                     )}
                     {step.type === 'tool_call' && toolName && (
                       <span className="font-mono text-xs">{toolName}()</span>
@@ -114,9 +112,7 @@ export function TraceTimeline({ steps, formatDuration, formatNumber }: TraceTime
                 <td className="px-4 py-2.5 text-right">
                   <span
                     className={`text-xs font-medium ${
-                      step.status === 'success'
-                        ? 'text-emerald-400'
-                        : 'text-red-400'
+                      step.status === 'success' ? 'text-emerald-400' : 'text-red-400'
                     }`}
                   >
                     {step.status === 'success' ? '✓' : '✗'}

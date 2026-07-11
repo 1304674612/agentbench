@@ -63,10 +63,9 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
     if (!session?.user?.id) return
     setLoading(true)
     try {
-      const data = await apiFetch<{ notifications: Notification[] }>(
-        '/api/v1/notifications',
-        { params: { limit: '20', offset: '0' } },
-      )
+      const data = await apiFetch<{ notifications: Notification[] }>('/api/v1/notifications', {
+        params: { limit: '20', offset: '0' },
+      })
       setNotifications(data.notifications ?? [])
     } catch {
       // Silently fail
@@ -93,31 +92,34 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
     setOpen((prev) => !prev)
   }, [])
 
-  const handleNotificationClick = useCallback(async (notification: Notification) => {
-    // Mark as read
-    try {
-      await apiFetch('/api/v1/notifications', {
-        method: 'PATCH',
-        body: JSON.stringify({
-          action: 'mark_read',
-          notificationId: notification.id,
-        }),
-      })
-      // Optimistic update
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n))
-      )
-      setUnreadCount((prev) => Math.max(0, prev - 1))
-    } catch {
-      // Silently fail
-    }
+  const handleNotificationClick = useCallback(
+    async (notification: Notification) => {
+      // Mark as read
+      try {
+        await apiFetch('/api/v1/notifications', {
+          method: 'PATCH',
+          body: JSON.stringify({
+            action: 'mark_read',
+            notificationId: notification.id,
+          }),
+        })
+        // Optimistic update
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n))
+        )
+        setUnreadCount((prev) => Math.max(0, prev - 1))
+      } catch {
+        // Silently fail
+      }
 
-    // Navigate if there's a link
-    if (notification.link) {
-      setOpen(false)
-      router.push(notification.link)
-    }
-  }, [router])
+      // Navigate if there's a link
+      if (notification.link) {
+        setOpen(false)
+        router.push(notification.link)
+      }
+    },
+    [router]
+  )
 
   const handleMarkAllRead = useCallback(async () => {
     try {

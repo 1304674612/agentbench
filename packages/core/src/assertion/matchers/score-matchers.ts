@@ -14,11 +14,9 @@ export interface ScoreMetrics {
 export function scoreToBeGreaterThan(
   scores: ScoreMetrics['scores'],
   threshold: number,
-  dimension?: string,
+  dimension?: string
 ): AssertionResult {
-  const relevant = dimension
-    ? scores.filter((s) => s.evaluator === dimension)
-    : scores
+  const relevant = dimension ? scores.filter((s) => s.evaluator === dimension) : scores
 
   if (relevant.length === 0) {
     return {
@@ -48,11 +46,9 @@ export function scoreToBeGreaterThan(
 export function scoreToBeLessThan(
   scores: ScoreMetrics['scores'],
   threshold: number,
-  dimension?: string,
+  dimension?: string
 ): AssertionResult {
-  const relevant = dimension
-    ? scores.filter((s) => s.evaluator === dimension)
-    : scores
+  const relevant = dimension ? scores.filter((s) => s.evaluator === dimension) : scores
 
   if (relevant.length === 0) {
     return {
@@ -83,11 +79,9 @@ export function scoreToBeBetween(
   scores: ScoreMetrics['scores'],
   min: number,
   max: number,
-  dimension?: string,
+  dimension?: string
 ): AssertionResult {
-  const relevant = dimension
-    ? scores.filter((s) => s.evaluator === dimension)
-    : scores
+  const relevant = dimension ? scores.filter((s) => s.evaluator === dimension) : scores
 
   if (relevant.length === 0) {
     return {
@@ -107,6 +101,8 @@ export function scoreToBeBetween(
     status: passed ? 'passed' : 'failed',
     expected: `${min} - ${max}`,
     actual: `${avgScore.toFixed(2)}`,
-    message: passed ? undefined : `Expected score between ${min} and ${max}, but got ${avgScore.toFixed(2)}`,
+    message: passed
+      ? undefined
+      : `Expected score between ${min} and ${max}, but got ${avgScore.toFixed(2)}`,
   }
 }

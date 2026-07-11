@@ -86,7 +86,12 @@ function createMockRunResult(overrides?: Partial<RunResult>): RunResult {
         startedAt: new Date(),
         endedAt: new Date(),
         duration: 10,
-        llmResponse: { content: 'The capital of France is Paris.', finishReason: 'stop', usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 }, model: 'gpt-4o' },
+        llmResponse: {
+          content: 'The capital of France is Paris.',
+          finishReason: 'stop',
+          usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+          model: 'gpt-4o',
+        },
         status: 'success',
       },
     ],
@@ -141,9 +146,7 @@ describe('assertion engine', () => {
   describe('status matchers', () => {
     it('toBeCompleted passes when status is "passed"', () => {
       const ctx = createMockContext({ status: 'passed' })
-      const results = createAssertionBuilder()
-        .status().toBeCompleted()
-        .run(ctx)
+      const results = createAssertionBuilder().status().toBeCompleted().run(ctx)
 
       expect(results.allPassed).toBe(true)
       expect(results.passed).toBe(1)
@@ -151,36 +154,28 @@ describe('assertion engine', () => {
 
     it('toBeCompleted passes when status is "completed"', () => {
       const ctx = createMockContext({ status: 'completed' })
-      const results = createAssertionBuilder()
-        .status().toBeCompleted()
-        .run(ctx)
+      const results = createAssertionBuilder().status().toBeCompleted().run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('toBeCompleted fails when status is "failed"', () => {
       const ctx = createMockContext({ status: 'failed' })
-      const results = createAssertionBuilder()
-        .status().toBeCompleted()
-        .run(ctx)
+      const results = createAssertionBuilder().status().toBeCompleted().run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
 
     it('toBe passes when status matches expected', () => {
       const ctx = createMockContext({ status: 'running' })
-      const results = createAssertionBuilder()
-        .status().toBe('running')
-        .run(ctx)
+      const results = createAssertionBuilder().status().toBe('running').run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('toBe fails when status does not match', () => {
       const ctx = createMockContext({ status: 'passed' })
-      const results = createAssertionBuilder()
-        .status().toBe('failed')
-        .run(ctx)
+      const results = createAssertionBuilder().status().toBe('failed').run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
@@ -190,24 +185,21 @@ describe('assertion engine', () => {
     const ctx = createMockContext()
 
     it('toBeCalled passes when tool was called', () => {
-      const results = createAssertionBuilder()
-        .tool('search').toBeCalled()
-        .run(ctx)
+      const results = createAssertionBuilder().tool('search').toBeCalled().run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('toBeCalled fails when tool was not called', () => {
-      const results = createAssertionBuilder()
-        .tool('nonexistent').toBeCalled()
-        .run(ctx)
+      const results = createAssertionBuilder().tool('nonexistent').toBeCalled().run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
 
     it('toBeCalledWith passes with matching arguments', () => {
       const results = createAssertionBuilder()
-        .tool('search').toBeCalledWith({ query: 'capital of France' })
+        .tool('search')
+        .toBeCalledWith({ query: 'capital of France' })
         .run(ctx)
 
       expect(results.allPassed).toBe(true)
@@ -215,40 +207,33 @@ describe('assertion engine', () => {
 
     it('toBeCalledWith fails with wrong arguments', () => {
       const results = createAssertionBuilder()
-        .tool('search').toBeCalledWith({ query: 'wrong query' })
+        .tool('search')
+        .toBeCalledWith({ query: 'wrong query' })
         .run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
 
     it('toBeCalledTimes passes with correct count', () => {
-      const results = createAssertionBuilder()
-        .tool('search').toBeCalledTimes(2)
-        .run(ctx)
+      const results = createAssertionBuilder().tool('search').toBeCalledTimes(2).run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('toBeCalledTimes fails with wrong count', () => {
-      const results = createAssertionBuilder()
-        .tool('search').toBeCalledTimes(5)
-        .run(ctx)
+      const results = createAssertionBuilder().tool('search').toBeCalledTimes(5).run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
 
     it('notToBeCalled passes when tool was not called', () => {
-      const results = createAssertionBuilder()
-        .tool('dangerous_tool').not.toBeCalled()
-        .run(ctx)
+      const results = createAssertionBuilder().tool('dangerous_tool').not.toBeCalled().run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('notToBeCalled fails when tool was called', () => {
-      const results = createAssertionBuilder()
-        .tool('search').not.toBeCalled()
-        .run(ctx)
+      const results = createAssertionBuilder().tool('search').not.toBeCalled().run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
@@ -258,57 +243,43 @@ describe('assertion engine', () => {
     const ctx = createMockContext()
 
     it('toBeLessThan passes when tokens below threshold', () => {
-      const results = createAssertionBuilder()
-        .tokens().toBeLessThan(3000)
-        .run(ctx)
+      const results = createAssertionBuilder().tokens().toBeLessThan(3000).run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('toBeLessThan fails when tokens exceed threshold', () => {
-      const results = createAssertionBuilder()
-        .tokens().toBeLessThan(500)
-        .run(ctx)
+      const results = createAssertionBuilder().tokens().toBeLessThan(500).run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
 
     it('toBeGreaterThan passes when tokens above threshold', () => {
-      const results = createAssertionBuilder()
-        .tokens().toBeGreaterThan(1000)
-        .run(ctx)
+      const results = createAssertionBuilder().tokens().toBeGreaterThan(1000).run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('toBeGreaterThan fails when tokens below threshold', () => {
-      const results = createAssertionBuilder()
-        .tokens().toBeGreaterThan(5000)
-        .run(ctx)
+      const results = createAssertionBuilder().tokens().toBeGreaterThan(5000).run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
 
     it('toBeBetween passes within range', () => {
-      const results = createAssertionBuilder()
-        .tokens().toBeBetween(1000, 2000)
-        .run(ctx)
+      const results = createAssertionBuilder().tokens().toBeBetween(1000, 2000).run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('toBeBetween fails outside range', () => {
-      const results = createAssertionBuilder()
-        .tokens().toBeBetween(3000, 5000)
-        .run(ctx)
+      const results = createAssertionBuilder().tokens().toBeBetween(3000, 5000).run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
 
     it('prompt().toBeLessThan checks prompt tokens', () => {
-      const results = createAssertionBuilder()
-        .tokens().prompt().toBeLessThan(1000)
-        .run(ctx)
+      const results = createAssertionBuilder().tokens().prompt().toBeLessThan(1000).run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
@@ -318,41 +289,31 @@ describe('assertion engine', () => {
     const ctx = createMockContext()
 
     it('toBeLessThan passes when latency below threshold', () => {
-      const results = createAssertionBuilder()
-        .latency().toBeLessThan(5000)
-        .run(ctx)
+      const results = createAssertionBuilder().latency().toBeLessThan(5000).run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('toBeLessThan fails when latency above threshold', () => {
-      const results = createAssertionBuilder()
-        .latency().toBeLessThan(100)
-        .run(ctx)
+      const results = createAssertionBuilder().latency().toBeLessThan(100).run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
 
     it('toBeGreaterThan passes when latency above threshold', () => {
-      const results = createAssertionBuilder()
-        .latency().toBeGreaterThan(1000)
-        .run(ctx)
+      const results = createAssertionBuilder().latency().toBeGreaterThan(1000).run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('firstToken().toBeLessThan checks first token latency', () => {
-      const results = createAssertionBuilder()
-        .latency().firstToken().toBeLessThan(1000)
-        .run(ctx)
+      const results = createAssertionBuilder().latency().firstToken().toBeLessThan(1000).run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('firstToken().toBeLessThan fails when threshold exceeded', () => {
-      const results = createAssertionBuilder()
-        .latency().firstToken().toBeLessThan(10)
-        .run(ctx)
+      const results = createAssertionBuilder().latency().firstToken().toBeLessThan(10).run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
@@ -362,33 +323,25 @@ describe('assertion engine', () => {
     const ctx = createMockContext()
 
     it('toContain passes when output contains substring', () => {
-      const results = createAssertionBuilder()
-        .output().toContain('capital of France')
-        .run(ctx)
+      const results = createAssertionBuilder().output().toContain('capital of France').run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('toContain fails when output does not contain substring', () => {
-      const results = createAssertionBuilder()
-        .output().toContain('capital of Germany')
-        .run(ctx)
+      const results = createAssertionBuilder().output().toContain('capital of Germany').run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
 
     it('toMatchRegex passes when output matches pattern', () => {
-      const results = createAssertionBuilder()
-        .output().toMatchRegex('capital of \\w+')
-        .run(ctx)
+      const results = createAssertionBuilder().output().toMatchRegex('capital of \\w+').run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('toMatchRegex fails when output does not match', () => {
-      const results = createAssertionBuilder()
-        .output().toMatchRegex('\\d{10}')
-        .run(ctx)
+      const results = createAssertionBuilder().output().toMatchRegex('\\d{10}').run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
@@ -398,7 +351,8 @@ describe('assertion engine', () => {
         output: '{"name":"Alice","age":30}',
       })
       const results = createAssertionBuilder()
-        .output().toMatchSchema({
+        .output()
+        .toMatchSchema({
           type: 'object',
           properties: { name: { type: 'string' }, age: { type: 'number' } },
           required: ['name'],
@@ -409,57 +363,49 @@ describe('assertion engine', () => {
     })
 
     it('toMatchSchema fails for non-JSON output', () => {
-      const results = createAssertionBuilder()
-        .output().toMatchSchema({ type: 'object' })
-        .run(ctx)
+      const results = createAssertionBuilder().output().toMatchSchema({ type: 'object' }).run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
 
     it('toEqual passes when output matches exactly', () => {
       const results = createAssertionBuilder()
-        .output().toEqual('The capital of France is Paris.')
+        .output()
+        .toEqual('The capital of France is Paris.')
         .run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('toEqual fails when output differs', () => {
-      const results = createAssertionBuilder()
-        .output().toEqual('Something else')
-        .run(ctx)
+      const results = createAssertionBuilder().output().toEqual('Something else').run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
 
     it('toMatchSnapshot passes for identical output', () => {
       const results = createAssertionBuilder()
-        .output().toMatchSnapshot('The capital of France is Paris.')
+        .output()
+        .toMatchSnapshot('The capital of France is Paris.')
         .run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('toMatchSnapshot fails for different output', () => {
-      const results = createAssertionBuilder()
-        .output().toMatchSnapshot('Something else')
-        .run(ctx)
+      const results = createAssertionBuilder().output().toMatchSnapshot('Something else').run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
 
     it('not.toContain passes when output does not contain substring', () => {
-      const results = createAssertionBuilder()
-        .output().not.toContain('Germany')
-        .run(ctx)
+      const results = createAssertionBuilder().output().not.toContain('Germany').run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('not.toContain fails when output does contain substring', () => {
-      const results = createAssertionBuilder()
-        .output().not.toContain('Paris')
-        .run(ctx)
+      const results = createAssertionBuilder().output().not.toContain('Paris').run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
@@ -469,49 +415,37 @@ describe('assertion engine', () => {
     const ctx = createMockContext()
 
     it('toBeGreaterThan passes when score above threshold', () => {
-      const results = createAssertionBuilder()
-        .score('correctness').toBeGreaterThan(7)
-        .run(ctx)
+      const results = createAssertionBuilder().score('correctness').toBeGreaterThan(7).run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('toBeGreaterThan fails when score below threshold', () => {
-      const results = createAssertionBuilder()
-        .score('correctness').toBeGreaterThan(9)
-        .run(ctx)
+      const results = createAssertionBuilder().score('correctness').toBeGreaterThan(9).run(ctx)
 
       expect(results.allPassed).toBe(false)
     })
 
     it('toBeLessThan passes when score below threshold', () => {
-      const results = createAssertionBuilder()
-        .score('correctness').toBeLessThan(9)
-        .run(ctx)
+      const results = createAssertionBuilder().score('correctness').toBeLessThan(9).run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('toBeBetween passes when score in range', () => {
-      const results = createAssertionBuilder()
-        .score('correctness').toBeBetween(7, 9)
-        .run(ctx)
+      const results = createAssertionBuilder().score('correctness').toBeBetween(7, 9).run(ctx)
 
       expect(results.allPassed).toBe(true)
     })
 
     it('returns skipped when no matching scores', () => {
-      const results = createAssertionBuilder()
-        .score('nonexistent').toBeGreaterThan(5)
-        .run(ctx)
+      const results = createAssertionBuilder().score('nonexistent').toBeGreaterThan(5).run(ctx)
 
       expect(results.skipped).toBe(1)
     })
 
     it('aggregates across all scores when no dimension specified', () => {
-      const results = createAssertionBuilder()
-        .score().toBeGreaterThan(5)
-        .run(ctx)
+      const results = createAssertionBuilder().score().toBeGreaterThan(5).run(ctx)
 
       // Average of 8 and 9 = 8.5 > 5
       expect(results.allPassed).toBe(true)
@@ -522,9 +456,12 @@ describe('assertion engine', () => {
     it('supports full chained assertions from RunResult', () => {
       const runResult = createMockRunResult()
       const results = assertExpect(runResult)
-        .tool('search').toBeCalled()
-        .tool('search').toBeCalledWith({ query: 'capital of France' })
-        .output().toContain('Paris')
+        .tool('search')
+        .toBeCalled()
+        .tool('search')
+        .toBeCalledWith({ query: 'capital of France' })
+        .output()
+        .toContain('Paris')
         .run()
 
       expect(results.allPassed).toBe(true)
@@ -534,10 +471,14 @@ describe('assertion engine', () => {
     it('supports full chained assertions from AssertionContext', () => {
       const ctx = createMockContext()
       const results = assertExpect(ctx)
-        .tool('search').toBeCalled()
-        .output().toContain('Paris')
-        .tokens().toBeLessThan(4096)
-        .latency().toBeLessThan(5000)
+        .tool('search')
+        .toBeCalled()
+        .output()
+        .toContain('Paris')
+        .tokens()
+        .toBeLessThan(4096)
+        .latency()
+        .toBeLessThan(5000)
         .run()
 
       expect(results.allPassed).toBe(true)
@@ -612,8 +553,10 @@ describe('assertion engine', () => {
     it('returns correct result structure from run()', () => {
       const ctx = createMockContext()
       const results = createAssertionBuilder()
-        .tool('search').toBeCalled()
-        .output().toContain('Paris')
+        .tool('search')
+        .toBeCalled()
+        .output()
+        .toContain('Paris')
         .run(ctx)
 
       expect(results).toHaveProperty('assertions')
@@ -633,8 +576,10 @@ describe('assertion engine', () => {
     it('allPassed is true when all assertions pass', () => {
       const ctx = createMockContext()
       const results = createAssertionBuilder()
-        .tool('search').toBeCalled()
-        .output().toContain('France')
+        .tool('search')
+        .toBeCalled()
+        .output()
+        .toContain('France')
         .run(ctx)
 
       expect(results.passed).toBe(2)
@@ -645,8 +590,10 @@ describe('assertion engine', () => {
     it('allPassed is false when any assertion fails', () => {
       const ctx = createMockContext()
       const results = createAssertionBuilder()
-        .tool('search').toBeCalled()
-        .tool('nonexistent').toBeCalled()
+        .tool('search')
+        .toBeCalled()
+        .tool('nonexistent')
+        .toBeCalled()
         .run(ctx)
 
       expect(results.passed).toBe(1)
@@ -656,9 +603,7 @@ describe('assertion engine', () => {
 
     it('includes duration', () => {
       const ctx = createMockContext()
-      const results = createAssertionBuilder()
-        .tool('search').toBeCalled()
-        .run(ctx)
+      const results = createAssertionBuilder().tool('search').toBeCalled().run(ctx)
 
       expect(results.duration).toBeGreaterThanOrEqual(0)
     })
@@ -733,9 +678,7 @@ describe('assertion engine', () => {
       const builder = assertExpect(run)
 
       // Should resolve context from run and allow assertions
-      const results = builder
-        .tool('search').toBeCalled()
-        .run()
+      const results = builder.tool('search').toBeCalled().run()
 
       expect(results.allPassed).toBe(true)
     })

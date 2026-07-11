@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import ora from 'ora'
 import { apiClient } from '../lib/api'
 import { formatApiError } from '../lib/errors'
-import { statusIcon, section, outputJson, formatDuration, infoLine } from '../lib/format'
+import { statusIcon, section, outputJson, formatDuration } from '../lib/format'
 
 // ── Inline Types ────────────────────────────────────────────────────────────
 
@@ -68,7 +68,8 @@ const MOCK_BENCHMARKS: BenchmarkListItem[] = [
     ratingsCount: 124,
     downloads: 3840,
     status: 'published',
-    description: 'Multi-turn customer support scenarios with RAG, tool calling, and escalation logic.',
+    description:
+      'Multi-turn customer support scenarios with RAG, tool calling, and escalation logic.',
   },
   {
     slug: 'agentbench/sql-agent-bench',
@@ -81,7 +82,8 @@ const MOCK_BENCHMARKS: BenchmarkListItem[] = [
     ratingsCount: 89,
     downloads: 2150,
     status: 'published',
-    description: 'Text-to-SQL with schema awareness, joins, aggregations, and SQL injection prevention.',
+    description:
+      'Text-to-SQL with schema awareness, joins, aggregations, and SQL injection prevention.',
   },
   {
     slug: 'agentbench/code-review-v1',
@@ -94,7 +96,8 @@ const MOCK_BENCHMARKS: BenchmarkListItem[] = [
     ratingsCount: 67,
     downloads: 1920,
     status: 'published',
-    description: 'Security review, code quality, false-positive detection, and large diff handling.',
+    description:
+      'Security review, code quality, false-positive detection, and large diff handling.',
   },
   {
     slug: 'agentbench/rag-benchmark',
@@ -107,7 +110,8 @@ const MOCK_BENCHMARKS: BenchmarkListItem[] = [
     ratingsCount: 45,
     downloads: 1280,
     status: 'published',
-    description: 'Retrieval-augmented generation testing with grounding, context-window, and latency tests.',
+    description:
+      'Retrieval-augmented generation testing with grounding, context-window, and latency tests.',
   },
   {
     slug: 'agentbench/multi-agent-challenge',
@@ -120,7 +124,8 @@ const MOCK_BENCHMARKS: BenchmarkListItem[] = [
     ratingsCount: 32,
     downloads: 890,
     status: 'published',
-    description: 'Complex multi-agent orchestration with handoff, consensus, concurrency, and failure recovery.',
+    description:
+      'Complex multi-agent orchestration with handoff, consensus, concurrency, and failure recovery.',
   },
   {
     slug: 'agentbench/safety-eval',
@@ -133,7 +138,8 @@ const MOCK_BENCHMARKS: BenchmarkListItem[] = [
     ratingsCount: 156,
     downloads: 4500,
     status: 'published',
-    description: 'Safety and alignment testing: jailbreak resistance, harmful output detection, content filtering.',
+    description:
+      'Safety and alignment testing: jailbreak resistance, harmful output detection, content filtering.',
   },
   {
     slug: 'agentbench/tool-calling-pro',
@@ -146,7 +152,8 @@ const MOCK_BENCHMARKS: BenchmarkListItem[] = [
     ratingsCount: 78,
     downloads: 2340,
     status: 'published',
-    description: 'Complex tool orchestration: selection, parallel calls, ordering, and error handling.',
+    description:
+      'Complex tool orchestration: selection, parallel calls, ordering, and error handling.',
   },
 ]
 
@@ -174,10 +181,30 @@ function getMockDetail(slug: string): BenchmarkDetail {
       status: item?.status ?? 'published',
     },
     suites: [
-      { name: 'Accuracy', description: 'Evaluates response correctness and factual accuracy', testCount: 12, weight: 0.4 },
-      { name: 'Tool Usage', description: 'Verifies correct tool selection and argument passing', testCount: 8, weight: 0.3 },
-      { name: 'Performance', description: 'Measures latency, token usage, and cost efficiency', testCount: 6, weight: 0.2 },
-      { name: 'Edge Cases', description: 'Tests behavior on unusual or adversarial inputs', testCount: 4, weight: 0.1 },
+      {
+        name: 'Accuracy',
+        description: 'Evaluates response correctness and factual accuracy',
+        testCount: 12,
+        weight: 0.4,
+      },
+      {
+        name: 'Tool Usage',
+        description: 'Verifies correct tool selection and argument passing',
+        testCount: 8,
+        weight: 0.3,
+      },
+      {
+        name: 'Performance',
+        description: 'Measures latency, token usage, and cost efficiency',
+        testCount: 6,
+        weight: 0.2,
+      },
+      {
+        name: 'Edge Cases',
+        description: 'Tests behavior on unusual or adversarial inputs',
+        testCount: 4,
+        weight: 0.1,
+      },
     ],
     leaderboard: [
       { rank: 1, agent: 'GPT-5 + ToolRAG', author: 'OpenAI Labs', overallScore: 94.2 },
@@ -258,7 +285,11 @@ function registerSearchCommand(program: Command): void {
     .option('--category <cat>', 'Filter by category')
     .option('--difficulty <level>', 'Filter by difficulty (beginner|intermediate|advanced|expert)')
     .option('--tags <tags>', 'Comma-separated tags')
-    .option('--sort <order>', 'Sort order (popular|newest|highest-rated|most-downloaded)', 'popular')
+    .option(
+      '--sort <order>',
+      'Sort order (popular|newest|highest-rated|most-downloaded)',
+      'popular'
+    )
     .option('--page <n>', 'Page number', '1')
     .option('--page-size <n>', 'Results per page', '20')
     .option('--json', 'Output as JSON')
@@ -334,7 +365,11 @@ function registerSearchCommand(program: Command): void {
 
         if (benchmarks.length === 0) {
           console.log(chalk.yellow('\n  No benchmarks found matching your criteria.'))
-          console.log(chalk.gray('  Try a broader search or browse the marketplace at https://agentbench.dev/marketplace\n'))
+          console.log(
+            chalk.gray(
+              '  Try a broader search or browse the marketplace at https://agentbench.dev/marketplace\n'
+            )
+          )
           return
         }
 
@@ -342,14 +377,23 @@ function registerSearchCommand(program: Command): void {
         for (const bm of benchmarks) {
           const stars = '★'.repeat(Math.round(bm.rating)) + '☆'.repeat(5 - Math.round(bm.rating))
           const difficultyColor =
-            bm.difficulty === 'beginner' ? chalk.green :
-            bm.difficulty === 'intermediate' ? chalk.blue :
-            bm.difficulty === 'advanced' ? chalk.yellow :
-            chalk.red
+            bm.difficulty === 'beginner'
+              ? chalk.green
+              : bm.difficulty === 'intermediate'
+                ? chalk.blue
+                : bm.difficulty === 'advanced'
+                  ? chalk.yellow
+                  : chalk.red
 
-          console.log(`  ${chalk.bold(chalk.cyan(bm.name))}  ${chalk.yellow(stars)}  (${bm.ratingsCount})`)
-          console.log(`  ${chalk.gray('by')} ${bm.author}  ${chalk.gray('·')}  v${bm.version}  ${chalk.gray('·')}  ${difficultyColor(bm.difficulty)}`)
-          console.log(`  ${chalk.gray('Category:')} ${bm.category}  ${chalk.gray('·')}  ${bm.downloads.toLocaleString()} downloads`)
+          console.log(
+            `  ${chalk.bold(chalk.cyan(bm.name))}  ${chalk.yellow(stars)}  (${bm.ratingsCount})`
+          )
+          console.log(
+            `  ${chalk.gray('by')} ${bm.author}  ${chalk.gray('·')}  v${bm.version}  ${chalk.gray('·')}  ${difficultyColor(bm.difficulty)}`
+          )
+          console.log(
+            `  ${chalk.gray('Category:')} ${bm.category}  ${chalk.gray('·')}  ${bm.downloads.toLocaleString()} downloads`
+          )
           console.log(`  ${bm.description}`)
           console.log(`  ${chalk.cyan('agentbench benchmark install ' + bm.slug)}`)
           console.log('')
@@ -399,23 +443,32 @@ function registerInfoCommand(program: Command): void {
         const meta = bm.meta
         const stars = '★'.repeat(Math.round(meta.rating)) + '☆'.repeat(5 - Math.round(meta.rating))
         const difficultyColor =
-          meta.difficulty === 'beginner' ? chalk.green :
-          meta.difficulty === 'intermediate' ? chalk.blue :
-          meta.difficulty === 'advanced' ? chalk.yellow :
-          chalk.red
+          meta.difficulty === 'beginner'
+            ? chalk.green
+            : meta.difficulty === 'intermediate'
+              ? chalk.blue
+              : meta.difficulty === 'advanced'
+                ? chalk.yellow
+                : chalk.red
 
         console.log('')
         console.log(section(meta.name))
         console.log(`  ${chalk.bold('Version:')}     v${meta.version}`)
-        console.log(`  ${chalk.bold('Author:')}      ${meta.author.name}${meta.author.url ? chalk.gray(` (${meta.author.url})`) : ''}`)
+        console.log(
+          `  ${chalk.bold('Author:')}      ${meta.author.name}${meta.author.url ? chalk.gray(` (${meta.author.url})`) : ''}`
+        )
         console.log(`  ${chalk.bold('License:')}     ${meta.license}`)
         console.log(`  ${chalk.bold('Category:')}    ${meta.category}`)
         console.log(`  ${chalk.bold('Difficulty:')}  ${difficultyColor(meta.difficulty)}`)
         console.log(`  ${chalk.bold('Rating:')}      ${stars}  (${meta.ratingsCount} ratings)`)
         console.log(`  ${chalk.bold('Downloads:')}   ${meta.downloads.toLocaleString()}`)
-        console.log(`  ${chalk.bold('Status:')}      ${meta.status === 'published' ? chalk.green('Published') : chalk.yellow(meta.status)}`)
+        console.log(
+          `  ${chalk.bold('Status:')}      ${meta.status === 'published' ? chalk.green('Published') : chalk.yellow(meta.status)}`
+        )
         console.log(`  ${chalk.bold('Tags:')}        ${meta.tags.join(', ')}`)
-        console.log(`  ${chalk.bold('Updated:')}     ${new Date(meta.updatedAt).toLocaleDateString()}`)
+        console.log(
+          `  ${chalk.bold('Updated:')}     ${new Date(meta.updatedAt).toLocaleDateString()}`
+        )
         console.log('')
         console.log(`  ${meta.description}`)
         console.log('')
@@ -424,7 +477,9 @@ function registerInfoCommand(program: Command): void {
         if (bm.suites.length > 0) {
           console.log(chalk.bold('  Test Suites:'))
           for (const suite of bm.suites) {
-            console.log(`    ${chalk.cyan('■')} ${suite.name}  ${chalk.gray(`(${suite.testCount} tests, weight: ${(suite.weight * 100).toFixed(0)}%)`)}`)
+            console.log(
+              `    ${chalk.cyan('■')} ${suite.name}  ${chalk.gray(`(${suite.testCount} tests, weight: ${(suite.weight * 100).toFixed(0)}%)`)}`
+            )
             console.log(`      ${chalk.gray(suite.description)}`)
           }
           console.log('')
@@ -435,8 +490,17 @@ function registerInfoCommand(program: Command): void {
           console.log(chalk.bold('  Leaderboard (Top 5):'))
           const top5 = bm.leaderboard.slice(0, 5)
           for (const entry of top5) {
-            const medal = entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : ` ${entry.rank}.`
-            console.log(`    ${medal}  ${chalk.bold(entry.agent)}  ${chalk.gray('by')} ${entry.author}  ${chalk.green(`Score: ${entry.overallScore.toFixed(1)}`)}`)
+            const medal =
+              entry.rank === 1
+                ? '🥇'
+                : entry.rank === 2
+                  ? '🥈'
+                  : entry.rank === 3
+                    ? '🥉'
+                    : ` ${entry.rank}.`
+            console.log(
+              `    ${medal}  ${chalk.bold(entry.agent)}  ${chalk.gray('by')} ${entry.author}  ${chalk.green(`Score: ${entry.overallScore.toFixed(1)}`)}`
+            )
           }
           console.log('')
         }
@@ -502,7 +566,11 @@ function registerInstallCommand(program: Command): void {
         console.log(chalk.green(`  ✓ Benchmark installed to ${downloadResult.path}`))
         console.log(chalk.gray(`  Files: ${downloadResult.files.length} items`))
         if (isMockMode(program)) {
-          console.log(chalk.yellow('  ⚠️  Mock mode — benchmark not actually downloaded. Remove --mock to install for real.'))
+          console.log(
+            chalk.yellow(
+              '  ⚠️  Mock mode — benchmark not actually downloaded. Remove --mock to install for real.'
+            )
+          )
         }
         console.log('')
         console.log(chalk.bold('  Next steps:'))
@@ -606,14 +674,22 @@ function registerRunCommand(program: Command): void {
           totalDuration += suite.duration
 
           const suiteIcon = suite.failed === 0 ? chalk.green('✓') : chalk.red('✗')
-          console.log(`  ${suiteIcon} ${chalk.bold(suite.name)}  ${chalk.gray(`(${suite.passed}/${suite.total} passed, ${formatDuration(suite.duration)})`)}  ${chalk.yellow(`Score: ${suite.score.toFixed(1)}`)}`)
+          console.log(
+            `  ${suiteIcon} ${chalk.bold(suite.name)}  ${chalk.gray(`(${suite.passed}/${suite.total} passed, ${formatDuration(suite.duration)})`)}  ${chalk.yellow(`Score: ${suite.score.toFixed(1)}`)}`
+          )
 
           if (options.verbose) {
             for (const test of suite.tests) {
               const testIcon = statusIcon(test.status)
-              console.log(`    ${testIcon} ${test.name}  ${chalk.gray(`${formatDuration(test.duration)} · ${test.tokens} tokens · score ${test.score.toFixed(1)}`)}`)
+              console.log(
+                `    ${testIcon} ${test.name}  ${chalk.gray(`${formatDuration(test.duration)} · ${test.tokens} tokens · score ${test.score.toFixed(1)}`)}`
+              )
               if (test.status === 'FAILED' && test.assertions) {
-                console.log(chalk.red(`      ${test.assertions.failed}/${test.assertions.total} assertions failed`))
+                console.log(
+                  chalk.red(
+                    `      ${test.assertions.failed}/${test.assertions.total} assertions failed`
+                  )
+                )
               }
             }
           }
@@ -625,19 +701,32 @@ function registerRunCommand(program: Command): void {
         console.log(
           overallPassed
             ? chalk.green(`  All ${grandTotal} tests passed!  (${formatDuration(totalDuration)})`)
-            : chalk.red(`  ${grandPassed}/${grandTotal} passed, ${grandFailed} failed  (${formatDuration(totalDuration)})`)
+            : chalk.red(
+                `  ${grandPassed}/${grandTotal} passed, ${grandFailed} failed  (${formatDuration(totalDuration)})`
+              )
         )
         console.log(separator())
         console.log('')
 
         if (isMockMode(program)) {
-          console.log(chalk.yellow('  ⚠️  Mock mode — these results are simulated. Run without --mock for real results.'))
+          console.log(
+            chalk.yellow(
+              '  ⚠️  Mock mode — these results are simulated. Run without --mock for real results.'
+            )
+          )
           console.log('')
         }
 
         if (grandFailed > 0) {
           console.log(chalk.gray('  View full report: agentbench benchmark info ' + slug))
-          console.log(chalk.gray('  Submit to leaderboard: agentbench benchmark submit ' + slug + ' --run ' + runResult.runId))
+          console.log(
+            chalk.gray(
+              '  Submit to leaderboard: agentbench benchmark submit ' +
+                slug +
+                ' --run ' +
+                runResult.runId
+            )
+          )
           console.log('')
         }
       } catch (err) {
@@ -699,9 +788,17 @@ function registerSubmitCommand(program: Command): void {
         console.log(chalk.green(`  ✓ Your submission is ranked #${result.entry.rank}`))
         console.log(chalk.gray(`    Agent:    ${result.entry.agent}`))
         console.log(chalk.gray(`    Score:    ${result.entry.overallScore.toFixed(1)}`))
-        console.log(chalk.gray(`    Verified: ${result.entry.verified ? chalk.green('Yes') : chalk.yellow('Pending')}`))
+        console.log(
+          chalk.gray(
+            `    Verified: ${result.entry.verified ? chalk.green('Yes') : chalk.yellow('Pending')}`
+          )
+        )
         if (isMockMode(program)) {
-          console.log(chalk.yellow('  ⚠️  Mock mode — not actually submitted. Remove --mock to submit for real.'))
+          console.log(
+            chalk.yellow(
+              '  ⚠️  Mock mode — not actually submitted. Remove --mock to submit for real.'
+            )
+          )
         }
         console.log('')
         console.log(chalk.gray(`  View leaderboard: agentbench benchmark info ${slug}`))
@@ -759,7 +856,11 @@ function registerPublishCommand(program: Command): void {
           console.log('')
           console.log(chalk.green(`  ✓ Published as: ${mockSlug}`))
           console.log(chalk.gray('    Status: pending_review'))
-          console.log(chalk.yellow('  ⚠️  Mock mode — benchmark not actually published. Remove --mock to publish for real.'))
+          console.log(
+            chalk.yellow(
+              '  ⚠️  Mock mode — benchmark not actually published. Remove --mock to publish for real.'
+            )
+          )
           console.log('')
           return
         }
@@ -786,7 +887,9 @@ function registerPublishCommand(program: Command): void {
         console.log(chalk.cyan(`  $ agentbench benchmark info ${result.slug}`))
         console.log(chalk.cyan(`  $ agentbench benchmark run ${result.slug} --agent <path>`))
         console.log('')
-        console.log(chalk.gray('  Your benchmark will be reviewed before appearing in public search results.'))
+        console.log(
+          chalk.gray('  Your benchmark will be reviewed before appearing in public search results.')
+        )
         console.log('')
       } catch (err) {
         spinner.fail('Publishing failed')
@@ -840,13 +943,19 @@ function registerListCommand(program: Command): void {
         }
 
         if (isMockMode(program)) {
-          console.log(chalk.gray('  (mock data — run without --mock to see actual installed benchmarks)'))
+          console.log(
+            chalk.gray('  (mock data — run without --mock to see actual installed benchmarks)')
+          )
         }
 
         console.log('')
         for (const bm of result.benchmarks) {
-          console.log(`  ${chalk.cyan('■')} ${chalk.bold(bm.name)}  ${chalk.gray(`v${bm.version}`)}`)
-          console.log(`    ${chalk.gray('Slug:')} ${bm.slug}  ${chalk.gray('· Installed:')} ${new Date(bm.installedAt).toLocaleDateString()}`)
+          console.log(
+            `  ${chalk.cyan('■')} ${chalk.bold(bm.name)}  ${chalk.gray(`v${bm.version}`)}`
+          )
+          console.log(
+            `    ${chalk.gray('Slug:')} ${bm.slug}  ${chalk.gray('· Installed:')} ${new Date(bm.installedAt).toLocaleDateString()}`
+          )
           console.log(`    ${chalk.gray('Path:')} ${bm.path}`)
           console.log(`    ${chalk.cyan(`$ agentbench benchmark run ${bm.slug} --agent <path>`)}`)
           console.log('')

@@ -19,7 +19,8 @@ export async function questionAnsweringPathTest() {
   })
 
   const hasOutput = await expect(result)
-    .output().toMatchRegex(/.{50,}/)
+    .output()
+    .toMatchRegex(/.{50,}/)
     .run()
 
   const pathComplete = result.traversalPath.length >= 2
@@ -42,7 +43,8 @@ export async function codeGenerationPathTest() {
   })
 
   const hasOutput = await expect(result)
-    .output().toMatchRegex(/.{50,}/)
+    .output()
+    .toMatchRegex(/.{50,}/)
     .run()
 
   const correctIntent = result.workflowState.intent === 'code_generation'
@@ -62,7 +64,8 @@ export async function summarizationPathTest() {
   })
 
   const hasOutput = await expect(result)
-    .output().toMatchRegex(/.{50,}/)
+    .output()
+    .toMatchRegex(/.{50,}/)
     .run()
 
   const correctIntent = result.workflowState.intent === 'summarization'

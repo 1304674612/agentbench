@@ -108,7 +108,7 @@ export interface RegressionFlag {
  */
 export function buildDeterministicReplay(
   originalConfig: RunConfig,
-  options?: { seed?: number },
+  options?: { seed?: number }
 ): ReplayConfig {
   return {
     mode: 'deterministic',
@@ -123,7 +123,7 @@ export function buildDeterministicReplay(
  */
 export function buildCrossModelReplay(
   originalConfig: RunConfig,
-  modelOverride: ReplayConfig['modelOverride'],
+  modelOverride: ReplayConfig['modelOverride']
 ): ReplayConfig {
   return {
     mode: 'cross_model',
@@ -138,7 +138,7 @@ export function buildCrossModelReplay(
 export function buildBatchReplay(
   originalConfig: RunConfig,
   batchCount: number,
-  options?: { parallel?: boolean; seed?: number },
+  options?: { parallel?: boolean; seed?: number }
 ): ReplayConfig {
   return {
     mode: 'batch',
@@ -164,7 +164,9 @@ export function applyReplayOverrides(config: ReplayConfig): RunConfig {
     name: `${originalConfig.name} (replay)`,
     agent: {
       ...originalConfig.agent,
-      provider: (modelOverride?.provider as RunConfig['agent']['provider']) ?? originalConfig.agent.provider,
+      provider:
+        (modelOverride?.provider as RunConfig['agent']['provider']) ??
+        originalConfig.agent.provider,
       model: modelOverride?.model ?? originalConfig.agent.model,
       temperature: modelOverride?.temperature ?? originalConfig.agent.temperature,
       maxTokens: modelOverride?.maxTokens ?? originalConfig.agent.maxTokens,
@@ -250,7 +252,7 @@ export function compareReplayToOriginal(
   replayMetrics: RunMetrics,
   originalScores?: RunResult['scores'],
   replayScores?: RunResult['scores'],
-  regressionThresholds?: ReplayRegressionThresholds,
+  regressionThresholds?: ReplayRegressionThresholds
 ): ReplayComparison {
   const metricDiffs: MetricDiff[] = [
     buildMetricDiff('totalTokens', originalMetrics.totalTokens, replayMetrics.totalTokens),
@@ -309,7 +311,7 @@ const DEFAULT_THRESHOLDS: ReplayRegressionThresholds = {
  */
 export function detectRegressions(
   diffs: MetricDiff[],
-  thresholds?: ReplayRegressionThresholds,
+  thresholds?: ReplayRegressionThresholds
 ): RegressionFlag[] {
   const t = { ...DEFAULT_THRESHOLDS, ...thresholds }
   const regressions: RegressionFlag[] = []
@@ -370,11 +372,7 @@ export function detectRegressions(
 // Helpers
 // ============================================================
 
-function buildMetricDiff(
-  metric: string,
-  original: number,
-  replay: number,
-): MetricDiff {
+function buildMetricDiff(metric: string, original: number, replay: number): MetricDiff {
   const changePercent =
     original === 0
       ? replay === 0
@@ -387,11 +385,6 @@ function buildMetricDiff(
     original,
     replay,
     changePercent,
-    direction:
-      changePercent === 0
-        ? 'unchanged'
-        : changePercent > 0
-          ? 'increase'
-          : 'decrease',
+    direction: changePercent === 0 ? 'unchanged' : changePercent > 0 ? 'increase' : 'decrease',
   }
 }

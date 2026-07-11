@@ -16,7 +16,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticateRequest, requireWrite, requireAdmin, AuthError, type AuthContext } from './auth'
+import {
+  authenticateRequest,
+  requireWrite,
+  requireAdmin,
+  AuthError,
+  type AuthContext,
+} from './auth'
 import { rateLimit, getRateLimitHeaders, type RateLimitOptions } from './rate-limit'
 
 export interface ApiContext {
@@ -47,19 +53,19 @@ export interface AuthOptions {
  */
 export function withApiAuth(
   handler: (req: NextRequest, ctx: ApiContext) => Promise<NextResponse> | NextResponse,
-  options?: AuthOptions,
+  options?: AuthOptions
 ): (req: NextRequest) => Promise<NextResponse>
 export function withApiAuth<Params extends { params?: unknown }>(
   handler: (req: NextRequest, ctx: Params & ApiContext) => Promise<NextResponse> | NextResponse,
-  options?: AuthOptions,
+  options?: AuthOptions
 ): (req: NextRequest, ctx: Params) => Promise<NextResponse>
 export function withApiAuth(
   handler: (req: NextRequest, ctx: any) => Promise<NextResponse> | NextResponse,
-  options?: AuthOptions,
+  options?: AuthOptions
 ) {
   return async function authenticatedHandler(
     req: NextRequest,
-    routeCtx?: any,
+    routeCtx?: any
   ): Promise<NextResponse> {
     try {
       const auth = await authenticateRequest(req)
@@ -76,7 +82,7 @@ export function withApiAuth(
             error: err.message,
             code: err.statusCode === 403 ? 'FORBIDDEN' : 'UNAUTHORIZED',
           },
-          { status: err.statusCode },
+          { status: err.statusCode }
         )
       }
       console.error('Unhandled auth error:', err)
@@ -124,10 +130,7 @@ export async function checkAuth(req: NextRequest): Promise<AuthContext> {
  * }
  * ```
  */
-export async function applyRateLimit(
-  req: NextRequest,
-  options?: RateLimitOptions,
-) {
+export async function applyRateLimit(req: NextRequest, options?: RateLimitOptions) {
   return rateLimit(req, options)
 }
 
@@ -146,7 +149,7 @@ export async function applyRateLimit(
  */
 export function withRateLimit(
   handler: (req: NextRequest, ...args: any[]) => Promise<NextResponse> | NextResponse,
-  options?: RateLimitOptions,
+  options?: RateLimitOptions
 ) {
   return async function rateLimitedHandler(
     req: NextRequest,
@@ -161,7 +164,7 @@ export function withRateLimit(
         {
           status: 429,
           headers: getRateLimitHeaders(result, options),
-        },
+        }
       )
     }
 
@@ -186,12 +189,9 @@ export function withRateLimit(
  * Logs method, path, status code, and duration in ms with timestamps.
  */
 export function withLogging(
-  handler: (req: NextRequest, ...args: any[]) => Promise<NextResponse> | NextResponse,
+  handler: (req: NextRequest, ...args: any[]) => Promise<NextResponse> | NextResponse
 ) {
-  return async function loggingHandler(
-    req: NextRequest,
-    ...args: any[]
-  ): Promise<NextResponse> {
+  return async function loggingHandler(req: NextRequest, ...args: any[]): Promise<NextResponse> {
     const start = Date.now()
     const method = req.method
     const url = new URL(req.url)
@@ -202,16 +202,12 @@ export function withLogging(
       response = await handler(req, ...args)
     } catch (err) {
       const duration = Date.now() - start
-      console.log(
-        `[${new Date().toISOString()}] ${method} ${path} 500 ${duration}ms (error)`,
-      )
+      console.log(`[${new Date().toISOString()}] ${method} ${path} 500 ${duration}ms (error)`)
       throw err
     }
 
     const duration = Date.now() - start
-    console.log(
-      `[${new Date().toISOString()}] ${method} ${path} ${response.status} ${duration}ms`,
-    )
+    console.log(`[${new Date().toISOString()}] ${method} ${path} ${response.status} ${duration}ms`)
 
     return response
   }
@@ -234,7 +230,7 @@ export function withLogging(
  */
 export function withStandardMiddleware(
   handler: (req: NextRequest, ...args: any[]) => Promise<NextResponse> | NextResponse,
-  rateLimitOptions?: RateLimitOptions,
+  rateLimitOptions?: RateLimitOptions
 ) {
   return withLogging(withRateLimit(handler, rateLimitOptions))
 }

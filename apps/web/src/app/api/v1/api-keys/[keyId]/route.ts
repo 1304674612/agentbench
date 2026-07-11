@@ -8,7 +8,7 @@ import { getServerSession } from '@/shared/lib/auth-config'
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: Promise<{ keyId: string }> },
+  { params }: { params: Promise<{ keyId: string }> }
 ) {
   try {
     const session = await getServerSession()

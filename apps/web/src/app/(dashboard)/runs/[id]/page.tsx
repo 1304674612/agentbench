@@ -2,8 +2,26 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { db } from '@/shared/lib/db'
-import { formatNumber, formatCurrency, formatDuration, formatRelativeTime } from '@/shared/lib/utils'
-import { ArrowLeft, Clock, Zap, DollarSign, BarChart3, AlertTriangle, CheckCircle2, XCircle, SkipForward, AlertCircle, ThumbsUp, RotateCcw } from 'lucide-react'
+import {
+  formatNumber,
+  formatCurrency,
+  formatDuration,
+  formatRelativeTime,
+} from '@/shared/lib/utils'
+import {
+  ArrowLeft,
+  Clock,
+  Zap,
+  DollarSign,
+  BarChart3,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  SkipForward,
+  AlertCircle,
+  ThumbsUp,
+  RotateCcw,
+} from 'lucide-react'
 
 const statusStyles: Record<string, string> = {
   passed: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
@@ -23,7 +41,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   })
   return {
     title: run?.name ?? 'Run',
-    description: run ? `Run "${run.name}" — status: ${run.status}. View full trace, metrics, scores, and assertion results.` : 'View run details, traces, and evaluation results.',
+    description: run
+      ? `Run "${run.name}" — status: ${run.status}. View full trace, metrics, scores, and assertion results.`
+      : 'View run details, traces, and evaluation results.',
   }
 }
 
@@ -172,7 +192,20 @@ export default async function RunDetailPage({ params }: PageProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {(run.traceSteps as Array<{ id: string; sequence: number; type: string; duration?: number | null; totalTokens?: number | null; status: string; toolName?: string | null; llmRequest?: Record<string, unknown> | null; llmResponse?: Record<string, unknown> | null; error?: { message?: string } | null }>).map((step) => {
+                {(
+                  run.traceSteps as Array<{
+                    id: string
+                    sequence: number
+                    type: string
+                    duration?: number | null
+                    totalTokens?: number | null
+                    status: string
+                    toolName?: string | null
+                    llmRequest?: Record<string, unknown> | null
+                    llmResponse?: Record<string, unknown> | null
+                    error?: { message?: string } | null
+                  }>
+                ).map((step) => {
                   const llmReq = step.llmRequest as Record<string, unknown> | null
                   const toolName = step.toolName
 
@@ -202,9 +235,7 @@ export default async function RunDetailPage({ params }: PageProps) {
                       <td className="px-4 py-2.5">
                         <div className="text-sm">
                           {step.type === 'llm_call' && llmReq && (
-                            <span className="text-muted-foreground">
-                              {llmReq.model as string}
-                            </span>
+                            <span className="text-muted-foreground">{llmReq.model as string}</span>
                           )}
                           {step.type === 'tool_call' && toolName && (
                             <span className="font-mono text-xs">{toolName}()</span>
@@ -213,7 +244,9 @@ export default async function RunDetailPage({ params }: PageProps) {
                             <span className="text-muted-foreground">Final response</span>
                           )}
                           {step.type === 'error' && (
-                            <span className="text-red-400">{step.error?.message ?? 'Unknown error'}</span>
+                            <span className="text-red-400">
+                              {step.error?.message ?? 'Unknown error'}
+                            </span>
                           )}
                         </div>
                       </td>
@@ -230,9 +263,7 @@ export default async function RunDetailPage({ params }: PageProps) {
                       <td className="px-4 py-2.5 text-right">
                         <span
                           className={`text-xs font-medium ${
-                            step.status === 'success'
-                              ? 'text-emerald-400'
-                              : 'text-red-400'
+                            step.status === 'success' ? 'text-emerald-400' : 'text-red-400'
                           }`}
                         >
                           {step.status === 'success' ? '✓' : '✗'}
@@ -252,34 +283,36 @@ export default async function RunDetailPage({ params }: PageProps) {
         <div>
           <h2 className="text-lg font-semibold mb-4">Scores</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {run.scores.map((score: { id: string; evaluator: string; score: number; maxScore: number; reason?: string | null; judgeModel?: string | null }) => (
-              <div
-                key={score.id}
-                className="rounded-xl border border-border bg-card p-4"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium capitalize">
-                    {score.evaluator.replace(/_/g, ' ')}
-                  </span>
-                  <span className="text-sm font-mono font-bold">
-                    {score.score.toFixed(1)}
-                    <span className="text-muted-foreground font-normal">
-                      /{score.maxScore}
+            {run.scores.map(
+              (score: {
+                id: string
+                evaluator: string
+                score: number
+                maxScore: number
+                reason?: string | null
+                judgeModel?: string | null
+              }) => (
+                <div key={score.id} className="rounded-xl border border-border bg-card p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium capitalize">
+                      {score.evaluator.replace(/_/g, ' ')}
                     </span>
-                  </span>
+                    <span className="text-sm font-mono font-bold">
+                      {score.score.toFixed(1)}
+                      <span className="text-muted-foreground font-normal">/{score.maxScore}</span>
+                    </span>
+                  </div>
+                  {score.reason && (
+                    <p className="text-xs text-muted-foreground line-clamp-2">{score.reason}</p>
+                  )}
+                  {score.judgeModel && (
+                    <p className="text-[10px] text-muted-foreground mt-2">
+                      Judge: {score.judgeModel}
+                    </p>
+                  )}
                 </div>
-                {score.reason && (
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    {score.reason}
-                  </p>
-                )}
-                {score.judgeModel && (
-                  <p className="text-[10px] text-muted-foreground mt-2">
-                    Judge: {score.judgeModel}
-                  </p>
-                )}
-              </div>
-            ))}
+              )
+            )}
           </div>
         </div>
       )}
@@ -310,46 +343,55 @@ export default async function RunDetailPage({ params }: PageProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {run.assertionResults.map((result: { id: string; type: string; status: string; expected?: unknown; actual?: unknown; message?: string | null }) => (
-                  <tr key={result.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-2.5">
-                      <code className="text-xs font-mono bg-muted rounded px-1.5 py-0.5">
-                        {result.type}
-                      </code>
-                    </td>
-                    <td className="px-4 py-2.5">
-                      {result.status === 'PASSED' && (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-400">
-                          <CheckCircle2 className="h-3.5 w-3.5" /> Passed
-                        </span>
-                      )}
-                      {result.status === 'FAILED' && (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-red-400">
-                          <XCircle className="h-3.5 w-3.5" /> Failed
-                        </span>
-                      )}
-                      {result.status === 'ERROR' && (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-400">
-                          <AlertCircle className="h-3.5 w-3.5" /> Error
-                        </span>
-                      )}
-                      {result.status === 'SKIPPED' && (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                          <SkipForward className="h-3.5 w-3.5" /> Skipped
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-[200px] truncate">
-                      {result.expected ? JSON.stringify(result.expected as unknown) : '—'}
-                    </td>
-                    <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-[200px] truncate">
-                      {result.actual ? JSON.stringify(result.actual as unknown) : '—'}
-                    </td>
-                    <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-[250px] truncate">
-                      {result.message ?? '—'}
-                    </td>
-                  </tr>
-                ))}
+                {run.assertionResults.map(
+                  (result: {
+                    id: string
+                    type: string
+                    status: string
+                    expected?: unknown
+                    actual?: unknown
+                    message?: string | null
+                  }) => (
+                    <tr key={result.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="px-4 py-2.5">
+                        <code className="text-xs font-mono bg-muted rounded px-1.5 py-0.5">
+                          {result.type}
+                        </code>
+                      </td>
+                      <td className="px-4 py-2.5">
+                        {result.status === 'PASSED' && (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-400">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Passed
+                          </span>
+                        )}
+                        {result.status === 'FAILED' && (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-red-400">
+                            <XCircle className="h-3.5 w-3.5" /> Failed
+                          </span>
+                        )}
+                        {result.status === 'ERROR' && (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-400">
+                            <AlertCircle className="h-3.5 w-3.5" /> Error
+                          </span>
+                        )}
+                        {result.status === 'SKIPPED' && (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                            <SkipForward className="h-3.5 w-3.5" /> Skipped
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-[200px] truncate">
+                        {result.expected ? JSON.stringify(result.expected as unknown) : '—'}
+                      </td>
+                      <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-[200px] truncate">
+                        {result.actual ? JSON.stringify(result.actual as unknown) : '—'}
+                      </td>
+                      <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-[250px] truncate">
+                        {result.message ?? '—'}
+                      </td>
+                    </tr>
+                  )
+                )}
               </tbody>
             </table>
           </div>

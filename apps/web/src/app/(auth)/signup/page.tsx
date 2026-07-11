@@ -3,9 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import {
-  Shield, Mail, Lock, User, Loader2, AlertCircle,
-} from 'lucide-react'
+import { Shield, Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react'
 import { apiPost, ApiFetchError } from '@/shared/lib/client-fetch'
 
 export default function SignUpPage() {
@@ -92,22 +90,15 @@ export default function SignUpPage() {
               <Shield className="h-4 w-4 text-white" />
             </div>
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Create an account
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Start testing your AI agents today
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Create an account</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Start testing your AI agents today</p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-3.5">
           {/* Name */}
           <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-foreground mb-1.5"
-            >
+            <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1.5">
               Name
             </label>
             <div className="relative">
@@ -133,10 +124,7 @@ export default function SignUpPage() {
 
           {/* Email */}
           <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-foreground mb-1.5"
-            >
+            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
               Email
             </label>
             <div className="relative">
@@ -162,10 +150,7 @@ export default function SignUpPage() {
 
           {/* Password */}
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-foreground mb-1.5"
-            >
+            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1.5">
               Password
             </label>
             <div className="relative">
@@ -185,9 +170,7 @@ export default function SignUpPage() {
               />
             </div>
             {fieldErrors.password && (
-              <p className="mt-1 text-xs text-destructive">
-                {fieldErrors.password}
-              </p>
+              <p className="mt-1 text-xs text-destructive">{fieldErrors.password}</p>
             )}
           </div>
 
@@ -217,9 +200,7 @@ export default function SignUpPage() {
               />
             </div>
             {fieldErrors.confirmPassword && (
-              <p className="mt-1 text-xs text-destructive">
-                {fieldErrors.confirmPassword}
-              </p>
+              <p className="mt-1 text-xs text-destructive">{fieldErrors.confirmPassword}</p>
             )}
           </div>
 

@@ -19,16 +19,16 @@ export async function teslaSafetyRetrievalTest() {
     apiKey: API_KEY,
   })
 
-  const usedRetrieve = await expect(result)
-    .tool('retrieve').toBeCalled()
-    .run()
+  const usedRetrieve = await expect(result).tool('retrieve').toBeCalled().run()
 
   const mentionsTesla = await expect(result)
-    .output().toMatchRegex(/Tesla|Autopilot|safety/i)
+    .output()
+    .toMatchRegex(/Tesla|Autopilot|safety/i)
     .run()
 
   const retrievedSomething = await expect(result)
-    .output().toMatchRegex(/.{100,}/)
+    .output()
+    .toMatchRegex(/.{100,}/)
     .run()
 
   return {
@@ -46,17 +46,17 @@ export async function pythonFeaturesRetrievalTest() {
     apiKey: API_KEY,
   })
 
-  const usedRetrieve = await expect(result)
-    .tool('retrieve').toBeCalled()
-    .run()
+  const usedRetrieve = await expect(result).tool('retrieve').toBeCalled().run()
 
   const mentionsPython = await expect(result)
-    .output().toMatchRegex(/Python|3\.13|GIL|JIT/i)
+    .output()
+    .toMatchRegex(/Python|3\.13|GIL|JIT/i)
     .run()
 
   // Retriever should have found chunks about Python 3.13
   const hasContent = await expect(result)
-    .output().toMatchRegex(/.{150,}/)
+    .output()
+    .toMatchRegex(/.{150,}/)
     .run()
 
   return {
@@ -77,8 +77,8 @@ export async function retrievalSimilarityQualityTest() {
   const topScoreHigh = result.chunks.length > 0 && result.chunks[0].score > 0.1
 
   // Top result title should contain Tesla
-  const topResultRelevant = result.chunks.length > 0 &&
-    result.chunks[0].title.toLowerCase().includes('tesla')
+  const topResultRelevant =
+    result.chunks.length > 0 && result.chunks[0].title.toLowerCase().includes('tesla')
 
   // Similarity score for the best match should be > 0
   if (result.chunks.length > 0) {

@@ -20,7 +20,9 @@ export function StatCard({
   className = '',
 }: StatCardProps) {
   return (
-    <div className={`rounded-xl border border-border bg-card p-4 hover:border-foreground/10 transition-colors ${className}`}>
+    <div
+      className={`rounded-xl border border-border bg-card p-4 hover:border-foreground/10 transition-colors ${className}`}
+    >
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm text-muted-foreground">{label}</span>
         <div className={`rounded-lg p-1.5 ${bg}`}>

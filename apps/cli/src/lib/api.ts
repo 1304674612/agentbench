@@ -261,9 +261,7 @@ export function createApiClient(baseUrl?: string) {
     },
 
     listSnapshots(projectId: string): Promise<{ snapshots: SnapshotListItem[] }> {
-      return apiFetch<{ snapshots: SnapshotListItem[] }>(
-        `/projects/${projectId}/snapshots`
-      )
+      return apiFetch<{ snapshots: SnapshotListItem[] }>(`/projects/${projectId}/snapshots`)
     },
 
     restoreSnapshot(snapshotId: string, overrides?: { model?: string }) {

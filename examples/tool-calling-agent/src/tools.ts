@@ -20,16 +20,56 @@ export interface WeatherResult {
 }
 
 const weatherDB: Record<string, WeatherResult> = {
-  'new york': { city: 'New York', temperature: 22, units: 'celsius', condition: 'Partly Cloudy', humidity: 65, windSpeed: 12, forecast: 'Clearing by evening' },
-  'san francisco': { city: 'San Francisco', temperature: 18, units: 'celsius', condition: 'Foggy', humidity: 80, windSpeed: 8, forecast: 'Fog clearing by noon' },
-  'london': { city: 'London', temperature: 15, units: 'celsius', condition: 'Light Rain', humidity: 75, windSpeed: 15, forecast: 'Rain continuing throughout the day' },
-  'tokyo': { city: 'Tokyo', temperature: 28, units: 'celsius', condition: 'Sunny', humidity: 55, windSpeed: 6, forecast: 'Clear skies all day' },
-  'beijing': { city: 'Beijing', temperature: 30, units: 'celsius', condition: 'Hazy', humidity: 40, windSpeed: 10, forecast: 'Haze reducing by afternoon' },
+  'new york': {
+    city: 'New York',
+    temperature: 22,
+    units: 'celsius',
+    condition: 'Partly Cloudy',
+    humidity: 65,
+    windSpeed: 12,
+    forecast: 'Clearing by evening',
+  },
+  'san francisco': {
+    city: 'San Francisco',
+    temperature: 18,
+    units: 'celsius',
+    condition: 'Foggy',
+    humidity: 80,
+    windSpeed: 8,
+    forecast: 'Fog clearing by noon',
+  },
+  london: {
+    city: 'London',
+    temperature: 15,
+    units: 'celsius',
+    condition: 'Light Rain',
+    humidity: 75,
+    windSpeed: 15,
+    forecast: 'Rain continuing throughout the day',
+  },
+  tokyo: {
+    city: 'Tokyo',
+    temperature: 28,
+    units: 'celsius',
+    condition: 'Sunny',
+    humidity: 55,
+    windSpeed: 6,
+    forecast: 'Clear skies all day',
+  },
+  beijing: {
+    city: 'Beijing',
+    temperature: 30,
+    units: 'celsius',
+    condition: 'Hazy',
+    humidity: 40,
+    windSpeed: 10,
+    forecast: 'Haze reducing by afternoon',
+  },
 }
 
 export async function getWeather(
   city: string,
-  units: 'celsius' | 'fahrenheit' = 'celsius',
+  units: 'celsius' | 'fahrenheit' = 'celsius'
 ): Promise<WeatherResult> {
   const key = city.toLowerCase()
   const base = weatherDB[key]
@@ -44,9 +84,8 @@ export async function getWeather(
       forecast: `No weather data available for ${city}`,
     }
   }
-  const temp = units === 'fahrenheit'
-    ? Math.round(base.temperature * 9 / 5 + 32)
-    : base.temperature
+  const temp =
+    units === 'fahrenheit' ? Math.round((base.temperature * 9) / 5 + 32) : base.temperature
   return { ...base, temperature: temp, units }
 }
 
@@ -74,7 +113,11 @@ export async function calculator(expression: string): Promise<CalculatorResult> 
     }
     return { expression, result: Math.round(result * 1e10) / 1e10 }
   } catch (err) {
-    return { expression, result: 0, error: `Calculation error: ${err instanceof Error ? err.message : 'invalid expression'}` }
+    return {
+      expression,
+      result: 0,
+      error: `Calculation error: ${err instanceof Error ? err.message : 'invalid expression'}`,
+    }
   }
 }
 
@@ -89,36 +132,58 @@ export interface SearchResult {
 }
 
 const docIndex: Array<{ title: string; content: string }> = [
-  { title: 'Getting Started Guide', content: 'This guide covers installation, configuration, and your first query. To install, run npm install @agentbench/core. Configure your API keys in the .env file.' },
-  { title: 'API Reference', content: 'The API Reference documents all public methods. Key classes: Runner, Tracer, Evaluator, Assertion. Each class provides detailed method signatures and usage examples.' },
-  { title: 'Deployment Guide', content: 'Deploy AgentBench to production using Docker. Use docker-compose up to start all services. Configure environment variables for your cloud provider.' },
-  { title: 'Troubleshooting', content: 'Common issues: API key not set (check .env), rate limiting (reduce concurrency), timeout errors (increase maxSteps). Contact support for persistent issues.' },
-  { title: 'Security Best Practices', content: 'Never commit API keys. Use environment variables. Rotate keys regularly. Enable audit logging. Review tool permissions before deployment.' },
+  {
+    title: 'Getting Started Guide',
+    content:
+      'This guide covers installation, configuration, and your first query. To install, run npm install @agentbench/core. Configure your API keys in the .env file.',
+  },
+  {
+    title: 'API Reference',
+    content:
+      'The API Reference documents all public methods. Key classes: Runner, Tracer, Evaluator, Assertion. Each class provides detailed method signatures and usage examples.',
+  },
+  {
+    title: 'Deployment Guide',
+    content:
+      'Deploy AgentBench to production using Docker. Use docker-compose up to start all services. Configure environment variables for your cloud provider.',
+  },
+  {
+    title: 'Troubleshooting',
+    content:
+      'Common issues: API key not set (check .env), rate limiting (reduce concurrency), timeout errors (increase maxSteps). Contact support for persistent issues.',
+  },
+  {
+    title: 'Security Best Practices',
+    content:
+      'Never commit API keys. Use environment variables. Rotate keys regularly. Enable audit logging. Review tool permissions before deployment.',
+  },
 ]
 
-export async function searchDocs(
-  query: string,
-  maxResults = 3,
-): Promise<SearchResult> {
+export async function searchDocs(query: string, maxResults = 3): Promise<SearchResult> {
   const q = query.toLowerCase()
-  const scored = docIndex.map((doc) => {
-    const words = q.split(/\s+/)
-    let score = 0
-    const titleLower = doc.title.toLowerCase()
-    const contentLower = doc.content.toLowerCase()
-    for (const w of words) {
-      if (titleLower.includes(w)) score += 3
-      if (contentLower.includes(w)) score += 1
-    }
-    return { ...doc, relevance: Math.round(score * 100) / 100 }
-  })
+  const scored = docIndex
+    .map((doc) => {
+      const words = q.split(/\s+/)
+      let score = 0
+      const titleLower = doc.title.toLowerCase()
+      const contentLower = doc.content.toLowerCase()
+      for (const w of words) {
+        if (titleLower.includes(w)) score += 3
+        if (contentLower.includes(w)) score += 1
+      }
+      return { ...doc, relevance: Math.round(score * 100) / 100 }
+    })
     .filter((d) => d.relevance > 0)
     .sort((a, b) => b.relevance - a.relevance)
     .slice(0, maxResults)
 
   return {
     query,
-    results: scored.map((d) => ({ title: d.title, snippet: d.content.slice(0, 150) + '...', relevance: d.relevance })),
+    results: scored.map((d) => ({
+      title: d.title,
+      snippet: d.content.slice(0, 150) + '...',
+      relevance: d.relevance,
+    })),
     totalHits: scored.length,
   }
 }
@@ -155,7 +220,13 @@ export async function queryDatabase(sql: string): Promise<DatabaseResult> {
 
   // Only allow SELECT queries
   if (!upper.startsWith('SELECT')) {
-    return { query: sql, columns: [], rows: [], rowCount: 0, error: 'Only SELECT queries are allowed' }
+    return {
+      query: sql,
+      columns: [],
+      rows: [],
+      rowCount: 0,
+      error: 'Only SELECT queries are allowed',
+    }
   }
 
   // Check for known queries
@@ -186,11 +257,7 @@ export interface EmailResult {
   error?: string
 }
 
-export async function sendEmail(
-  to: string,
-  subject: string,
-  body: string,
-): Promise<EmailResult> {
+export async function sendEmail(to: string, subject: string, body: string): Promise<EmailResult> {
   // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(to)) {
@@ -223,17 +290,44 @@ export interface CalendarResult {
 }
 
 const calendarDB: CalendarEvent[] = [
-  { title: 'Team Standup', date: '2025-07-10', time: '09:00', duration: '30m', attendees: ['Alice', 'Bob', 'Carol'] },
-  { title: 'Sprint Planning', date: '2025-07-10', time: '14:00', duration: '2h', attendees: ['Alice', 'Bob', 'Carol', 'Dave'] },
-  { title: '1:1 with Manager', date: '2025-07-11', time: '10:00', duration: '1h', attendees: ['Alice'] },
-  { title: 'Design Review', date: '2025-07-11', time: '15:00', duration: '1h', attendees: ['Carol', 'Dave'] },
-  { title: 'Company All Hands', date: '2025-07-12', time: '11:00', duration: '1h', attendees: ['All'] },
+  {
+    title: 'Team Standup',
+    date: '2025-07-10',
+    time: '09:00',
+    duration: '30m',
+    attendees: ['Alice', 'Bob', 'Carol'],
+  },
+  {
+    title: 'Sprint Planning',
+    date: '2025-07-10',
+    time: '14:00',
+    duration: '2h',
+    attendees: ['Alice', 'Bob', 'Carol', 'Dave'],
+  },
+  {
+    title: '1:1 with Manager',
+    date: '2025-07-11',
+    time: '10:00',
+    duration: '1h',
+    attendees: ['Alice'],
+  },
+  {
+    title: 'Design Review',
+    date: '2025-07-11',
+    time: '15:00',
+    duration: '1h',
+    attendees: ['Carol', 'Dave'],
+  },
+  {
+    title: 'Company All Hands',
+    date: '2025-07-12',
+    time: '11:00',
+    duration: '1h',
+    attendees: ['All'],
+  },
 ]
 
-export async function checkCalendar(
-  date?: string,
-  days = 3,
-): Promise<CalendarResult> {
+export async function checkCalendar(date?: string, days = 3): Promise<CalendarResult> {
   const startDate = date ? new Date(date) : new Date()
   const endDate = new Date(startDate)
   endDate.setDate(endDate.getDate() + days)
@@ -265,16 +359,46 @@ export interface TranslateResult {
 }
 
 const translations: Record<string, Record<string, string>> = {
-  hello: { spanish: 'hola', french: 'bonjour', german: 'hallo', japanese: 'こんにちは', chinese: '你好' },
-  'good morning': { spanish: 'buenos días', french: 'bonjour', german: 'guten morgen', japanese: 'おはようございます', chinese: '早上好' },
-  'thank you': { spanish: 'gracias', french: 'merci', german: 'danke', japanese: 'ありがとう', chinese: '谢谢' },
-  goodbye: { spanish: 'adiós', french: 'au revoir', german: 'auf wiedersehen', japanese: 'さようなら', chinese: '再见' },
-  'how are you': { spanish: '¿cómo estás?', french: 'comment allez-vous?', german: 'wie geht es ihnen?', japanese: 'お元気ですか', chinese: '你好吗' },
+  hello: {
+    spanish: 'hola',
+    french: 'bonjour',
+    german: 'hallo',
+    japanese: 'こんにちは',
+    chinese: '你好',
+  },
+  'good morning': {
+    spanish: 'buenos días',
+    french: 'bonjour',
+    german: 'guten morgen',
+    japanese: 'おはようございます',
+    chinese: '早上好',
+  },
+  'thank you': {
+    spanish: 'gracias',
+    french: 'merci',
+    german: 'danke',
+    japanese: 'ありがとう',
+    chinese: '谢谢',
+  },
+  goodbye: {
+    spanish: 'adiós',
+    french: 'au revoir',
+    german: 'auf wiedersehen',
+    japanese: 'さようなら',
+    chinese: '再见',
+  },
+  'how are you': {
+    spanish: '¿cómo estás?',
+    french: 'comment allez-vous?',
+    german: 'wie geht es ihnen?',
+    japanese: 'お元気ですか',
+    chinese: '你好吗',
+  },
 }
 
 export async function translateText(
   text: string,
-  targetLanguage: string,
+  targetLanguage: string
 ): Promise<TranslateResult> {
   const key = text.toLowerCase().trim()
   const lang = targetLanguage.toLowerCase()
@@ -301,17 +425,30 @@ export interface FileResult {
 }
 
 const fileSystem: Record<string, string> = {
-  '/data/config.json': JSON.stringify({ app: 'AgentBench', version: '0.3.0', debug: false, port: 3000 }, null, 2),
-  '/data/users.csv': 'id,name,email\n1,Alice,alice@example.com\n2,Bob,bob@example.com\n3,Carol,carol@example.com',
-  '/data/README.md': '# Project Documentation\n\nThis is the main documentation for the project.\n\n## Setup\nRun `npm install` to get started.',
-  '/logs/app.log': '[2025-07-10 09:00:01] INFO  Server started on port 3000\n[2025-07-10 09:00:05] INFO  Database connected\n[2025-07-10 09:01:00] WARN  High memory usage detected (85%)',
+  '/data/config.json': JSON.stringify(
+    { app: 'AgentBench', version: '0.3.0', debug: false, port: 3000 },
+    null,
+    2
+  ),
+  '/data/users.csv':
+    'id,name,email\n1,Alice,alice@example.com\n2,Bob,bob@example.com\n3,Carol,carol@example.com',
+  '/data/README.md':
+    '# Project Documentation\n\nThis is the main documentation for the project.\n\n## Setup\nRun `npm install` to get started.',
+  '/logs/app.log':
+    '[2025-07-10 09:00:01] INFO  Server started on port 3000\n[2025-07-10 09:00:05] INFO  Database connected\n[2025-07-10 09:01:00] WARN  High memory usage detected (85%)',
 }
 
 export async function readFile(path: string): Promise<FileResult> {
   const normalized = path.startsWith('/') ? path : `/${path}`
   const content = fileSystem[normalized]
   if (content === undefined) {
-    return { path: normalized, content: '', size: 0, exists: false, error: `File not found: ${normalized}` }
+    return {
+      path: normalized,
+      content: '',
+      size: 0,
+      exists: false,
+      error: `File not found: ${normalized}`,
+    }
   }
   return { path: normalized, content, size: Buffer.byteLength(content), exists: true }
 }

@@ -38,9 +38,7 @@ describe('TokenCounter', () => {
   })
 
   it('handles null content in messages', () => {
-    const tokens = counter.estimateMessagesTokens([
-      { role: 'assistant', content: null },
-    ])
+    const tokens = counter.estimateMessagesTokens([{ role: 'assistant', content: null }])
     expect(tokens).toBeGreaterThan(0) // just overhead
   })
 })

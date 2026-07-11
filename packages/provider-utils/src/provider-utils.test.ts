@@ -90,10 +90,7 @@ describe('CostCalculator', () => {
       expect(breakdown.currency).toBe('USD')
       expect(breakdown.promptCost).toBeGreaterThan(0)
       expect(breakdown.completionCost).toBeGreaterThan(0)
-      expect(breakdown.totalCost).toBeCloseTo(
-        breakdown.promptCost + breakdown.completionCost,
-        5,
-      )
+      expect(breakdown.totalCost).toBeCloseTo(breakdown.promptCost + breakdown.completionCost, 5)
       expect(breakdown.rates.promptPer1K).toBeGreaterThan(0)
       expect(breakdown.rates.completionPer1K).toBeGreaterThan(0)
     })
@@ -220,9 +217,7 @@ describe('TokenCounter', () => {
 
     it('handles null content in messages', () => {
       const counter = new TokenCounter()
-      const tokens = counter.estimateMessagesTokens([
-        { role: 'assistant', content: null },
-      ])
+      const tokens = counter.estimateMessagesTokens([{ role: 'assistant', content: null }])
       // Should still have overhead tokens
       expect(tokens).toBeGreaterThan(0)
     })
@@ -382,7 +377,9 @@ describe('OpenAICompatibleProvider', () => {
     it('includes Content-Type and Authorization headers', () => {
       // buildHeaders is protected, but we can call it in the test since
       // TestProvider extends the class in same module context
-      const headers = (provider as unknown as { buildHeaders: () => Record<string, string> }).buildHeaders()
+      const headers = (
+        provider as unknown as { buildHeaders: () => Record<string, string> }
+      ).buildHeaders()
       expect(headers['Content-Type']).toBe('application/json')
       expect(headers['Authorization']).toBe('Bearer ')
     })
@@ -397,7 +394,10 @@ describe('OpenAICompatibleProvider', () => {
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue(mockResponse))
 
       // Override buildHeaders via a spy
-      vi.spyOn(provider as unknown as { buildHeaders: () => Record<string, string> }, 'buildHeaders').mockReturnValue({
+      vi.spyOn(
+        provider as unknown as { buildHeaders: () => Record<string, string> },
+        'buildHeaders'
+      ).mockReturnValue({
         'Content-Type': 'application/json',
         Authorization: 'Bearer test-key',
       })
@@ -415,7 +415,10 @@ describe('OpenAICompatibleProvider', () => {
       }
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue(mockResponse))
 
-      vi.spyOn(provider as unknown as { buildHeaders: () => Record<string, string> }, 'buildHeaders').mockReturnValue({
+      vi.spyOn(
+        provider as unknown as { buildHeaders: () => Record<string, string> },
+        'buildHeaders'
+      ).mockReturnValue({
         'Content-Type': 'application/json',
         Authorization: 'Bearer test-key',
       })
@@ -428,7 +431,10 @@ describe('OpenAICompatibleProvider', () => {
     it('returns unhealthy when fetch throws an error', async () => {
       vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Connection refused')))
 
-      vi.spyOn(provider as unknown as { buildHeaders: () => Record<string, string> }, 'buildHeaders').mockReturnValue({
+      vi.spyOn(
+        provider as unknown as { buildHeaders: () => Record<string, string> },
+        'buildHeaders'
+      ).mockReturnValue({
         'Content-Type': 'application/json',
         Authorization: 'Bearer test-key',
       })
@@ -444,9 +450,11 @@ describe('OpenAICompatibleProvider', () => {
       const mockResponse = { ok: true, status: 200 }
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue(mockResponse))
 
-      const fetchWithRetry = (provider as unknown as {
-        fetchWithRetry: (url: string, init: RequestInit, retries?: number) => Promise<Response>
-      }).fetchWithRetry.bind(provider)
+      const fetchWithRetry = (
+        provider as unknown as {
+          fetchWithRetry: (url: string, init: RequestInit, retries?: number) => Promise<Response>
+        }
+      ).fetchWithRetry.bind(provider)
 
       const response = await fetchWithRetry('https://api.example.com/test', { method: 'GET' })
       expect(response.ok).toBe(true)
@@ -458,9 +466,11 @@ describe('OpenAICompatibleProvider', () => {
 
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue(errorResponse))
 
-      const fetchWithRetry = (provider as unknown as {
-        fetchWithRetry: (url: string, init: RequestInit, retries?: number) => Promise<Response>
-      }).fetchWithRetry.bind(provider)
+      const fetchWithRetry = (
+        provider as unknown as {
+          fetchWithRetry: (url: string, init: RequestInit, retries?: number) => Promise<Response>
+        }
+      ).fetchWithRetry.bind(provider)
 
       const response = await fetchWithRetry('https://api.example.com/test', { method: 'GET' })
       expect(response.ok).toBe(false)
@@ -473,9 +483,11 @@ describe('OpenAICompatibleProvider', () => {
 
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue(rateLimitResponse))
 
-      const fetchWithRetry = (provider as unknown as {
-        fetchWithRetry: (url: string, init: RequestInit, retries?: number) => Promise<Response>
-      }).fetchWithRetry.bind(provider)
+      const fetchWithRetry = (
+        provider as unknown as {
+          fetchWithRetry: (url: string, init: RequestInit, retries?: number) => Promise<Response>
+        }
+      ).fetchWithRetry.bind(provider)
 
       const response = await fetchWithRetry('https://api.example.com/test', { method: 'GET' })
       expect(response.ok).toBe(false)
@@ -490,12 +502,14 @@ describe('OpenAICompatibleProvider', () => {
         vi
           .fn()
           .mockRejectedValueOnce(new Error('Network error'))
-          .mockResolvedValueOnce(successResponse),
+          .mockResolvedValueOnce(successResponse)
       )
 
-      const fetchWithRetry = (provider as unknown as {
-        fetchWithRetry: (url: string, init: RequestInit, retries?: number) => Promise<Response>
-      }).fetchWithRetry.bind(provider)
+      const fetchWithRetry = (
+        provider as unknown as {
+          fetchWithRetry: (url: string, init: RequestInit, retries?: number) => Promise<Response>
+        }
+      ).fetchWithRetry.bind(provider)
 
       const response = await fetchWithRetry('https://api.example.com/test', { method: 'GET' })
       expect(response.ok).toBe(true)

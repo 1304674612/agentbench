@@ -14,17 +14,14 @@ const API_KEY = process.env.OPENAI_API_KEY ?? 'sk-test-key'
 
 /** Test Case 1: Approved human review sets state to completed. */
 export async function humanApprovalTest() {
-  const state = updateState(
-    createInitialState('test'),
-    {
-      intent: 'question_answering',
-      currentNode: 'human_review',
-      status: 'human_review',
-      humanReviewRequired: true,
-      validation: 'needs_human',
-      generatedResponse: 'Test response that needs review.',
-    },
-  )
+  const state = updateState(createInitialState('test'), {
+    intent: 'question_answering',
+    currentNode: 'human_review',
+    status: 'human_review',
+    humanReviewRequired: true,
+    validation: 'needs_human',
+    generatedResponse: 'Test response that needs review.',
+  })
 
   const result = humanReviewNode(state, true)
 
@@ -42,17 +39,14 @@ export async function humanApprovalTest() {
 
 /** Test Case 2: Rejected human review routes back to generate. */
 export async function humanRejectionTest() {
-  const state = updateState(
-    createInitialState('test'),
-    {
-      intent: 'question_answering',
-      currentNode: 'human_review',
-      status: 'human_review',
-      humanReviewRequired: true,
-      validation: 'needs_human',
-      generatedResponse: 'Incomplete response.',
-    },
-  )
+  const state = updateState(createInitialState('test'), {
+    intent: 'question_answering',
+    currentNode: 'human_review',
+    status: 'human_review',
+    humanReviewRequired: true,
+    validation: 'needs_human',
+    generatedResponse: 'Incomplete response.',
+  })
 
   const result = humanReviewNode(state, false)
 
@@ -77,7 +71,8 @@ export async function complexRequestWithReviewTest() {
   })
 
   const hasOutput = await expect(result)
-    .output().toMatchRegex(/.{50,}/)
+    .output()
+    .toMatchRegex(/.{50,}/)
     .run()
 
   const pathIncludesClassify = result.traversalPath.includes('classify')

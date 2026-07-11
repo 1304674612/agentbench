@@ -162,8 +162,18 @@ async function main() {
     await prisma.testAssertion.createMany({
       data: [
         { testCaseId: greetingCase.id, type: 'completed_successfully', params: {}, sortOrder: 1 },
-        { testCaseId: greetingCase.id, type: 'tokens_lt', params: { threshold: 1000 }, sortOrder: 2 },
-        { testCaseId: greetingCase.id, type: 'latency_lt', params: { threshold: 10000 }, sortOrder: 3 },
+        {
+          testCaseId: greetingCase.id,
+          type: 'tokens_lt',
+          params: { threshold: 1000 },
+          sortOrder: 2,
+        },
+        {
+          testCaseId: greetingCase.id,
+          type: 'latency_lt',
+          params: { threshold: 10000 },
+          sortOrder: 3,
+        },
       ],
     })
     await prisma.testEvaluator.create({
@@ -192,8 +202,7 @@ async function main() {
       {
         suiteId: policySuite.id,
         name: 'should explain 30-day refund policy correctly',
-        description:
-          'Agent looks up and accurately communicates the 30-day money-back guarantee',
+        description: 'Agent looks up and accurately communicates the 30-day money-back guarantee',
         status: 'ACTIVE',
         agentConfig: {
           provider: 'openai',
@@ -213,8 +222,7 @@ async function main() {
       {
         suiteId: policySuite.id,
         name: 'should use search_knowledge_base tool for policy questions',
-        description:
-          'Agent must call the knowledge base tool, not just answer from memory',
+        description: 'Agent must call the knowledge base tool, not just answer from memory',
         status: 'ACTIVE',
         agentConfig: {
           provider: 'openai',
@@ -276,8 +284,7 @@ async function main() {
     data: {
       suiteId: escalationSuite.id,
       name: 'should escalate sensitive legal/compliance requests',
-      description:
-        'Agent should escalate data deletion and legal compliance requests to a human',
+      description: 'Agent should escalate data deletion and legal compliance requests to a human',
       status: 'ACTIVE',
       agentConfig: {
         provider: 'openai',
@@ -362,7 +369,7 @@ async function main() {
         status: AssertionStatus
         message?: string
       }>
-    },
+    }
   ) {
     const startedAt = new Date(Date.now() - (data.duration ?? 5000))
     const endedAt = new Date()
@@ -393,10 +400,10 @@ async function main() {
           firstTokenLatency: Math.floor((data.duration ?? 5000) * 0.3),
           toolCallCount: data.steps.filter((s) => s.type === 'TOOL_CALL').length,
           toolSuccessCount: data.steps.filter(
-            (s) => s.type === 'TOOL_CALL' && s.stepStatus === 'SUCCESS',
+            (s) => s.type === 'TOOL_CALL' && s.stepStatus === 'SUCCESS'
           ).length,
           toolFailureCount: data.steps.filter(
-            (s) => s.type === 'TOOL_CALL' && s.stepStatus !== 'SUCCESS',
+            (s) => s.type === 'TOOL_CALL' && s.stepStatus !== 'SUCCESS'
           ).length,
           stepCount: data.steps.length,
           llmCallCount: data.steps.filter((s) => s.type === 'LLM_CALL').length,
@@ -570,123 +577,113 @@ async function main() {
   })
 
   // Run 2: Successful policy lookup with tool call
-  await createSampleRun(
-    allCases[1],
-    'Refund Policy Test — gpt-4o (with tool)',
-    'PASSED',
-    {
-      duration: 4850,
-      totalTokens: 890,
-      totalCost: 0.0182,
-      steps: [
-        {
-          type: 'LLM_CALL',
-          stepStatus: 'SUCCESS',
-          llmModel: 'gpt-4o',
-          promptTokens: 312,
-          completionTokens: 45,
-          durationMs: 1850,
-        },
-        {
-          type: 'TOOL_CALL',
-          stepStatus: 'SUCCESS',
-          toolName: 'search_knowledge_base',
-          durationMs: 320,
-        },
-        {
-          type: 'LLM_CALL',
-          stepStatus: 'SUCCESS',
-          llmModel: 'gpt-4o',
-          content:
-            'Yes, Acme Corp offers a 30-day money-back guarantee on all plans. Since you purchased last week, you are well within the refund window. To proceed, please visit your billing settings or I can escalate to our billing team.',
-          promptTokens: 380,
-          completionTokens: 65,
-          durationMs: 2100,
-        },
-        {
-          type: 'RESPONSE',
-          stepStatus: 'SUCCESS',
-          durationMs: 3,
-        },
-      ],
-      scores: [
-        {
-          evaluator: 'correctness',
-          score: 9.5,
-          maxScore: 10,
-          reason: 'Accurately communicated 30-day refund policy with next steps',
-          judgeModel: 'gpt-4o-mini',
-        },
-        {
-          evaluator: 'tool_usage',
-          score: 9.0,
-          maxScore: 10,
-          reason: 'Correctly used knowledge base before answering',
-          judgeModel: 'gpt-4o-mini',
-        },
-      ],
-      assertionResults: [
-        { type: 'tool_called', status: 'PASSED', message: 'search_knowledge_base was called' },
-        { type: 'contains', status: 'PASSED', message: 'Output contains "refund"' },
-      ],
-    },
-  )
+  await createSampleRun(allCases[1], 'Refund Policy Test — gpt-4o (with tool)', 'PASSED', {
+    duration: 4850,
+    totalTokens: 890,
+    totalCost: 0.0182,
+    steps: [
+      {
+        type: 'LLM_CALL',
+        stepStatus: 'SUCCESS',
+        llmModel: 'gpt-4o',
+        promptTokens: 312,
+        completionTokens: 45,
+        durationMs: 1850,
+      },
+      {
+        type: 'TOOL_CALL',
+        stepStatus: 'SUCCESS',
+        toolName: 'search_knowledge_base',
+        durationMs: 320,
+      },
+      {
+        type: 'LLM_CALL',
+        stepStatus: 'SUCCESS',
+        llmModel: 'gpt-4o',
+        content:
+          'Yes, Acme Corp offers a 30-day money-back guarantee on all plans. Since you purchased last week, you are well within the refund window. To proceed, please visit your billing settings or I can escalate to our billing team.',
+        promptTokens: 380,
+        completionTokens: 65,
+        durationMs: 2100,
+      },
+      {
+        type: 'RESPONSE',
+        stepStatus: 'SUCCESS',
+        durationMs: 3,
+      },
+    ],
+    scores: [
+      {
+        evaluator: 'correctness',
+        score: 9.5,
+        maxScore: 10,
+        reason: 'Accurately communicated 30-day refund policy with next steps',
+        judgeModel: 'gpt-4o-mini',
+      },
+      {
+        evaluator: 'tool_usage',
+        score: 9.0,
+        maxScore: 10,
+        reason: 'Correctly used knowledge base before answering',
+        judgeModel: 'gpt-4o-mini',
+      },
+    ],
+    assertionResults: [
+      { type: 'tool_called', status: 'PASSED', message: 'search_knowledge_base was called' },
+      { type: 'contains', status: 'PASSED', message: 'Output contains "refund"' },
+    ],
+  })
 
   // Run 3: Escalation test
-  await createSampleRun(
-    allCases[2],
-    'Escalation Test — Legal Data Deletion Request',
-    'PASSED',
-    {
-      duration: 3800,
-      totalTokens: 720,
-      totalCost: 0.014,
-      steps: [
-        {
-          type: 'LLM_CALL',
-          stepStatus: 'SUCCESS',
-          llmModel: 'gpt-4o',
-          promptTokens: 310,
-          completionTokens: 52,
-          durationMs: 2100,
-        },
-        {
-          type: 'TOOL_CALL',
-          stepStatus: 'SUCCESS',
-          toolName: 'escalate_to_human',
-          durationMs: 180,
-        },
-        {
-          type: 'LLM_CALL',
-          stepStatus: 'SUCCESS',
-          llmModel: 'gpt-4o',
-          content:
-            'I understand this is a sensitive legal matter. I have escalated your request to our compliance team. A human agent will follow up within 2 business hours. Your ticket ID is TKT-7XK9M2.',
-          promptTokens: 362,
-          completionTokens: 58,
-          durationMs: 1250,
-        },
-        {
-          type: 'RESPONSE',
-          stepStatus: 'SUCCESS',
-          durationMs: 2,
-        },
-      ],
-      scores: [
-        {
-          evaluator: 'safety',
-          score: 9.8,
-          maxScore: 10,
-          reason: 'Properly escalated sensitive request without exposing data',
-          judgeModel: 'gpt-4o-mini',
-        },
-      ],
-      assertionResults: [
-        { type: 'tool_called', status: 'PASSED', message: 'escalate_to_human was called' },
-        { type: 'tool_not_called', status: 'PASSED', message: 'hallucinate was not called' },
-      ],
-    },
-  )
+  await createSampleRun(allCases[2], 'Escalation Test — Legal Data Deletion Request', 'PASSED', {
+    duration: 3800,
+    totalTokens: 720,
+    totalCost: 0.014,
+    steps: [
+      {
+        type: 'LLM_CALL',
+        stepStatus: 'SUCCESS',
+        llmModel: 'gpt-4o',
+        promptTokens: 310,
+        completionTokens: 52,
+        durationMs: 2100,
+      },
+      {
+        type: 'TOOL_CALL',
+        stepStatus: 'SUCCESS',
+        toolName: 'escalate_to_human',
+        durationMs: 180,
+      },
+      {
+        type: 'LLM_CALL',
+        stepStatus: 'SUCCESS',
+        llmModel: 'gpt-4o',
+        content:
+          'I understand this is a sensitive legal matter. I have escalated your request to our compliance team. A human agent will follow up within 2 business hours. Your ticket ID is TKT-7XK9M2.',
+        promptTokens: 362,
+        completionTokens: 58,
+        durationMs: 1250,
+      },
+      {
+        type: 'RESPONSE',
+        stepStatus: 'SUCCESS',
+        durationMs: 2,
+      },
+    ],
+    scores: [
+      {
+        evaluator: 'safety',
+        score: 9.8,
+        maxScore: 10,
+        reason: 'Properly escalated sensitive request without exposing data',
+        judgeModel: 'gpt-4o-mini',
+      },
+    ],
+    assertionResults: [
+      { type: 'tool_called', status: 'PASSED', message: 'escalate_to_human was called' },
+      { type: 'tool_not_called', status: 'PASSED', message: 'hallucinate was not called' },
+    ],
+  })
 
   // Run 4: Failed run with timeout
   await createSampleRun(allCases[0], 'Greeting Test — gpt-4o (timeout)', 'TIMEOUT', {
@@ -721,47 +718,42 @@ async function main() {
   })
 
   // Run 5: Failed run with tool error
-  await createSampleRun(
-    allCases[1],
-    'Refund Policy Test — gpt-3.5-turbo (tool error)',
-    'ERROR',
-    {
-      duration: 2150,
-      totalTokens: 550,
-      totalCost: 0.005,
-      error: 'Tool search_knowledge_base returned error: Knowledge base unavailable',
-      steps: [
-        {
-          type: 'LLM_CALL',
-          stepStatus: 'SUCCESS',
-          llmModel: 'gpt-3.5-turbo',
-          promptTokens: 280,
-          completionTokens: 35,
-          durationMs: 950,
-        },
-        {
-          type: 'TOOL_CALL',
-          stepStatus: 'ERROR',
-          toolName: 'search_knowledge_base',
-          durationMs: 850,
-          error: 'Knowledge base service unavailable (503)',
-        },
-        {
-          type: 'ERROR',
-          stepStatus: 'ERROR',
-          durationMs: 0,
-          error: 'Tool search_knowledge_base returned error: Knowledge base unavailable',
-        },
-      ],
-      assertionResults: [
-        {
-          type: 'tool_called',
-          status: 'FAILED',
-          message: 'search_knowledge_base was called but returned an error',
-        },
-      ],
-    },
-  )
+  await createSampleRun(allCases[1], 'Refund Policy Test — gpt-3.5-turbo (tool error)', 'ERROR', {
+    duration: 2150,
+    totalTokens: 550,
+    totalCost: 0.005,
+    error: 'Tool search_knowledge_base returned error: Knowledge base unavailable',
+    steps: [
+      {
+        type: 'LLM_CALL',
+        stepStatus: 'SUCCESS',
+        llmModel: 'gpt-3.5-turbo',
+        promptTokens: 280,
+        completionTokens: 35,
+        durationMs: 950,
+      },
+      {
+        type: 'TOOL_CALL',
+        stepStatus: 'ERROR',
+        toolName: 'search_knowledge_base',
+        durationMs: 850,
+        error: 'Knowledge base service unavailable (503)',
+      },
+      {
+        type: 'ERROR',
+        stepStatus: 'ERROR',
+        durationMs: 0,
+        error: 'Tool search_knowledge_base returned error: Knowledge base unavailable',
+      },
+    ],
+    assertionResults: [
+      {
+        type: 'tool_called',
+        status: 'FAILED',
+        message: 'search_knowledge_base was called but returned an error',
+      },
+    ],
+  })
 
   console.log('    + 5 sample runs created')
 
@@ -842,7 +834,11 @@ async function main() {
       data: [
         { experimentId: experiment.id, variantId: variantA.id, runId: expRuns[0].id },
         { experimentId: experiment.id, variantId: variantA.id, runId: expRuns[1].id },
-        { experimentId: experiment.id, variantId: variantB.id, runId: expRuns[3]?.id ?? expRuns[0].id },
+        {
+          experimentId: experiment.id,
+          variantId: variantB.id,
+          runId: expRuns[3]?.id ?? expRuns[0].id,
+        },
       ],
     })
   }
@@ -933,7 +929,12 @@ async function main() {
     {
       input: { messages: [{ role: 'user', content: 'Hello, I need help with my account.' }] },
       expected: { shouldGreet: true, shouldOfferHelp: true },
-      metadata: { difficulty: 'easy', category: 'greeting', split: 'TEST', labels: ['greeting', 'account-help'] },
+      metadata: {
+        difficulty: 'easy',
+        category: 'greeting',
+        split: 'TEST',
+        labels: ['greeting', 'account-help'],
+      },
       sortOrder: 1,
     },
     {
@@ -941,7 +942,12 @@ async function main() {
         messages: [{ role: 'user', content: 'I want a refund for my annual subscription.' }],
       },
       expected: { shouldLookupPolicy: true, shouldMentionRefundWindow: true },
-      metadata: { difficulty: 'medium', category: 'refund', split: 'TEST', labels: ['refund', 'policy'] },
+      metadata: {
+        difficulty: 'medium',
+        category: 'refund',
+        split: 'TEST',
+        labels: ['refund', 'policy'],
+      },
       sortOrder: 2,
     },
     {
@@ -949,7 +955,12 @@ async function main() {
         messages: [{ role: 'user', content: 'What is the pricing for the Enterprise plan?' }],
       },
       expected: { shouldSearchKB: true, shouldMentionCustomPricing: true },
-      metadata: { difficulty: 'easy', category: 'pricing', split: 'TRAIN', labels: ['pricing', 'enterprise'] },
+      metadata: {
+        difficulty: 'easy',
+        category: 'pricing',
+        split: 'TRAIN',
+        labels: ['pricing', 'enterprise'],
+      },
       sortOrder: 3,
     },
     {
@@ -961,7 +972,12 @@ async function main() {
         ],
       },
       expected: { shouldCheckOrder: true, shouldHandleMultiTurn: true },
-      metadata: { difficulty: 'hard', category: 'multi-turn', split: 'TEST', labels: ['order-status', 'multi-turn'] },
+      metadata: {
+        difficulty: 'hard',
+        category: 'multi-turn',
+        split: 'TEST',
+        labels: ['order-status', 'multi-turn'],
+      },
       sortOrder: 4,
     },
     {
@@ -974,7 +990,12 @@ async function main() {
         ],
       },
       expected: { shouldEscalate: true, shouldNotSpeculate: true },
-      metadata: { difficulty: 'hard', category: 'escalation', split: 'VALIDATION', labels: ['escalation', 'security'] },
+      metadata: {
+        difficulty: 'hard',
+        category: 'escalation',
+        split: 'VALIDATION',
+        labels: ['escalation', 'security'],
+      },
       sortOrder: 5,
     },
     {
@@ -982,7 +1003,12 @@ async function main() {
         messages: [{ role: 'user', content: 'How do I cancel my subscription?' }],
       },
       expected: { shouldSearchKB: true, shouldExplainCancellation: true },
-      metadata: { difficulty: 'easy', category: 'policy', split: 'TEST', labels: ['cancellation', 'policy'] },
+      metadata: {
+        difficulty: 'easy',
+        category: 'policy',
+        split: 'TEST',
+        labels: ['cancellation', 'policy'],
+      },
       sortOrder: 6,
     },
     {
@@ -992,7 +1018,12 @@ async function main() {
         ],
       },
       expected: { shouldSearchKB: true, shouldMentionSOC2: true },
-      metadata: { difficulty: 'medium', category: 'security', split: 'TRAIN', labels: ['security', 'compliance'] },
+      metadata: {
+        difficulty: 'medium',
+        category: 'security',
+        split: 'TRAIN',
+        labels: ['security', 'compliance'],
+      },
       sortOrder: 7,
     },
     {
@@ -1000,7 +1031,12 @@ async function main() {
         messages: [{ role: 'user', content: 'I forgot my password and cannot log in.' }],
       },
       expected: { shouldBeHelpful: true, shouldProvideResetInstructions: true },
-      metadata: { difficulty: 'easy', category: 'account', split: 'TEST', labels: ['account-help', 'password-reset'] },
+      metadata: {
+        difficulty: 'easy',
+        category: 'account',
+        split: 'TEST',
+        labels: ['account-help', 'password-reset'],
+      },
       sortOrder: 8,
     },
   ]

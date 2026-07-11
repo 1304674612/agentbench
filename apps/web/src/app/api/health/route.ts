@@ -28,8 +28,7 @@ export async function GET() {
   } catch (error) {
     console.error('[HEALTH] Database connectivity check failed:', error)
     checks.checks.database = 'error'
-    checks.checks.databaseError =
-      error instanceof Error ? error.message : 'Unknown database error'
+    checks.checks.databaseError = error instanceof Error ? error.message : 'Unknown database error'
     checks.status = 'degraded'
   }
 

@@ -18,7 +18,8 @@ export interface CodeReviewProjectConfig {
 
 const config: CodeReviewProjectConfig = {
   name: 'code-review',
-  description: 'Claude-powered code review agent that identifies bugs, security issues, and suggests improvements',
+  description:
+    'Claude-powered code review agent that identifies bugs, security issues, and suggests improvements',
 
   agent: {
     provider: 'anthropic',
@@ -58,7 +59,10 @@ When reviewing, always:
           type: 'object',
           properties: {
             code: { type: 'string', description: 'Code snippet to analyze' },
-            language: { type: 'string', description: 'Programming language (typescript, python, etc.)' },
+            language: {
+              type: 'string',
+              description: 'Programming language (typescript, python, etc.)',
+            },
           },
           required: ['code', 'language'],
         },
@@ -70,7 +74,10 @@ When reviewing, always:
           type: 'object',
           properties: {
             code: { type: 'string', description: 'Code to check' },
-            category: { type: 'string', description: 'Category: security, performance, readability, or all' },
+            category: {
+              type: 'string',
+              description: 'Category: security, performance, readability, or all',
+            },
           },
           required: ['code'],
         },
@@ -97,10 +104,7 @@ When reviewing, always:
     concurrency: 1,
   },
 
-  testSuites: [
-    './tests/code-quality.test.ts',
-    './tests/security-review.test.ts',
-  ],
+  testSuites: ['./tests/code-quality.test.ts', './tests/security-review.test.ts'],
 }
 
 export default config

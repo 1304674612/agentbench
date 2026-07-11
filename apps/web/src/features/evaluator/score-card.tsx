@@ -21,21 +21,24 @@ function getScoreTextColor(score: number, maxScore: number): string {
   return 'text-red-400'
 }
 
-export function ScoreCard({ evaluator, score, maxScore, reason, judgeModel, className = '' }: ScoreCardProps) {
+export function ScoreCard({
+  evaluator,
+  score,
+  maxScore,
+  reason,
+  judgeModel,
+  className = '',
+}: ScoreCardProps) {
   const ratio = maxScore > 0 ? score / maxScore : 0
   const pct = Math.round(ratio * 100)
 
   return (
     <div className={`rounded-xl border border-border bg-card p-4 ${className}`}>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium capitalize">
-          {evaluator.replace(/_/g, ' ')}
-        </span>
+        <span className="text-sm font-medium capitalize">{evaluator.replace(/_/g, ' ')}</span>
         <span className={`text-sm font-mono font-bold ${getScoreTextColor(score, maxScore)}`}>
           {score.toFixed(1)}
-          <span className="text-muted-foreground font-normal">
-            /{maxScore}
-          </span>
+          <span className="text-muted-foreground font-normal">/{maxScore}</span>
         </span>
       </div>
       <div className="h-2 rounded-full bg-muted overflow-hidden mb-2">
@@ -44,14 +47,8 @@ export function ScoreCard({ evaluator, score, maxScore, reason, judgeModel, clas
           style={{ width: `${Math.max(pct, 3)}%` }}
         />
       </div>
-      {reason && (
-        <p className="text-xs text-muted-foreground line-clamp-2">{reason}</p>
-      )}
-      {judgeModel && (
-        <p className="text-[10px] text-muted-foreground mt-2">
-          Judge: {judgeModel}
-        </p>
-      )}
+      {reason && <p className="text-xs text-muted-foreground line-clamp-2">{reason}</p>}
+      {judgeModel && <p className="text-[10px] text-muted-foreground mt-2">Judge: {judgeModel}</p>}
     </div>
   )
 }

@@ -51,48 +51,55 @@
 
 ```bash
 npm install -g @agentbench/cli
-agentbench init
+agentbench init --quick
+```
+
+**30 秒。从安装到看到测试通过。** 然后你就可以把测试文件改成你自己的 Agent。
+
+---
+
+### 第一个测试：5 行代码
+
+```ts
+import { agentbench } from '@agentbench/core'
+
+const suite = agentbench.suite('My first agent test')
+
+suite.test('handles refund requests correctly', async ({ agent, expect }) => {
+  const response = await agent.toolCall('refund', { orderId: 'ORD-123', reason: 'defective' })
+  expect(response).tool('refund').toBeCalledWith({ orderId: 'ORD-123' })
+  expect(response).output.semanticMatch('refund initiated')
+})
+```
+
+跑一次：
+
+```bash
 agentbench test
 ```
 
-**AgentBench is to AI agents what Jest is to JavaScript.**
+看到结果：
 
-Before Jest, JavaScript testing was fragmented — every team wrote their own harness, nobody trusted anyone else's results, there was no standard. Jest gave developers a unified way to write tests, run them fast, and catch regressions in CI. Playwright did the same for browser apps, bringing deterministic assertions to an inherently visual and interactive medium.
+```
+ PASS  tests/my-agent.test.ts
+  ✓ handles refund requests correctly (1.2s)
+  ✓ responds politely to greetings (0.8s)
+  ✓ escalates when unable to help (1.5s)
 
-AgentBench does the same for AI agents — a domain that is non-deterministic, LLM-powered, and tool-calling by nature. Same philosophy: assertions, snapshots, replay, coverage, CI integration. Different domain: instead of `expect(2 + 2).toBe(4)`, you write `expect(agent).tool("search").toBeCalledWith({ query: "refund policy" })`. Instead of deterministic pass/fail, you get LLM-aware scoring, regression detection, and cross-model replay.
-
-You test your code. You test your UI. You test your API. Now test your AI agents with the same rigor. One CLI. Five minutes. Ship agents with confidence.
-
-<table>
-<tr>
-<td width="50%">
-
-### Prerequisites
-- **Node.js** >= 20
-- **pnpm** >= 9
-- **Docker** (PostgreSQL + Redis)
-
-</td>
-<td width="50%">
-
-### Install from Source
-
-```bash
-git clone git@github.com:1304674612/agentbench.git
-cd agentbench && pnpm install
-docker compose up -d
-cp .env.example .env && pnpm db:push
-pnpm dev
+Tests: 3 passed, 3 total
+Time:   3.5s
 ```
 
-| | URL |
-|---|---|
-| Dashboard | http://localhost:3000/dashboard |
-| API | http://localhost:3000/api/v1 |
+---
 
-</td>
-</tr>
-</table>
+### 然后呢？
+
+1. 把你的 Agent 代码放到 `src/agent.ts`
+2. 在 `tests/` 里写断言 —— [22 种 matcher](https://agentbench.dev/docs/assertions) 任选
+3. `agentbench test` 跑起来
+4. 加一个 GitHub Actions workflow，PR 里自动拦住回归
+
+**从 0 到 CI 门禁，5 分钟。**
 
 ---
 

@@ -32,7 +32,10 @@ Write the implementation to src/calculator.ts and then run the tests to verify.`
   const result = await runCodingAgent({ task, apiKey: API_KEY })
 
   const completed = await expect(result).status().toBeCompleted().run()
-  const mentionsAdd = await expect(result).output().toMatchRegex(/add|sum|calculator/i).run()
+  const mentionsAdd = await expect(result)
+    .output()
+    .toMatchRegex(/add|sum|calculator/i)
+    .run()
 
   return {
     completed: completed.allPassed,
@@ -66,7 +69,10 @@ Implement the divide function in src/divide.ts.`
   const result = await runCodingAgent({ task, apiKey: API_KEY })
 
   const completed = await expect(result).status().toBeCompleted().run()
-  const handlesZero = await expect(result).output().toMatchRegex(/divide|zero|throw/i).run()
+  const handlesZero = await expect(result)
+    .output()
+    .toMatchRegex(/divide|zero|throw/i)
+    .run()
 
   return {
     completed: completed.allPassed,

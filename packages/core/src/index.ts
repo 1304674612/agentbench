@@ -30,5 +30,9 @@ export * from './reporter'
 // Dataset — the Dataset class + helpers (types are in ./types)
 export { Dataset } from './dataset'
 
+// Convenience API — createAgent, defineSuite, defineTest
+export { createAgent, defineSuite, defineTest } from './agent'
+export type { CreateAgentConfig, Agent, AssertionDef, TestDef, SuiteDef } from './agent'
+
 // Version
 export const VERSION = '0.3.0'

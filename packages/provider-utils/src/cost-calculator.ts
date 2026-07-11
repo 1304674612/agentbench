@@ -36,12 +36,12 @@ const PRICING_TABLE: Record<string, ModelPricing> = {
   'gpt-4-32k': { input: 60.0, output: 120.0 },
   'gpt-3.5-turbo': { input: 0.5, output: 1.5 },
   'gpt-3.5-turbo-16k': { input: 3.0, output: 4.0 },
-  'o1': { input: 15.0, output: 60.0 },
+  o1: { input: 15.0, output: 60.0 },
   'o1-mini': { input: 1.1, output: 4.4 },
   'o1-pro': { input: 15.0, output: 60.0 },
-  'o3': { input: 10.0, output: 40.0 },
+  o3: { input: 10.0, output: 40.0 },
   'o3-mini': { input: 1.1, output: 4.4 },
-  'o5': { input: 10.0, output: 40.0 },
+  o5: { input: 10.0, output: 40.0 },
   'o4-mini': { input: 1.1, output: 4.4 },
   'gpt-4o-realtime': { input: 5.0, output: 20.0 },
 
@@ -86,7 +86,7 @@ const PRICING_TABLE: Record<string, ModelPricing> = {
   'llama-3.2-3b-preview': { input: 0.04, output: 0.04 },
   'llama-3.2-1b-preview': { input: 0.04, output: 0.04 },
   'mixtral-8x7b-32768': { input: 0.24, output: 0.24 },
-  'gemma2-9b-it': { input: 0.10, output: 0.10 },
+  'gemma2-9b-it': { input: 0.1, output: 0.1 },
   'deepseek-r1-distill-llama-70b': { input: 0.59, output: 0.79 },
   'deepseek-r1-distill-qwen-32b': { input: 0.23, output: 0.23 },
 
@@ -114,12 +114,12 @@ const PRICING_TABLE: Record<string, ModelPricing> = {
   // ── Cohere ───────────────────────────────────────────────────────────────
   'command-r-plus': { input: 2.5, output: 10.0 },
   'command-r': { input: 0.5, output: 1.5 },
-  'command': { input: 1.0, output: 2.0 },
+  command: { input: 1.0, output: 2.0 },
   'command-light': { input: 0.3, output: 0.6 },
 
   // ── Perplexity ───────────────────────────────────────────────────────────
   'sonar-pro': { input: 3.0, output: 15.0 },
-  'sonar': { input: 1.0, output: 1.0 },
+  sonar: { input: 1.0, output: 1.0 },
   'sonar-reasoning': { input: 1.0, output: 5.0 },
 
   // ── Fireworks AI ─────────────────────────────────────────────────────────
@@ -130,10 +130,10 @@ const PRICING_TABLE: Record<string, ModelPricing> = {
   // ── Together AI ──────────────────────────────────────────────────────────
   'meta-llama/Llama-3.3-70B-Instruct-Turbo': { input: 0.88, output: 0.88 },
   'meta-llama/Llama-3.1-8B-Instruct-Turbo': { input: 0.18, output: 0.18 },
-  'mistralai/Mixtral-8x7B-Instruct-v0.1': { input: 0.60, output: 0.60 },
+  'mistralai/Mixtral-8x7B-Instruct-v0.1': { input: 0.6, output: 0.6 },
   'deepseek-ai/DeepSeek-R1': { input: 0.55, output: 2.19 },
   'deepseek-ai/DeepSeek-V3': { input: 0.27, output: 1.1 },
-  'Qwen/Qwen2.5-72B-Instruct-Turbo': { input: 1.20, output: 1.20 },
+  'Qwen/Qwen2.5-72B-Instruct-Turbo': { input: 1.2, output: 1.2 },
 }
 
 // ── Default Pricing (used when model is unknown) ───────────────────────────────

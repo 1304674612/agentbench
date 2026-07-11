@@ -14,19 +14,18 @@ const importSchema = z.object({
   format: z.enum(['CSV', 'JSON', 'JSONL']),
   data: z.union([z.string(), z.array(z.unknown())]),
   /** Split ratio: { train: 0.7, test: 0.2, validation: 0.1 } */
-  split: z.object({
-    train: z.number().optional(),
-    test: z.number().optional(),
-    validation: z.number().optional(),
-  }).optional(),
+  split: z
+    .object({
+      train: z.number().optional(),
+      test: z.number().optional(),
+      validation: z.number().optional(),
+    })
+    .optional(),
 })
 
 type ParamsCtx = { params: Promise<{ projectId: string }> }
 
-export const GET = withApiAuth(async (
-  req: NextRequest,
-  ctx: ParamsCtx,
-) => {
+export const GET = withApiAuth(async (req: NextRequest, ctx: ParamsCtx) => {
   const { projectId } = await ctx.params
   try {
     const { searchParams } = new URL(req.url)
@@ -45,11 +44,22 @@ export const GET = withApiAuth(async (
     })
 
     return NextResponse.json({
-      datasets: datasets.map((d: { id: string; name: string; description?: string | null; format: string; tags: string[]; createdAt: Date; updatedAt: Date; _count: { items: number } }) => ({
-        ...d,
-        itemCount: d._count.items,
-        _count: undefined,
-      })),
+      datasets: datasets.map(
+        (d: {
+          id: string
+          name: string
+          description?: string | null
+          format: string
+          tags: string[]
+          createdAt: Date
+          updatedAt: Date
+          _count: { items: number }
+        }) => ({
+          ...d,
+          itemCount: d._count.items,
+          _count: undefined,
+        })
+      ),
     })
   } catch (error) {
     console.error('Failed to list datasets:', error)
@@ -57,48 +67,54 @@ export const GET = withApiAuth(async (
   }
 })
 
-export const POST = withApiAuth(async (
-  req: NextRequest,
-  ctx: ParamsCtx,
-) => {
-  const { projectId } = await ctx.params
-  try {
-    const body = await req.json()
-    const action = body.action ?? 'create'
+export const POST = withApiAuth(
+  async (req: NextRequest, ctx: ParamsCtx) => {
+    const { projectId } = await ctx.params
+    try {
+      const body = await req.json()
+      const action = body.action ?? 'create'
 
-    if (action === 'import') {
-      const parsed = importSchema.safeParse(body)
-      if (!parsed.success) {
-        return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
+      if (action === 'import') {
+        const parsed = importSchema.safeParse(body)
+        if (!parsed.success) {
+          return NextResponse.json(
+            { error: 'Validation failed', details: parsed.error.flatten() },
+            { status: 400 }
+          )
+        }
+        return handleImport(projectId, parsed.data)
       }
-      return handleImport(projectId, parsed.data)
+
+      const parsed = createDatasetSchema.safeParse(body)
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: 'Validation failed', details: parsed.error.flatten() },
+          { status: 400 }
+        )
+      }
+
+      const dataset = await db.dataset.create({
+        data: {
+          projectId,
+          name: parsed.data.name,
+          description: parsed.data.description,
+          format: parsed.data.format,
+          tags: parsed.data.tags,
+        },
+      })
+
+      return NextResponse.json(dataset, { status: 201 })
+    } catch (error) {
+      console.error('Failed to create dataset:', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
-
-    const parsed = createDatasetSchema.safeParse(body)
-    if (!parsed.success) {
-      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
-    }
-
-    const dataset = await db.dataset.create({
-      data: {
-        projectId,
-        name: parsed.data.name,
-        description: parsed.data.description,
-        format: parsed.data.format,
-        tags: parsed.data.tags,
-      },
-    })
-
-    return NextResponse.json(dataset, { status: 201 })
-  } catch (error) {
-    console.error('Failed to create dataset:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}, { requireWrite: true })
+  },
+  { requireWrite: true }
+)
 
 async function handleImport(
   projectId: string,
-  params: z.infer<typeof importSchema>,
+  params: z.infer<typeof importSchema>
 ): Promise<NextResponse> {
   let items: Array<{ input: unknown; expected?: unknown }> = []
 
@@ -115,10 +131,15 @@ async function handleImport(
     items = lines.slice(1).map((line) => {
       const values = line.split(',').map((v) => v.trim())
       const obj: Record<string, string> = {}
-      headers.forEach((h, i) => { obj[h] = values[i] ?? '' })
+      headers.forEach((h, i) => {
+        obj[h] = values[i] ?? ''
+      })
       return {
         input: { messages: [{ role: 'user', content: obj.input ?? obj.question ?? line }] },
-        expected: obj.expected ?? obj.answer ?? obj.output ? { content: obj.expected ?? obj.answer ?? obj.output } : undefined,
+        expected:
+          (obj.expected ?? obj.answer ?? obj.output)
+            ? { content: obj.expected ?? obj.answer ?? obj.output }
+            : undefined,
       }
     })
   }
@@ -153,31 +174,34 @@ async function handleImport(
     })),
   })
 
-  return NextResponse.json({
-    dataset,
-    imported: items.length,
-    split: { train: trainEnd, test: testEnd - trainEnd, validation: total - testEnd },
-  }, { status: 201 })
+  return NextResponse.json(
+    {
+      dataset,
+      imported: items.length,
+      split: { train: trainEnd, test: testEnd - trainEnd, validation: total - testEnd },
+    },
+    { status: 201 }
+  )
 }
 
-export const DELETE = withApiAuth(async (
-  req: NextRequest,
-  ctx: ParamsCtx,
-) => {
-  const { projectId } = await ctx.params
-  try {
-    const { searchParams } = new URL(req.url)
-    const id = searchParams.get('id')
+export const DELETE = withApiAuth(
+  async (req: NextRequest, ctx: ParamsCtx) => {
+    const { projectId } = await ctx.params
+    try {
+      const { searchParams } = new URL(req.url)
+      const id = searchParams.get('id')
 
-    if (id) {
-      await db.dataset.delete({ where: { id } })
-    } else {
-      return NextResponse.json({ error: 'Dataset ID required' }, { status: 400 })
+      if (id) {
+        await db.dataset.delete({ where: { id } })
+      } else {
+        return NextResponse.json({ error: 'Dataset ID required' }, { status: 400 })
+      }
+
+      return NextResponse.json({ success: true })
+    } catch (error) {
+      console.error('Failed to delete dataset:', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
-
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Failed to delete dataset:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}, { requireWrite: true })
+  },
+  { requireWrite: true }
+)

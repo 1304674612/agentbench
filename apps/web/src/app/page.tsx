@@ -1,9 +1,27 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import {
-  ArrowRight, Play, CheckCircle2, Zap, BarChart3, Shield,
-  Terminal, Code2, Github, ExternalLink, BookOpen, FileText, Scale,
-  Wrench, Gauge, Target, Layers, Sparkles, Heart, RotateCcw, Camera,
+  ArrowRight,
+  Play,
+  CheckCircle2,
+  Zap,
+  BarChart3,
+  Shield,
+  Terminal,
+  Code2,
+  Github,
+  ExternalLink,
+  BookOpen,
+  FileText,
+  Scale,
+  Wrench,
+  Gauge,
+  Target,
+  Layers,
+  Sparkles,
+  Heart,
+  RotateCcw,
+  Camera,
 } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -12,13 +30,15 @@ export const metadata: Metadata = {
     'Replay, evaluate, compare, and assert — catch AI agent regressions before your users do. The Verification Framework for AI Agents.',
   openGraph: {
     title: 'AgentBench — The Regression Testing Framework for AI Agents',
-    description: 'Replay, evaluate, compare, and assert — catch AI agent regressions before your users do.',
+    description:
+      'Replay, evaluate, compare, and assert — catch AI agent regressions before your users do.',
     images: ['/api/og?title=AgentBench+Landing'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'AgentBench — The Regression Testing Framework for AI Agents',
-    description: 'Replay, evaluate, compare, and assert — catch AI agent regressions before your users do.',
+    description:
+      'Replay, evaluate, compare, and assert — catch AI agent regressions before your users do.',
     images: ['/api/og?title=AgentBench+Landing'],
   },
 }
@@ -92,8 +112,7 @@ export default function LandingPage() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
             <span className="text-muted-foreground">
-              Production release —{' '}
-              <span className="text-emerald-400 font-medium">v0.2.0</span>
+              Production release — <span className="text-emerald-400 font-medium">v0.2.0</span>
               {' · '}
               <span className="text-emerald-400 font-medium">391+ tests</span>
               {' · '}
@@ -164,7 +183,8 @@ export default function LandingPage() {
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-3">Everything you need to ship with confidence</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              A complete toolkit for testing, evaluating, and monitoring your AI agents throughout the entire development lifecycle.
+              A complete toolkit for testing, evaluating, and monitoring your AI agents throughout
+              the entire development lifecycle.
             </p>
           </div>
 
@@ -193,7 +213,8 @@ export default function LandingPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-3">Write assertions like you write tests</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              A chainable, type-safe DSL that reads like English. No new syntax to learn — if you know Jest, you know AgentBench.
+              A chainable, type-safe DSL that reads like English. No new syntax to learn — if you
+              know Jest, you know AgentBench.
             </p>
           </div>
 
@@ -202,8 +223,12 @@ export default function LandingPage() {
               <div className="w-3 h-3 rounded-full bg-red-400/80" />
               <div className="w-3 h-3 rounded-full bg-amber-400/80" />
               <div className="w-3 h-3 rounded-full bg-emerald-400/80" />
-              <span className="ml-3 text-xs text-muted-foreground font-mono">tests/agent.test.ts</span>
-              <span className="ml-auto text-[10px] text-emerald-400/70 font-medium">✓ 10/10 passing</span>
+              <span className="ml-3 text-xs text-muted-foreground font-mono">
+                tests/agent.test.ts
+              </span>
+              <span className="ml-auto text-[10px] text-emerald-400/70 font-medium">
+                ✓ 10/10 passing
+              </span>
             </div>
             <pre className="p-6 text-sm leading-6 overflow-x-auto">
               <code className="text-[#e5e5e5]">
@@ -213,21 +238,57 @@ export default function LandingPage() {
                 <span className="text-[#34d399]">'@agentbench/core'</span>
                 {'\n\n'}
                 <span className="text-[#6366f1]">const</span>{' '}
-                <span className="text-[#f9a8d4]">result</span>{' '}
-                = <span className="text-[#6366f1]">await</span>{' '}
+                <span className="text-[#f9a8d4]">result</span> ={' '}
+                <span className="text-[#6366f1]">await</span>{' '}
                 <span className="text-[#a78bfa]">expect</span>(runResult){'\n'}
-                <span className="text-[#6366f1]">  .status()</span>.<span className="text-[#fbbf24]">toBeCompleted</span>()                     <span className="text-[#6b7280]">// 1. Agent finished successfully</span>{'\n'}
-                <span className="text-[#6366f1]">  .tool</span>(<span className="text-[#34d399]">"search_docs"</span>).<span className="text-[#fbbf24]">toBeCalled</span>()             <span className="text-[#6b7280]">// 2. Called the right tool</span>{'\n'}
-                <span className="text-[#6366f1]">  .output</span>().<span className="text-[#fbbf24]">toContain</span>(<span className="text-[#34d399]">"30 天"</span>)                     <span className="text-[#6b7280]">// 3. Output contains correct info</span>{'\n'}
-                <span className="text-[#6366f1]">  .output</span>().<span className="text-[#fbbf24]">toMatchRegex</span>(<span className="text-[#e5e5e5]">/退款.*政策/i</span>)          <span className="text-[#6b7280]">// 4. Pattern validation</span>{'\n'}
-                <span className="text-[#6366f1]">  .tokens</span>().<span className="text-[#fbbf24]">toBeLessThan</span>(<span className="text-[#f97316]">4096</span>)                    <span className="text-[#6b7280]">// 5. Token budget respected</span>{'\n'}
-                <span className="text-[#6366f1]">  .latency</span>().<span className="text-[#fbbf24]">toBeLessThan</span>(<span className="text-[#f97316]">5000</span>)                    <span className="text-[#6b7280]">// 6. Under 5 seconds</span>{'\n'}
-                <span className="text-[#6366f1]">  .score</span>(<span className="text-[#34d399]">"correctness"</span>).<span className="text-[#fbbf24]">toBeGreaterThan</span>(<span className="text-[#f97316]">7</span>)        <span className="text-[#6b7280]">// 7. Quality threshold</span>{'\n'}
-                <span className="text-[#6366f1]">  .score</span>(<span className="text-[#34d399]">"safety"</span>).<span className="text-[#fbbf24]">toBeGreaterThan</span>(<span className="text-[#f97316]">8</span>)           <span className="text-[#6b7280]">// 8. Safety threshold</span>{'\n'}
-                <span className="text-[#6366f1]">  .run</span>()
+                <span className="text-[#6366f1]"> .status()</span>.
+                <span className="text-[#fbbf24]">toBeCompleted</span>(){' '}
+                <span className="text-[#6b7280]">// 1. Agent finished successfully</span>
+                {'\n'}
+                <span className="text-[#6366f1]"> .tool</span>(
+                <span className="text-[#34d399]">"search_docs"</span>).
+                <span className="text-[#fbbf24]">toBeCalled</span>(){' '}
+                <span className="text-[#6b7280]">// 2. Called the right tool</span>
+                {'\n'}
+                <span className="text-[#6366f1]"> .output</span>().
+                <span className="text-[#fbbf24]">toContain</span>(
+                <span className="text-[#34d399]">"30 天"</span>){' '}
+                <span className="text-[#6b7280]">// 3. Output contains correct info</span>
+                {'\n'}
+                <span className="text-[#6366f1]"> .output</span>().
+                <span className="text-[#fbbf24]">toMatchRegex</span>(
+                <span className="text-[#e5e5e5]">/退款.*政策/i</span>){' '}
+                <span className="text-[#6b7280]">// 4. Pattern validation</span>
+                {'\n'}
+                <span className="text-[#6366f1]"> .tokens</span>().
+                <span className="text-[#fbbf24]">toBeLessThan</span>(
+                <span className="text-[#f97316]">4096</span>){' '}
+                <span className="text-[#6b7280]">// 5. Token budget respected</span>
+                {'\n'}
+                <span className="text-[#6366f1]"> .latency</span>().
+                <span className="text-[#fbbf24]">toBeLessThan</span>(
+                <span className="text-[#f97316]">5000</span>){' '}
+                <span className="text-[#6b7280]">// 6. Under 5 seconds</span>
+                {'\n'}
+                <span className="text-[#6366f1]"> .score</span>(
+                <span className="text-[#34d399]">"correctness"</span>).
+                <span className="text-[#fbbf24]">toBeGreaterThan</span>(
+                <span className="text-[#f97316]">7</span>){' '}
+                <span className="text-[#6b7280]">// 7. Quality threshold</span>
+                {'\n'}
+                <span className="text-[#6366f1]"> .score</span>(
+                <span className="text-[#34d399]">"safety"</span>).
+                <span className="text-[#fbbf24]">toBeGreaterThan</span>(
+                <span className="text-[#f97316]">8</span>){' '}
+                <span className="text-[#6b7280]">// 8. Safety threshold</span>
+                {'\n'}
+                <span className="text-[#6366f1]"> .run</span>()
                 {'\n\n'}
-                <span className="text-[#6366f1]">if</span> (<span className="text-[#fca5a5]">!result.allPassed</span>) {'{\n'}
-                {'  '}<span className="text-[#fca5a5]">process.exit</span>(<span className="text-[#f97316]">1</span>){'\n'}
+                <span className="text-[#6366f1]">if</span> (
+                <span className="text-[#fca5a5]">!result.allPassed</span>) {'{\n'}
+                {'  '}
+                <span className="text-[#fca5a5]">process.exit</span>(
+                <span className="text-[#f97316]">1</span>){'\n'}
                 {'}'}
               </code>
             </pre>
@@ -243,7 +304,8 @@ export default function LandingPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-3">Or use the CLI — CI-ready from day one</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Every command outputs structured data. Pipe to jq, redirect to files, or use in GitHub Actions.
+              Every command outputs structured data. Pipe to jq, redirect to files, or use in GitHub
+              Actions.
             </p>
           </div>
 
@@ -251,23 +313,41 @@ export default function LandingPage() {
             {/* Left: Terminal */}
             <div className="rounded-2xl border border-border bg-[#08080a] overflow-hidden shadow-2xl shadow-black/50">
               <div className="flex items-center gap-2 px-5 py-3 border-b border-border/50 bg-muted/10">
-                <span className="text-xs text-muted-foreground font-mono">~/projects/my-agent $</span>
+                <span className="text-xs text-muted-foreground font-mono">
+                  ~/projects/my-agent $
+                </span>
               </div>
               <pre className="p-5 text-sm leading-6 overflow-x-auto">
                 <code className="text-[#e5e5e5]">
                   <span className="text-[#a78bfa]">agentbench</span> test{'\n'}
-                  {'  '}<span className="text-[#6366f1]">--project</span> my-agent{'\n'}
-                  {'  '}<span className="text-[#6366f1]">--grep</span> <span className="text-[#34d399]">"customer-support"</span>{'\n'}
-                  {'  '}<span className="text-[#6366f1]">--verbose</span>
-                  {'\n\n'}<span className="text-[#6366f1]">⚡ Running tests...</span>
-                  {'\n'}<span className="text-[#6b7280]">  Suites: 3  ·  Test cases: 12</span>
+                  {'  '}
+                  <span className="text-[#6366f1]">--project</span> my-agent{'\n'}
+                  {'  '}
+                  <span className="text-[#6366f1]">--grep</span>{' '}
+                  <span className="text-[#34d399]">"customer-support"</span>
+                  {'\n'}
+                  {'  '}
+                  <span className="text-[#6366f1]">--verbose</span>
                   {'\n\n'}
-                  <span className="text-[#34d399]">  ✓</span> greeting      <span className="text-[#6b7280]">5/5 passed  (2,340ms)</span>{'\n'}
-                  <span className="text-[#34d399]">  ✓</span> refund_check  <span className="text-[#6b7280]">4/4 passed  (1,890ms)</span>{'\n'}
-                  <span className="text-[#f87171]">  ✗</span> escalation    <span className="text-[#f87171]">2/3 failed  (3,200ms)</span>{'\n'}
-                  {'     '}<span className="text-[#fbbf24]">└ tool_not_called("hallucinate") failed</span>
-                  {'\n\n'}<span className="text-[#6b7280]">──────────────────────────────────────</span>
-                  {'\n'}<span className="text-[#fca5a5]">  ✗ 1 failed</span>
+                  <span className="text-[#6366f1]">⚡ Running tests...</span>
+                  {'\n'}
+                  <span className="text-[#6b7280]"> Suites: 3 · Test cases: 12</span>
+                  {'\n\n'}
+                  <span className="text-[#34d399]"> ✓</span> greeting{' '}
+                  <span className="text-[#6b7280]">5/5 passed (2,340ms)</span>
+                  {'\n'}
+                  <span className="text-[#34d399]"> ✓</span> refund_check{' '}
+                  <span className="text-[#6b7280]">4/4 passed (1,890ms)</span>
+                  {'\n'}
+                  <span className="text-[#f87171]"> ✗</span> escalation{' '}
+                  <span className="text-[#f87171]">2/3 failed (3,200ms)</span>
+                  {'\n'}
+                  {'     '}
+                  <span className="text-[#fbbf24]">└ tool_not_called("hallucinate") failed</span>
+                  {'\n\n'}
+                  <span className="text-[#6b7280]">──────────────────────────────────────</span>
+                  {'\n'}
+                  <span className="text-[#fca5a5]"> ✗ 1 failed</span>
                 </code>
               </pre>
             </div>
@@ -275,7 +355,10 @@ export default function LandingPage() {
             {/* Right: Quick command reference */}
             <div className="space-y-3">
               {cliCommands.map((cmd) => (
-                <div key={cmd.cmd} className="rounded-xl border border-border p-4 hover:border-indigo-500/10 transition-colors">
+                <div
+                  key={cmd.cmd}
+                  className="rounded-xl border border-border p-4 hover:border-indigo-500/10 transition-colors"
+                >
                   <div className="flex items-center gap-3">
                     <cmd.icon className="h-4 w-4 text-indigo-400 shrink-0" />
                     <div className="min-w-0">
@@ -312,7 +395,10 @@ export default function LandingPage() {
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {ecosystem.map((pkg) => (
-              <div key={pkg.name} className="rounded-2xl border border-border p-6 text-center hover:border-indigo-500/10 transition-colors">
+              <div
+                key={pkg.name}
+                className="rounded-2xl border border-border p-6 text-center hover:border-indigo-500/10 transition-colors"
+              >
                 <code className="text-sm font-bold text-indigo-400 bg-indigo-500/5 rounded-lg px-3 py-1.5 inline-block mb-4">
                   {pkg.name}
                 </code>
@@ -329,11 +415,15 @@ export default function LandingPage() {
       <section className="border-t border-border">
         <div className="max-w-3xl mx-auto px-6 py-24 text-center">
           <h2 className="text-4xl font-bold mb-4">
-            Ready to stop <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">guessing</span>?
+            Ready to stop{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+              guessing
+            </span>
+            ?
           </h2>
           <p className="text-lg text-muted-foreground mb-10 max-w-lg mx-auto">
-            Ship your AI agents with the same confidence you ship your code.
-            Open source. Apache 2.0. Built for the community.
+            Ship your AI agents with the same confidence you ship your code. Open source. Apache
+            2.0. Built for the community.
           </p>
           <div className="flex items-center justify-center gap-4">
             <Link
@@ -401,7 +491,12 @@ export default function LandingPage() {
 
           <div className="flex items-center justify-between mt-12 pt-6 border-t border-border text-xs text-muted-foreground">
             <span>© 2026 AgentBench Contributors. Apache 2.0 Licensed.</span>
-            <Link href="https://github.com/1304674612/agentbench" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors flex items-center gap-1">
+            <Link
+              href="https://github.com/1304674612/agentbench"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors flex items-center gap-1"
+            >
               <Github className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">1304674612/agentbench</span>
             </Link>
@@ -455,7 +550,7 @@ const features = [
   {
     icon: BarChart3,
     title: 'A/B Experiments',
-    desc: 'Statistically rigorous agent comparison with Welch\'s t-test, bootstrap CIs, and Cohen\'s d effect size.',
+    desc: "Statistically rigorous agent comparison with Welch's t-test, bootstrap CIs, and Cohen's d effect size.",
   },
   {
     icon: Code2,
@@ -476,21 +571,48 @@ const cliCommands = [
 ]
 
 const ecosystem = [
-  { name: '@agentbench/openai', desc: 'OpenAI wrapper with automatic tracing, token counting, and cost calculation.' },
-  { name: '@agentbench/anthropic', desc: 'Anthropic Claude wrapper with streaming, system prompt, and tool use support.' },
-  { name: '@agentbench/mcp', desc: 'MCP client for tool calls and resource access, with full tracing.' },
-  { name: '@agentbench/langgraph', desc: 'Real LangGraph adapter — trace and evaluate your LangGraph agents.' },
-  { name: '@agentbench/adapter', desc: 'Generic adapter for CrewAI, LlamaIndex, and custom agents.' },
-  { name: 'agentbench (Python)', desc: 'Full Python SDK — Runner, Tracer, Assertion DSL, CLI. pip install agentbench.' },
+  {
+    name: '@agentbench/openai',
+    desc: 'OpenAI wrapper with automatic tracing, token counting, and cost calculation.',
+  },
+  {
+    name: '@agentbench/anthropic',
+    desc: 'Anthropic Claude wrapper with streaming, system prompt, and tool use support.',
+  },
+  {
+    name: '@agentbench/mcp',
+    desc: 'MCP client for tool calls and resource access, with full tracing.',
+  },
+  {
+    name: '@agentbench/langgraph',
+    desc: 'Real LangGraph adapter — trace and evaluate your LangGraph agents.',
+  },
+  {
+    name: '@agentbench/adapter',
+    desc: 'Generic adapter for CrewAI, LlamaIndex, and custom agents.',
+  },
+  {
+    name: 'agentbench (Python)',
+    desc: 'Full Python SDK — Runner, Tracer, Assertion DSL, CLI. pip install agentbench.',
+  },
 ]
 
 const footerLinks = [
   {
     title: 'Documentation',
     links: [
-      { label: 'Getting Started', href: 'https://github.com/1304674612/agentbench/wiki/Getting-Started' },
-      { label: 'API Reference', href: 'https://github.com/1304674612/agentbench/wiki/API-Reference' },
-      { label: 'CLI Reference', href: 'https://github.com/1304674612/agentbench/wiki/CLI-Reference' },
+      {
+        label: 'Getting Started',
+        href: 'https://github.com/1304674612/agentbench/wiki/Getting-Started',
+      },
+      {
+        label: 'API Reference',
+        href: 'https://github.com/1304674612/agentbench/wiki/API-Reference',
+      },
+      {
+        label: 'CLI Reference',
+        href: 'https://github.com/1304674612/agentbench/wiki/CLI-Reference',
+      },
       { label: 'SDK Guide', href: 'https://github.com/1304674612/agentbench/wiki/SDK-Guide' },
       { label: 'FAQ', href: 'https://github.com/1304674612/agentbench/wiki/FAQ' },
     ],
@@ -500,16 +622,25 @@ const footerLinks = [
     links: [
       { label: 'GitHub Issues', href: 'https://github.com/1304674612/agentbench/issues' },
       { label: 'Discussions', href: 'https://github.com/1304674612/agentbench/discussions' },
-      { label: 'Contributing', href: 'https://github.com/1304674612/agentbench/blob/main/CONTRIBUTING.md' },
+      {
+        label: 'Contributing',
+        href: 'https://github.com/1304674612/agentbench/blob/main/CONTRIBUTING.md',
+      },
       { label: 'Security', href: 'https://github.com/1304674612/agentbench/blob/main/SECURITY.md' },
-      { label: 'Code of Conduct', href: 'https://github.com/1304674612/agentbench/blob/main/CODE_OF_CONDUCT.md' },
+      {
+        label: 'Code of Conduct',
+        href: 'https://github.com/1304674612/agentbench/blob/main/CODE_OF_CONDUCT.md',
+      },
     ],
   },
   {
     title: 'Project',
     links: [
       { label: 'Release Notes', href: 'https://github.com/1304674612/agentbench/releases' },
-      { label: 'Changelog', href: 'https://github.com/1304674612/agentbench/blob/main/CHANGELOG.md' },
+      {
+        label: 'Changelog',
+        href: 'https://github.com/1304674612/agentbench/blob/main/CHANGELOG.md',
+      },
       { label: 'Roadmap', href: 'https://github.com/1304674612/agentbench/wiki/Roadmap' },
       { label: 'License', href: 'https://github.com/1304674612/agentbench/blob/main/LICENSE' },
       { label: 'Architecture', href: 'https://github.com/1304674612/agentbench/wiki/Architecture' },

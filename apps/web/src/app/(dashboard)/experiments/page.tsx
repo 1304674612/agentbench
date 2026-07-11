@@ -5,7 +5,8 @@ import { FlaskConical, Plus, Beaker, Layers, Gauge } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Experiments',
-  description: 'A/B test prompts, models, and configurations with statistical rigor — compare variants side by side.',
+  description:
+    'A/B test prompts, models, and configurations with statistical rigor — compare variants side by side.',
 }
 
 const statusStyles: Record<string, string> = {
@@ -53,75 +54,102 @@ export default async function ExperimentsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {experiments.map((exp: { id: string; name: string; status: string; conclusion?: string | null; config: unknown; project: { name: string }; variants: Array<{ name: string; config: unknown }>; _count: { runs: number } }) => {
-            const config = exp.config as Record<string, unknown>
-            const metrics = (config.metrics ?? []) as Array<{ name: string }>
-            return (
-              <div key={exp.id} className="rounded-xl border border-border bg-card overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
-                  <div className="flex items-center gap-3">
-                    <FlaskConical className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <h3 className="font-semibold text-sm">{exp.name}</h3>
-                      <p className="text-[10px] text-muted-foreground">{exp.project.name}</p>
+          {experiments.map(
+            (exp: {
+              id: string
+              name: string
+              status: string
+              conclusion?: string | null
+              config: unknown
+              project: { name: string }
+              variants: Array<{ name: string; config: unknown }>
+              _count: { runs: number }
+            }) => {
+              const config = exp.config as Record<string, unknown>
+              const metrics = (config.metrics ?? []) as Array<{ name: string }>
+              return (
+                <div
+                  key={exp.id}
+                  className="rounded-xl border border-border bg-card overflow-hidden"
+                >
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
+                    <div className="flex items-center gap-3">
+                      <FlaskConical className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <h3 className="font-semibold text-sm">{exp.name}</h3>
+                        <p className="text-[10px] text-muted-foreground">{exp.project.name}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium ${statusStyles[exp.status] ?? statusStyles.DRAFT}`}>
-                      {exp.status.toLowerCase()}
-                    </span>
-                    {exp.conclusion && (
-                      <span className="text-[10px] text-muted-foreground">
-                        {exp.conclusion === 'WINNER_A' ? '🏆 A wins' : exp.conclusion === 'WINNER_B' ? '🏆 B wins' : exp.conclusion === 'TIE' ? '🤝 Tie' : '🔬 Inconclusive'}
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium ${statusStyles[exp.status] ?? statusStyles.DRAFT}`}
+                      >
+                        {exp.status.toLowerCase()}
                       </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="px-4 py-3">
-                  <div className="grid gap-3 sm:grid-cols-3 text-xs">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Beaker className="h-3 w-3" />
-                      {exp.variants.length} variants
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Layers className="h-3 w-3" />
-                      {exp._count.runs} runs
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Gauge className="h-3 w-3" />
-                      {metrics.length} metrics
+                      {exp.conclusion && (
+                        <span className="text-[10px] text-muted-foreground">
+                          {exp.conclusion === 'WINNER_A'
+                            ? '🏆 A wins'
+                            : exp.conclusion === 'WINNER_B'
+                              ? '🏆 B wins'
+                              : exp.conclusion === 'TIE'
+                                ? '🤝 Tie'
+                                : '🔬 Inconclusive'}
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  {/* Variant previews */}
-                  <div className="grid gap-2 sm:grid-cols-2 mt-3">
-                    {exp.variants.map((v: { name: string; config: unknown }) => {
-                      const vc = v.config as Record<string, unknown>
-                      return (
-                        <div key={v.name} className="rounded-lg border border-border bg-muted/30 p-2.5">
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[10px] font-bold bg-foreground text-background rounded-full w-4 h-4 inline-flex items-center justify-center">
-                              {v.name}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground">
-                              {vc.model ? `Model: ${vc.model}` : ''}
-                              {vc.temperature !== undefined ? ` · T=${String(vc.temperature)}` : ''}
-                            </span>
+                  <div className="px-4 py-3">
+                    <div className="grid gap-3 sm:grid-cols-3 text-xs">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Beaker className="h-3 w-3" />
+                        {exp.variants.length} variants
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Layers className="h-3 w-3" />
+                        {exp._count.runs} runs
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Gauge className="h-3 w-3" />
+                        {metrics.length} metrics
+                      </div>
+                    </div>
+
+                    {/* Variant previews */}
+                    <div className="grid gap-2 sm:grid-cols-2 mt-3">
+                      {exp.variants.map((v: { name: string; config: unknown }) => {
+                        const vc = v.config as Record<string, unknown>
+                        return (
+                          <div
+                            key={v.name}
+                            className="rounded-lg border border-border bg-muted/30 p-2.5"
+                          >
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <span className="text-[10px] font-bold bg-foreground text-background rounded-full w-4 h-4 inline-flex items-center justify-center">
+                                {v.name}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">
+                                {vc.model ? `Model: ${vc.model}` : ''}
+                                {vc.temperature !== undefined
+                                  ? ` · T=${String(vc.temperature)}`
+                                  : ''}
+                              </span>
+                            </div>
+                            {Boolean(vc.systemPrompt) && (
+                              <p className="text-[10px] text-muted-foreground line-clamp-2">
+                                {String(vc.systemPrompt ?? '').slice(0, 120)}
+                              </p>
+                            )}
                           </div>
-                          {Boolean(vc.systemPrompt) && (
-                            <p className="text-[10px] text-muted-foreground line-clamp-2">
-                              {String(vc.systemPrompt ?? '').slice(0, 120)}
-                            </p>
-                          )}
-                        </div>
-                      )
-                    })}
+                        )
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            }
+          )}
         </div>
       )}
     </div>

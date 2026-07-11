@@ -26,7 +26,7 @@ export class ApiFetchError extends Error {
 
 export async function apiFetch<T = unknown>(
   url: string,
-  options?: RequestInit & { params?: Record<string, string> },
+  options?: RequestInit & { params?: Record<string, string> }
 ): Promise<T> {
   const finalUrl = options?.params
     ? `${url}?${new URLSearchParams(options.params).toString()}`
@@ -41,14 +41,14 @@ export async function apiFetch<T = unknown>(
     // params is stripped — not a real RequestInit field
   })
 
-  const body = await res.json().catch(() => ({})) as Record<string, unknown>
+  const body = (await res.json().catch(() => ({}))) as Record<string, unknown>
 
   if (!res.ok) {
     throw new ApiFetchError(
       (body.error as string) ?? `Request failed with status ${res.status}`,
       res.status,
       body.code as string | undefined,
-      body.details as unknown,
+      body.details as unknown
     )
   }
 

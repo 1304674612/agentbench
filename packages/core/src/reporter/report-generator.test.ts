@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import {
-  generateReport,
-  generateBatchReport,
-  type ReportFormat,
-} from './report-generator'
+import { generateReport, generateBatchReport, type ReportFormat } from './report-generator'
 import type { RunResult } from '../types/run'
 
 function makeRunResult(overrides?: Partial<RunResult>): RunResult {
@@ -55,7 +51,12 @@ function makeRunResult(overrides?: Partial<RunResult>): RunResult {
     ],
     assertionResults: [
       { type: 'contains', status: 'passed', expected: '"CI/CD"', actual: 'contains "CI/CD"' },
-      { type: 'tool_called', status: 'passed', expected: 'Tool "search" called', actual: '"search" called' },
+      {
+        type: 'tool_called',
+        status: 'passed',
+        expected: 'Tool "search" called',
+        actual: '"search" called',
+      },
       { type: 'tokens_lt', status: 'passed', expected: '< 4096 tokens', actual: '1500 tokens' },
     ],
     startedAt: new Date(),
@@ -80,12 +81,16 @@ function makeFailedRunResult(): RunResult {
       totalTokens: 300,
       totalCost: 0.001,
     },
-    scores: [
-      { evaluator: 'correctness', score: 3, maxScore: 10 },
-    ],
+    scores: [{ evaluator: 'correctness', score: 3, maxScore: 10 }],
     assertionResults: [
       { type: 'contains', status: 'passed', expected: '"CI/CD"', actual: 'contains "CI/CD"' },
-      { type: 'tool_called', status: 'failed', expected: 'Tool "search" called', actual: 'Not called', message: 'Expected tool "search" to be called' },
+      {
+        type: 'tool_called',
+        status: 'failed',
+        expected: 'Tool "search" called',
+        actual: 'Not called',
+        message: 'Expected tool "search" to be called',
+      },
       { type: 'error', status: 'error', expected: null, actual: null, message: 'Evaluation error' },
     ],
     duration: 1200,

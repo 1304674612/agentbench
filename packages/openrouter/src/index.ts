@@ -9,10 +9,7 @@
  * @packageDocumentation
  */
 
-import {
-  OpenAICompatibleProvider,
-  costCalculator,
-} from '@agentbench/provider-utils'
+import { OpenAICompatibleProvider, costCalculator } from '@agentbench/provider-utils'
 import type {
   ProviderCapabilities,
   ProviderConfig,
@@ -102,8 +99,8 @@ export class OpenRouterProvider extends OpenAICompatibleProvider {
     const message = choices[0]?.message as Record<string, unknown> | undefined
 
     return {
-      id: r.id as string ?? `or-${Date.now()}`,
-      model: r.model as string ?? 'openai/gpt-4o',
+      id: (r.id as string) ?? `or-${Date.now()}`,
+      model: (r.model as string) ?? 'openai/gpt-4o',
       choices: choices.map((c, i) => ({
         index: i,
         message: {
@@ -112,7 +109,8 @@ export class OpenRouterProvider extends OpenAICompatibleProvider {
           ...(message?.reasoning ? { reasoning_content: message.reasoning as string } : {}),
           ...(message?.tool_calls ? { tool_calls: message.tool_calls as ToolCall[] } : {}),
         },
-        finishReason: (c.finish_reason as ChatCompletionResult['choices'][0]['finishReason']) ?? null,
+        finishReason:
+          (c.finish_reason as ChatCompletionResult['choices'][0]['finishReason']) ?? null,
       })),
       usage: {
         promptTokens: usage?.prompt_tokens ?? 0,
@@ -120,11 +118,15 @@ export class OpenRouterProvider extends OpenAICompatibleProvider {
         totalTokens: usage?.total_tokens ?? 0,
         // OpenRouter includes cost info
         breakdown: {
-          ...(usage?.prompt_tokens_details ? { promptDetails: usage.prompt_tokens_details as number } : {}),
-          ...(usage?.completion_tokens_details ? { completionDetails: usage.completion_tokens_details as number } : {}),
+          ...(usage?.prompt_tokens_details
+            ? { promptDetails: usage.prompt_tokens_details as number }
+            : {}),
+          ...(usage?.completion_tokens_details
+            ? { completionDetails: usage.completion_tokens_details as number }
+            : {}),
         },
       },
-      created: r.created as number ?? Math.floor(Date.now() / 1000),
+      created: (r.created as number) ?? Math.floor(Date.now() / 1000),
       provider: 'openrouter',
     }
   }

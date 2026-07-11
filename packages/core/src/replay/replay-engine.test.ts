@@ -185,9 +185,7 @@ describe('Replay Engine', () => {
       const config: ReplayConfig = {
         mode: 'deterministic',
         originalConfig: original,
-        toolOverrides: [
-          { name: 'search', description: 'Updated search tool' },
-        ],
+        toolOverrides: [{ name: 'search', description: 'Updated search tool' }],
       }
       const newConfig = applyReplayOverrides(config)
 
@@ -227,9 +225,15 @@ describe('Replay Engine', () => {
   describe('aggregateReplayResults', () => {
     it('aggregates metrics from multiple runs', () => {
       const runs = [
-        makeRunResult({ metrics: makeMetrics({ totalTokens: 1000, totalCost: 0.002, totalLatency: 2000 }) }),
-        makeRunResult({ metrics: makeMetrics({ totalTokens: 1200, totalCost: 0.003, totalLatency: 2500 }) }),
-        makeRunResult({ metrics: makeMetrics({ totalTokens: 1100, totalCost: 0.0025, totalLatency: 3000 }) }),
+        makeRunResult({
+          metrics: makeMetrics({ totalTokens: 1000, totalCost: 0.002, totalLatency: 2000 }),
+        }),
+        makeRunResult({
+          metrics: makeMetrics({ totalTokens: 1200, totalCost: 0.003, totalLatency: 2500 }),
+        }),
+        makeRunResult({
+          metrics: makeMetrics({ totalTokens: 1100, totalCost: 0.0025, totalLatency: 3000 }),
+        }),
       ]
 
       const aggregate = aggregateReplayResults(runs)
@@ -303,7 +307,7 @@ describe('Replay Engine', () => {
         original,
         replay,
         [{ evaluator: 'correctness', score: 8, maxScore: 10 }],
-        [{ evaluator: 'correctness', score: 9, maxScore: 10 }],
+        [{ evaluator: 'correctness', score: 9, maxScore: 10 }]
       )
 
       expect(comparison.scoreDiffs).toBeDefined()
@@ -325,7 +329,13 @@ describe('Replay Engine', () => {
   describe('detectRegressions', () => {
     it('detects critical token increase', () => {
       const diffs = [
-        { metric: 'totalTokens', original: 100, replay: 200, changePercent: 100, direction: 'increase' as const },
+        {
+          metric: 'totalTokens',
+          original: 100,
+          replay: 200,
+          changePercent: 100,
+          direction: 'increase' as const,
+        },
       ]
 
       const regressions = detectRegressions(diffs)
@@ -337,7 +347,13 @@ describe('Replay Engine', () => {
 
     it('detects warning-level increases', () => {
       const diffs = [
-        { metric: 'totalCost', original: 0.01, replay: 0.013, changePercent: 30, direction: 'increase' as const },
+        {
+          metric: 'totalCost',
+          original: 0.01,
+          replay: 0.013,
+          changePercent: 30,
+          direction: 'increase' as const,
+        },
       ]
 
       const regressions = detectRegressions(diffs)
@@ -348,7 +364,13 @@ describe('Replay Engine', () => {
 
     it('ignores decreases', () => {
       const diffs = [
-        { metric: 'totalLatency', original: 5000, replay: 2000, changePercent: -60, direction: 'decrease' as const },
+        {
+          metric: 'totalLatency',
+          original: 5000,
+          replay: 2000,
+          changePercent: -60,
+          direction: 'decrease' as const,
+        },
       ]
 
       const regressions = detectRegressions(diffs)
@@ -358,7 +380,13 @@ describe('Replay Engine', () => {
 
     it('uses custom thresholds', () => {
       const diffs = [
-        { metric: 'totalTokens', original: 100, replay: 115, changePercent: 15, direction: 'increase' as const },
+        {
+          metric: 'totalTokens',
+          original: 100,
+          replay: 115,
+          changePercent: 15,
+          direction: 'increase' as const,
+        },
       ]
 
       // Default threshold is 20%, so 15% should not trigger
@@ -372,7 +400,13 @@ describe('Replay Engine', () => {
 
     it('returns empty array for unchanged metrics', () => {
       const diffs = [
-        { metric: 'totalTokens', original: 100, replay: 100, changePercent: 0, direction: 'unchanged' as const },
+        {
+          metric: 'totalTokens',
+          original: 100,
+          replay: 100,
+          changePercent: 0,
+          direction: 'unchanged' as const,
+        },
       ]
 
       const regressions = detectRegressions(diffs)

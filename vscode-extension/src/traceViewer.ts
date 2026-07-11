@@ -1,5 +1,5 @@
-import * as vscode from 'vscode';
-import type { ExecutionTrace, TraceStep } from './types';
+import * as vscode from 'vscode'
+import type { ExecutionTrace, TraceStep } from './types'
 
 /**
  * Webview Panel provider for trace visualization.
@@ -8,38 +8,31 @@ import type { ExecutionTrace, TraceStep } from './types';
  */
 
 export class TraceViewerPanel {
-  public static currentPanel: TraceViewerPanel | undefined;
-  private readonly _panel: vscode.WebviewPanel;
-  private readonly _extensionUri: vscode.Uri;
-  private _disposables: vscode.Disposable[] = [];
+  public static currentPanel: TraceViewerPanel | undefined
+  private readonly _panel: vscode.WebviewPanel
+  private readonly _extensionUri: vscode.Uri
+  private _disposables: vscode.Disposable[] = []
 
   private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
-    this._panel = panel;
-    this._extensionUri = extensionUri;
+    this._panel = panel
+    this._extensionUri = extensionUri
 
-    this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-    this._panel.webview.onDidReceiveMessage(
-      this._handleMessage,
-      this,
-      this._disposables,
-    );
+    this._panel.onDidDispose(() => this.dispose(), null, this._disposables)
+    this._panel.webview.onDidReceiveMessage(this._handleMessage, this, this._disposables)
   }
 
   /**
    * Create or reveal the Trace Viewer panel.
    */
-  public static createOrShow(
-    extensionUri: vscode.Uri,
-    trace?: ExecutionTrace,
-  ): void {
-    const column = vscode.ViewColumn.Beside;
+  public static createOrShow(extensionUri: vscode.Uri, trace?: ExecutionTrace): void {
+    const column = vscode.ViewColumn.Beside
 
     if (TraceViewerPanel.currentPanel) {
-      TraceViewerPanel.currentPanel._panel.reveal(column);
+      TraceViewerPanel.currentPanel._panel.reveal(column)
       if (trace) {
-        TraceViewerPanel.currentPanel.setTrace(trace);
+        TraceViewerPanel.currentPanel.setTrace(trace)
       }
-      return;
+      return
     }
 
     const panel = vscode.window.createWebviewPanel(
@@ -50,14 +43,14 @@ export class TraceViewerPanel {
         enableScripts: true,
         retainContextWhenHidden: true,
         localResourceRoots: [extensionUri],
-      },
-    );
+      }
+    )
 
-    TraceViewerPanel.currentPanel = new TraceViewerPanel(panel, extensionUri);
+    TraceViewerPanel.currentPanel = new TraceViewerPanel(panel, extensionUri)
     if (trace) {
-      TraceViewerPanel.currentPanel.setTrace(trace);
+      TraceViewerPanel.currentPanel.setTrace(trace)
     } else {
-      TraceViewerPanel.currentPanel.setEmpty();
+      TraceViewerPanel.currentPanel.setEmpty()
     }
   }
 
@@ -65,16 +58,16 @@ export class TraceViewerPanel {
    * Set trace data and render the visualization.
    */
   public setTrace(trace: ExecutionTrace): void {
-    this._panel.title = `Trace: ${trace.metadata.agentName || trace.id}`;
-    this._panel.webview.html = this._generateHtml(trace);
+    this._panel.title = `Trace: ${trace.metadata.agentName || trace.id}`
+    this._panel.webview.html = this._generateHtml(trace)
   }
 
   /**
    * Show empty state.
    */
   public setEmpty(): void {
-    this._panel.title = 'AgentBench Trace Viewer';
-    this._panel.webview.html = this._generateEmptyHtml();
+    this._panel.title = 'AgentBench Trace Viewer'
+    this._panel.webview.html = this._generateEmptyHtml()
   }
 
   private _handleMessage(message: { command: string; stepId?: string }): void {
@@ -83,37 +76,28 @@ export class TraceViewerPanel {
         if (message.stepId) {
           // Could navigate to step details
         }
-        break;
+        break
       case 'refresh':
-        break;
+        break
     }
   }
 
   public dispose(): void {
-    TraceViewerPanel.currentPanel = undefined;
-    this._panel.dispose();
+    TraceViewerPanel.currentPanel = undefined
+    this._panel.dispose()
     while (this._disposables.length) {
-      const d = this._disposables.pop();
-      d?.dispose();
+      const d = this._disposables.pop()
+      d?.dispose()
     }
   }
 
   // ---- HTML Generation ----
 
   private _generateHtml(trace: ExecutionTrace): string {
-    const steps = trace.steps || [];
-    const totalDuration = steps.reduce(
-      (sum, s) => sum + (s.duration || 0),
-      0,
-    );
-    const totalTokens = steps.reduce(
-      (sum, s) => sum + (s.totalTokens || 0),
-      0,
-    );
-    const totalCost = steps.reduce(
-      (sum, s) => sum + (s.cost || 0),
-      0,
-    );
+    const steps = trace.steps || []
+    const totalDuration = steps.reduce((sum, s) => sum + (s.duration || 0), 0)
+    const totalTokens = steps.reduce((sum, s) => sum + (s.totalTokens || 0), 0)
+    const totalCost = steps.reduce((sum, s) => sum + (s.cost || 0), 0)
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -156,29 +140,21 @@ export class TraceViewerPanel {
     </div>
 
     <div class="timeline">
-      ${steps
-        .map((step, index) => this._renderStep(step, index, totalDuration))
-        .join('\n')}
+      ${steps.map((step, index) => this._renderStep(step, index, totalDuration)).join('\n')}
     </div>
   </div>
   ${this._getScript()}
 </body>
-</html>`;
+</html>`
   }
 
-  private _renderStep(
-    step: TraceStep,
-    index: number,
-    totalDuration: number,
-  ): string {
-    const duration = step.duration || 0;
-    const widthPercent =
-      totalDuration > 0
-        ? Math.max((duration / totalDuration) * 100, 2)
-        : 10;
-    const statusClass = step.status === 'error' ? 'error' : step.status === 'timeout' ? 'timeout' : 'success';
-    const stepIcon = this._getStepIcon(step.type);
-    const stepTypeLabel = this._getStepTypeLabel(step);
+  private _renderStep(step: TraceStep, index: number, totalDuration: number): string {
+    const duration = step.duration || 0
+    const widthPercent = totalDuration > 0 ? Math.max((duration / totalDuration) * 100, 2) : 10
+    const statusClass =
+      step.status === 'error' ? 'error' : step.status === 'timeout' ? 'timeout' : 'success'
+    const stepIcon = this._getStepIcon(step.type)
+    const stepTypeLabel = this._getStepTypeLabel(step)
 
     return `
       <div class="step step-${step.status}" data-step-id="${this._escapeHtml(step.id)}">
@@ -204,11 +180,11 @@ export class TraceViewerPanel {
         <div class="step-details" style="display: none;">
           ${this._renderStepDetails(step)}
         </div>
-      </div>`;
+      </div>`
   }
 
   private _renderStepDetails(step: TraceStep): string {
-    let details = '';
+    let details = ''
 
     if (step.error) {
       details += `
@@ -217,7 +193,7 @@ export class TraceViewerPanel {
           <div class="error-badge">${this._escapeHtml(step.error.type)}</div>
           <pre class="error-message">${this._escapeHtml(step.error.message)}</pre>
           ${step.error.statusCode ? `<div class="error-code">Status: ${step.error.statusCode}</div>` : ''}
-        </div>`;
+        </div>`
     }
 
     if (step.llmRequest) {
@@ -249,12 +225,12 @@ export class TraceViewerPanel {
                 <div class="message message-${msg.role}">
                   <span class="message-role">${msg.role}</span>
                   <pre class="message-content">${this._escapeHtml(msg.content || '(empty)')}</pre>
-                </div>`,
+                </div>`
                 )
                 .join('')}
             </div>
           </details>
-        </div>`;
+        </div>`
     }
 
     if (step.llmResponse) {
@@ -270,8 +246,9 @@ export class TraceViewerPanel {
             <span class="field-value">${this._escapeHtml(step.llmResponse.model)}</span>
           </div>
           <pre class="response-content">${this._escapeHtml(step.llmResponse.content || '(tool calls only)')}</pre>
-          ${step.llmResponse.toolCalls && step.llmResponse.toolCalls.length > 0
-            ? `
+          ${
+            step.llmResponse.toolCalls && step.llmResponse.toolCalls.length > 0
+              ? `
           <div class="tool-calls-list">
             ${step.llmResponse.toolCalls
               .map(
@@ -279,12 +256,13 @@ export class TraceViewerPanel {
               <div class="tool-call">
                 <span class="tool-call-name">${this._escapeHtml(tc.function.name)}</span>
                 <pre class="tool-call-args">${this._escapeHtml(tc.function.arguments)}</pre>
-              </div>`,
+              </div>`
               )
               .join('')}
           </div>`
-            : ''}
-        </div>`;
+              : ''
+          }
+        </div>`
     }
 
     if (step.toolRequest) {
@@ -296,7 +274,7 @@ export class TraceViewerPanel {
             <span class="field-value">${this._escapeHtml(step.toolName || step.toolRequest.name)}</span>
           </div>
           <pre class="tool-args">${this._escapeHtml(JSON.stringify(step.toolRequest.arguments, null, 2))}</pre>
-        </div>`;
+        </div>`
     }
 
     if (step.toolResponse) {
@@ -304,13 +282,15 @@ export class TraceViewerPanel {
         <div class="detail-section">
           <h4>Tool Response</h4>
           <pre class="tool-result">${this._escapeHtml(JSON.stringify(step.toolResponse.result, null, 2))}</pre>
-          ${step.toolResponse.error
-            ? `<div class="error-message">Error: ${this._escapeHtml(step.toolResponse.error)}</div>`
-            : ''}
-        </div>`;
+          ${
+            step.toolResponse.error
+              ? `<div class="error-message">Error: ${this._escapeHtml(step.toolResponse.error)}</div>`
+              : ''
+          }
+        </div>`
     }
 
-    return details;
+    return details
   }
 
   private _generateEmptyHtml(): string {
@@ -333,7 +313,7 @@ export class TraceViewerPanel {
     </div>
   </div>
 </body>
-</html>`;
+</html>`
   }
 
   // ---- Helpers ----
@@ -341,43 +321,43 @@ export class TraceViewerPanel {
   private _getStepIcon(type: string): string {
     switch (type) {
       case 'llm_call':
-        return '&#129302;'; // robot face
+        return '&#129302;' // robot face
       case 'tool_call':
-        return '&#128736;'; // wrench
+        return '&#128736;' // wrench
       case 'response':
-        return '&#128172;'; // speech bubble
+        return '&#128172;' // speech bubble
       case 'error':
-        return '&#9888;'; // warning
+        return '&#9888;' // warning
       default:
-        return '&#9679;'; // circle
+        return '&#9679;' // circle
     }
   }
 
   private _getStepTypeLabel(step: TraceStep): string {
     switch (step.type) {
       case 'llm_call':
-        return `LLM Call${step.llmModel ? ` (${step.llmModel})` : ''}`;
+        return `LLM Call${step.llmModel ? ` (${step.llmModel})` : ''}`
       case 'tool_call':
-        return `Tool: ${step.toolName || 'unknown'}`;
+        return `Tool: ${step.toolName || 'unknown'}`
       case 'response':
-        return 'Response';
+        return 'Response'
       case 'error':
-        return 'Error';
+        return 'Error'
       default:
-        return step.type;
+        return step.type
     }
   }
 
   private _formatDuration(ms: number): string {
     if (ms < 1000) {
-      return `${ms}ms`;
+      return `${ms}ms`
     }
     if (ms < 60000) {
-      return `${(ms / 1000).toFixed(1)}s`;
+      return `${(ms / 1000).toFixed(1)}s`
     }
-    const minutes = Math.floor(ms / 60000);
-    const seconds = ((ms % 60000) / 1000).toFixed(0);
-    return `${minutes}m ${seconds}s`;
+    const minutes = Math.floor(ms / 60000)
+    const seconds = ((ms % 60000) / 1000).toFixed(0)
+    return `${minutes}m ${seconds}s`
   }
 
   private _escapeHtml(str: string): string {
@@ -386,7 +366,7 @@ export class TraceViewerPanel {
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+      .replace(/'/g, '&#039;')
   }
 
   // ---- Styles ----
@@ -810,7 +790,7 @@ export class TraceViewerPanel {
       border-radius: 4px;
       font-size: 12px;
     }
-    </style>`;
+    </style>`
   }
 
   // ---- Script ----
@@ -831,6 +811,6 @@ export class TraceViewerPanel {
       const stepId = header.parentElement.dataset.stepId;
       vscode.postMessage({ command: 'selectStep', stepId });
     }
-    </script>`;
+    </script>`
   }
 }

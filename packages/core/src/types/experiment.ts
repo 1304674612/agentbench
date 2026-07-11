@@ -81,14 +81,17 @@ export interface ExperimentResult {
 export interface VariantResult {
   name: string
   runs: number
-  metrics: Record<string, {
-    mean: number
-    median: number
-    stdDev: number
-    pValue?: number
-    significant: boolean
-    effectSize?: number
-  }>
+  metrics: Record<
+    string,
+    {
+      mean: number
+      median: number
+      stdDev: number
+      pValue?: number
+      significant: boolean
+      effectSize?: number
+    }
+  >
 }
 
 export interface ExperimentStatistics {

@@ -47,32 +47,37 @@ const createExperimentSchema = z.object({
   }),
 })
 
-export const POST = withRateLimit(withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
-  try {
-    const body = await req.json()
-    const parsed = createExperimentSchema.parse(body)
+export const POST = withRateLimit(
+  withApiAuth(
+    async (req: NextRequest, _ctx: ApiContext) => {
+      try {
+        const body = await req.json()
+        const parsed = createExperimentSchema.parse(body)
 
-    const experiment = await db.experiment.create({
-      data: {
-        projectId: parsed.projectId,
-        name: parsed.name,
-        description: parsed.description,
-        config: parsed.config as any,
-        variants: {
-          create: parsed.config.variants.map((v) => ({
-            name: v.name,
-            config: v.config as any,
-          })),
-        },
-      },
-      include: { variants: true },
-    })
+        const experiment = await db.experiment.create({
+          data: {
+            projectId: parsed.projectId,
+            name: parsed.name,
+            description: parsed.description,
+            config: parsed.config as any,
+            variants: {
+              create: parsed.config.variants.map((v) => ({
+                name: v.name,
+                config: v.config as any,
+              })),
+            },
+          },
+          include: { variants: true },
+        })
 
-    return NextResponse.json(experiment, { status: 201 })
-  } catch (error) {
-    return handleApiError(error)
-  }
-}, { requireWrite: true }))
+        return NextResponse.json(experiment, { status: 201 })
+      } catch (error) {
+        return handleApiError(error)
+      }
+    },
+    { requireWrite: true }
+  )
+)
 
 export const GET = withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
   try {

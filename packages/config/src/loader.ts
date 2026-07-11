@@ -72,9 +72,7 @@ async function loadJsonConfig(filepath: string): Promise<AgentBenchUserConfig> {
  * Returns `null` when the key is absent so the caller can fall
  * through to the next resolution step.
  */
-async function loadPackageJsonConfig(
-  filepath: string
-): Promise<AgentBenchUserConfig | null> {
+async function loadPackageJsonConfig(filepath: string): Promise<AgentBenchUserConfig | null> {
   const contents = await readFile(filepath, 'utf-8')
   const pkg = JSON.parse(contents) as { agentbench?: AgentBenchUserConfig }
   return pkg.agentbench ?? null
@@ -199,9 +197,7 @@ export async function loadConfig(cwd?: string): Promise<AgentBenchConfig> {
       return resolveConfig(userConfig)
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
-      throw new Error(
-        `Failed to load AgentBench config from "${filepath}": ${message}`
-      )
+      throw new Error(`Failed to load AgentBench config from "${filepath}": ${message}`)
     }
   }
 
@@ -213,9 +209,7 @@ export async function loadConfig(cwd?: string): Promise<AgentBenchConfig> {
       return resolveConfig(userConfig)
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
-      throw new Error(
-        `Failed to parse config file "${jsonPath}": ${message}`
-      )
+      throw new Error(`Failed to parse config file "${jsonPath}": ${message}`)
     }
   }
 
@@ -229,9 +223,7 @@ export async function loadConfig(cwd?: string): Promise<AgentBenchConfig> {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
-      throw new Error(
-        `Failed to parse "agentbench" key from "${pkgPath}": ${message}`
-      )
+      throw new Error(`Failed to parse "agentbench" key from "${pkgPath}": ${message}`)
     }
   }
 

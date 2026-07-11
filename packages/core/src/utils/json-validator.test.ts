@@ -59,15 +59,25 @@ describe('validateJsonNode', () => {
   })
 
   it('validates array type with items schema', () => {
-    expect(validateJsonNode([1, 2, 3], {
-      type: 'array',
-      items: { type: 'number' },
-    }, 'root')).toEqual([])
+    expect(
+      validateJsonNode(
+        [1, 2, 3],
+        {
+          type: 'array',
+          items: { type: 'number' },
+        },
+        'root'
+      )
+    ).toEqual([])
 
-    const errors = validateJsonNode([1, 'two'], {
-      type: 'array',
-      items: { type: 'number' },
-    }, 'root')
+    const errors = validateJsonNode(
+      [1, 'two'],
+      {
+        type: 'array',
+        items: { type: 'number' },
+      },
+      'root'
+    )
     expect(errors.length).toBeGreaterThan(0)
   })
 
@@ -127,10 +137,8 @@ describe('validateJsonNode', () => {
         },
       },
     }
-    expect(validateJsonNode(
-      { user: { name: 'Alice', address: { city: 'NYC' } } },
-      schema,
-      'root',
-    )).toEqual([])
+    expect(
+      validateJsonNode({ user: { name: 'Alice', address: { city: 'NYC' } } }, schema, 'root')
+    ).toEqual([])
   })
 })

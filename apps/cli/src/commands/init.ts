@@ -1,3 +1,4 @@
+import { spawn } from 'node:child_process'
 import type { Command } from 'commander'
 import * as nodeFs from 'node:fs'
 import * as nodePath from 'node:path'
@@ -23,7 +24,11 @@ import type { Language, TemplateKind, Provider } from '../lib/types'
 function createPrompter(): {
   question: (q: string, defaultValue?: string) => Promise<string>
   confirm: (q: string, defaultYes?: boolean) => Promise<boolean>
-  select: (q: string, choices: Array<{ value: string; label: string }>, defaultValue?: string) => Promise<string>
+  select: (
+    q: string,
+    choices: Array<{ value: string; label: string }>,
+    defaultValue?: string
+  ) => Promise<string>
   close: () => void
 } {
   const rl = readline.createInterface({
@@ -50,7 +55,7 @@ function createPrompter(): {
   async function select(
     q: string,
     choices: Array<{ value: string; label: string }>,
-    defaultValue?: string,
+    defaultValue?: string
   ): Promise<string> {
     console.log(chalk.bold(`\n${q}`))
     const defaultIdx = defaultValue ? choices.findIndex((c) => c.value === defaultValue) : 0
@@ -60,7 +65,7 @@ function createPrompter(): {
     }
     const answer = await question(
       chalk.gray(`  Enter 1-${choices.length}`),
-      defaultValue ? String(defaultIdx + 1) : '1',
+      defaultValue ? String(defaultIdx + 1) : '1'
     )
     const idx = parseInt(answer, 10) - 1
     if (Number.isNaN(idx) || idx < 0 || idx >= choices.length) {
@@ -134,24 +139,39 @@ export function registerInitCommand(program: Command): void {
     .command('init')
     .description('Initialize a new AgentBench project with interactive onboarding')
     .option('-y, --yes', 'Skip all prompts and use defaults')
-    .option('-t, --template <name>', 'Project template: hello-agent, customer-support, rag-agent, empty')
+    .option(
+      '-t, --template <name>',
+      'Project template: hello-agent, customer-support, rag-agent, empty'
+    )
     .option('-p, --provider <name>', 'LLM provider: openai, anthropic, gemini, deepseek, etc.')
     .option('--ci', 'Generate GitHub Actions CI workflow')
     .option('-f, --force', 'Overwrite existing configuration')
+    .option('-q, --quick', 'Zero prompts: auto-detect keys, scaffold, and run tests immediately')
     .action(async (options) => {
       // ── Welcome Banner ──────────────────────────────────────────────────
-      console.log(renderLogo())
+      // --quick mode: skip the logo banner for a cleaner output
+      if (!options.quick) {
+        console.log(renderLogo())
+      }
 
       const spinner = ora()
 
+      // --quick implies --yes (skip all prompts)
+      if (options.quick) {
+        options.yes = true
+      }
+
       // Check for existing config
       if (!options.force && configFileExists()) {
-        console.log(
-          chalk.yellow(
-            '  ⚠ agentbench.config.ts already exists. Use --force to overwrite.\n',
-          ),
-        )
-        return
+        if (options.quick) {
+          // --quick mode: auto-force when config already exists
+          options.force = true
+        } else {
+          console.log(
+            chalk.yellow('  ⚠ agentbench.config.ts already exists. Use --force to overwrite.\n')
+          )
+          return
+        }
       }
 
       const prompter = createPrompter()
@@ -160,7 +180,7 @@ export function registerInitCommand(program: Command): void {
 
       try {
         // ── Step 1: Project basics ───────────────────────────────────────
-        stepHeader(1, 'Project settings')
+        if (!options.quick) stepHeader(1, 'Project settings')
 
         const projectName = options.yes
           ? dirName
@@ -168,10 +188,20 @@ export function registerInitCommand(program: Command): void {
 
         let language: Language = 'ts'
         if (!options.yes) {
-          language = (await prompter.select('  Language:', [
-            { value: 'ts', label: 'TypeScript' },
-            { value: 'js', label: 'JavaScript' },
-          ], 'ts')) as Language
+          language = (await prompter.select(
+            '  Language:',
+            [
+              { value: 'ts', label: 'TypeScript' },
+              { value: 'js', label: 'JavaScript' },
+            ],
+            'ts'
+          )) as Language
+        }
+
+        // --quick mode: force JavaScript so tests run immediately without
+        // a TypeScript compilation step (Node can't import .ts files directly).
+        if (options.quick) {
+          language = 'js'
         }
 
         let packageManager = 'npm'
@@ -187,10 +217,10 @@ export function registerInitCommand(program: Command): void {
         }
 
         // ── Step 2: API keys ─────────────────────────────────────────────
-        stepHeader(2, 'API keys')
+        if (!options.quick) stepHeader(2, 'API keys')
 
         const keys = scanApiKeys()
-        renderKeyStatus(keys)
+        if (!options.quick) renderKeyStatus(keys)
 
         let selectedProvider: Provider = 'openai'
         if (options.provider) {
@@ -204,7 +234,7 @@ export function registerInitCommand(program: Command): void {
           selectedProvider = (await prompter.select(
             '  Select default LLM provider:',
             providerChoices,
-            keys.find((k) => k.found)?.provider ?? 'openai',
+            keys.find((k) => k.found)?.provider ?? 'openai'
           )) as Provider
 
           // Offer to configure missing keys
@@ -212,7 +242,7 @@ export function registerInitCommand(program: Command): void {
           if (selectedKey && !selectedKey.found) {
             const wantConfig = await prompter.confirm(
               `  Configure ${selectedKey.envVar} now?`,
-              true,
+              true
             )
             if (wantConfig) {
               const keyValue = await prompter.question(`  ${selectedKey.envVar}=`)
@@ -224,13 +254,11 @@ export function registerInitCommand(program: Command): void {
           }
 
           // Ask about other missing keys
-          const unconfiguredKeys = keys.filter(
-            (k) => !k.found && k.provider !== selectedProvider,
-          )
+          const unconfiguredKeys = keys.filter((k) => !k.found && k.provider !== selectedProvider)
           if (unconfiguredKeys.length > 0) {
             const wantMore = await prompter.confirm(
               `  Configure ${unconfiguredKeys.length} other missing API keys?`,
-              false,
+              false
             )
             if (wantMore) {
               for (const k of unconfiguredKeys) {
@@ -249,7 +277,7 @@ export function registerInitCommand(program: Command): void {
         }
 
         // ── Step 3: Template ──────────────────────────────────────────────
-        stepHeader(3, 'Project template')
+        if (!options.quick) stepHeader(3, 'Project template')
 
         let template: TemplateKind = 'hello-agent'
         if (options.template) {
@@ -258,41 +286,47 @@ export function registerInitCommand(program: Command): void {
             template = options.template as TemplateKind
           } else {
             console.log(
-              chalk.yellow(`  ⚠ Unknown template "${options.template}". Using "hello-agent".`),
+              chalk.yellow(`  ⚠ Unknown template "${options.template}". Using "hello-agent".`)
             )
           }
         } else if (!options.yes) {
-          template = (await prompter.select('  Choose a starting template:', [
-            {
-              value: 'hello-agent',
-              label: `Hello Agent  ${chalk.gray('— Simple conversational agent with CSV-driven tests')}`,
-            },
-            {
-              value: 'customer-support',
-              label: `Customer Support  ${chalk.gray('— Support agent with refund, escalation scenarios')}`,
-            },
-            {
-              value: 'rag-agent',
-              label: `RAG Agent  ${chalk.gray('— Retrieval-augmented agent with knowledge base')}`,
-            },
-            {
-              value: 'empty',
-              label: `Empty  ${chalk.gray('— Bare scaffold. Build from scratch.')}`,
-            },
-          ], 'hello-agent')) as TemplateKind
+          template = (await prompter.select(
+            '  Choose a starting template:',
+            [
+              {
+                value: 'hello-agent',
+                label: `Hello Agent  ${chalk.gray('— Simple conversational agent with CSV-driven tests')}`,
+              },
+              {
+                value: 'customer-support',
+                label: `Customer Support  ${chalk.gray('— Support agent with refund, escalation scenarios')}`,
+              },
+              {
+                value: 'rag-agent',
+                label: `RAG Agent  ${chalk.gray('— Retrieval-augmented agent with knowledge base')}`,
+              },
+              {
+                value: 'empty',
+                label: `Empty  ${chalk.gray('— Bare scaffold. Build from scratch.')}`,
+              },
+            ],
+            'hello-agent'
+          )) as TemplateKind
         }
 
         // Template descriptions
         const templateDescriptions: Record<TemplateKind, string> = {
-          'hello-agent': 'Simple conversational agent with greetings, factual questions, and CSV-driven parametrized tests.',
-          'customer-support': 'Customer support agent handling refunds, returns, and escalation scenarios.',
+          'hello-agent':
+            'Simple conversational agent with greetings, factual questions, and CSV-driven parametrized tests.',
+          'customer-support':
+            'Customer support agent handling refunds, returns, and escalation scenarios.',
           'rag-agent': 'RAG agent that retrieves documents before answering, with source citation.',
-          'empty': 'Empty scaffold — add your own agent and tests.',
+          empty: 'Empty scaffold — add your own agent and tests.',
         }
-        console.log(`  ${chalk.gray(templateDescriptions[template])}`)
+        if (!options.quick) console.log(`  ${chalk.gray(templateDescriptions[template])}`)
 
         // ── Step 4: Directory layout ──────────────────────────────────────
-        stepHeader(4, 'Directory layout')
+        if (!options.quick) stepHeader(4, 'Directory layout')
 
         let testDir = 'tests'
         let srcDir = 'src'
@@ -301,10 +335,7 @@ export function registerInitCommand(program: Command): void {
         let examplesDir = 'examples'
 
         if (!options.yes) {
-          const customize = await prompter.confirm(
-            '  Customize directory names?',
-            false,
-          )
+          const customize = await prompter.confirm('  Customize directory names?', false)
           if (customize) {
             testDir = await prompter.question('  Test directory', testDir)
             srcDir = await prompter.question('  Source directory', srcDir)
@@ -314,22 +345,26 @@ export function registerInitCommand(program: Command): void {
           }
         }
 
-        console.log(chalk.gray(`  Tests:       ${testDir}/`))
-        console.log(chalk.gray(`  Source:      ${srcDir}/`))
-        console.log(chalk.gray(`  Datasets:    ${datasetDir}/`))
-        console.log(chalk.gray(`  Reports:     ${reportDir}/`))
-        console.log(chalk.gray(`  Examples:    ${examplesDir}/`))
+        if (!options.quick) {
+          console.log(chalk.gray(`  Tests:       ${testDir}/`))
+          console.log(chalk.gray(`  Source:      ${srcDir}/`))
+          console.log(chalk.gray(`  Datasets:    ${datasetDir}/`))
+          console.log(chalk.gray(`  Reports:     ${reportDir}/`))
+          console.log(chalk.gray(`  Examples:    ${examplesDir}/`))
+        }
 
         // Determine CI generation
         const includeCI = options.ci || false
 
         // ── Summary ──────────────────────────────────────────────────────
-        console.log(chalk.hex('#7C3AED').bold('\n  ─── Summary ───'))
-        console.log(chalk.gray(`  Project:     ${projectName}`))
-        console.log(chalk.gray(`  Language:    ${language.toUpperCase()}`))
-        console.log(chalk.gray(`  Provider:    ${getProviderLabel(selectedProvider)}`))
-        console.log(chalk.gray(`  Template:    ${template}`))
-        console.log(chalk.gray(`  CI/CD:       ${includeCI ? 'Yes' : 'No'}`))
+        if (!options.quick) {
+          console.log(chalk.hex('#7C3AED').bold('\n  ─── Summary ───'))
+          console.log(chalk.gray(`  Project:     ${projectName}`))
+          console.log(chalk.gray(`  Language:    ${language.toUpperCase()}`))
+          console.log(chalk.gray(`  Provider:    ${getProviderLabel(selectedProvider)}`))
+          console.log(chalk.gray(`  Template:    ${template}`))
+          console.log(chalk.gray(`  CI/CD:       ${includeCI ? 'Yes' : 'No'}`))
+        }
 
         if (!options.yes) {
           const proceed = await prompter.confirm('\n  Generate project files?', true)
@@ -361,7 +396,7 @@ export function registerInitCommand(program: Command): void {
             reportDir,
             examplesDir,
           }),
-          'utf-8',
+          'utf-8'
         )
 
         // 2. src/agent.ts
@@ -370,7 +405,7 @@ export function registerInitCommand(program: Command): void {
         nodeFs.writeFileSync(
           nodePath.join(agentDir, `agent.${ext}`),
           getAgentTemplate(language, template, srcDir),
-          'utf-8',
+          'utf-8'
         )
 
         // 3. tests/ directory
@@ -380,7 +415,7 @@ export function registerInitCommand(program: Command): void {
         nodeFs.writeFileSync(
           nodePath.join(testsDir, `${testFile}.test.${ext}`),
           getTestTemplate({ language, template, testDir, srcDir, datasetDir }),
-          'utf-8',
+          'utf-8'
         )
 
         // 4. dataset/ directory (if applicable)
@@ -391,27 +426,19 @@ export function registerInitCommand(program: Command): void {
           nodeFs.writeFileSync(
             nodePath.join(datasetFullDir, `${template}.queries.csv`),
             datasetContent,
-            'utf-8',
+            'utf-8'
           )
         }
 
         // 5. examples/ directory
         const examplesFullDir = nodePath.join(cwd, examplesDir)
         nodeFs.mkdirSync(examplesFullDir, { recursive: true })
-        nodeFs.writeFileSync(
-          nodePath.join(examplesFullDir, '.gitkeep'),
-          '',
-          'utf-8',
-        )
+        nodeFs.writeFileSync(nodePath.join(examplesFullDir, '.gitkeep'), '', 'utf-8')
 
         // 6. reports/ directory
         const reportsFullDir = nodePath.join(cwd, reportDir)
         nodeFs.mkdirSync(reportsFullDir, { recursive: true })
-        nodeFs.writeFileSync(
-          nodePath.join(reportsFullDir, '.gitkeep'),
-          '',
-          'utf-8',
-        )
+        nodeFs.writeFileSync(nodePath.join(reportsFullDir, '.gitkeep'), '', 'utf-8')
 
         // 7. .agentbench/ directory
         const agentbenchDir = nodePath.join(cwd, '.agentbench')
@@ -421,13 +448,9 @@ export function registerInitCommand(program: Command): void {
         nodeFs.writeFileSync(
           nodePath.join(agentbenchDir, '.gitignore'),
           '*\n!snapshots/\nsnapshots/*\n!snapshots/.gitkeep\n',
-          'utf-8',
+          'utf-8'
         )
-        nodeFs.writeFileSync(
-          nodePath.join(agentbenchDir, 'snapshots', '.gitkeep'),
-          '',
-          'utf-8',
-        )
+        nodeFs.writeFileSync(nodePath.join(agentbenchDir, 'snapshots', '.gitkeep'), '', 'utf-8')
 
         // 8. .github/workflows/agentbench.yml (if CI)
         if (includeCI) {
@@ -436,7 +459,7 @@ export function registerInitCommand(program: Command): void {
           nodeFs.writeFileSync(
             nodePath.join(workflowsDir, 'agentbench.yml'),
             getCIWorkflowTemplate(),
-            'utf-8',
+            'utf-8'
           )
         }
 
@@ -463,29 +486,109 @@ export function registerInitCommand(program: Command): void {
               nodeFs.writeFileSync(
                 envPath,
                 `# AgentBench environment configuration\n${selectedKeyStatus.envVar}=${envVal}\n`,
-                'utf-8',
+                'utf-8'
               )
             }
           } else {
             nodeFs.writeFileSync(
               envPath,
               `# AgentBench environment configuration\n# Add your API keys below:\n# OPENAI_API_KEY=sk-...\n# ANTHROPIC_API_KEY=sk-ant-...\n`,
-              'utf-8',
+              'utf-8'
             )
           }
         }
 
         spinner.succeed('Project files generated')
 
+        // ── Quick mode: install deps and run tests immediately ──────────
+        if (options.quick) {
+          // Ensure package.json exists so @agentbench/core can be resolved.
+          // When running from a global install, the user's project needs its own
+          // copy of @agentbench/core; we create a minimal package.json and
+          // install it automatically.
+          const pkgJsonPath = nodePath.join(cwd, 'package.json')
+          if (!nodeFs.existsSync(pkgJsonPath)) {
+            nodeFs.writeFileSync(
+              pkgJsonPath,
+              JSON.stringify(
+                {
+                  name: projectName,
+                  private: true,
+                  type: 'module',
+                  dependencies: {
+                    '@agentbench/core': '^0.3.0',
+                  },
+                },
+                null,
+                2
+              ) + '\n',
+              'utf-8'
+            )
+          }
+
+          // Install dependencies
+          spinner.start('Installing dependencies...')
+          const installExitCode: number = await new Promise((resolve) => {
+            const install = spawn('npm', ['install', '--loglevel=error'], {
+              cwd,
+              stdio: 'inherit',
+            })
+
+            install.on('close', (code: number | null) => {
+              resolve(code ?? 1)
+            })
+
+            install.on('error', () => {
+              resolve(1)
+            })
+          })
+
+          if (installExitCode !== 0) {
+            spinner.warn('npm install skipped — package may not be published yet')
+            console.log(
+              chalk.gray('  The test runner will resolve @agentbench/core from the CLI.\n')
+            )
+            // Don't exit — the test runner has a symlink fallback for
+            // @agentbench/core resolution from the CLI's own node_modules.
+          } else {
+            spinner.succeed('Dependencies installed')
+          }
+
+          // Run the tests
+          console.log(chalk.gray('\n  Running tests...\n'))
+
+          const testExitCode: number = await new Promise((resolve) => {
+            // Use the same node binary and CLI script so it works regardless
+            // of how agentbench was invoked (global install, npx, monorepo dev).
+            const child = spawn(process.execPath, [process.argv[1], 'test'], {
+              cwd,
+              stdio: 'inherit',
+            })
+
+            child.on('close', (code) => {
+              resolve(code ?? 1)
+            })
+
+            child.on('error', (err) => {
+              console.error(chalk.red(`  Failed to run agentbench test: ${err.message}`))
+              resolve(1)
+            })
+          })
+
+          console.log(
+            chalk.green(
+              '\n✓ AgentBench is ready. Edit tests/hello-agent.test.ts to test your own agent.\n'
+            )
+          )
+
+          process.exit(testExitCode)
+        }
+
         // ── Success Message ────────────────────────────────────────────
         console.log(renderSuccessMessage(projectName, template, packageManager))
       } catch (err) {
         spinner.fail('Initialization failed')
-        console.error(
-          chalk.red(
-            err instanceof Error ? err.message : String(err),
-          ),
-        )
+        console.error(chalk.red(err instanceof Error ? err.message : String(err)))
         prompter.close()
         process.exit(1)
       }

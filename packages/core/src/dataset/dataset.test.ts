@@ -17,7 +17,7 @@ function makeItem(overrides?: Partial<DatasetItem>): DatasetItem {
 
 function makeItems(n: number, prefix = 'item'): DatasetItem[] {
   return Array.from({ length: n }, (_, i) =>
-    makeItem({ id: `${prefix}-${i + 1}`, input: `Question ${i + 1}`, expected: `Answer ${i + 1}` }),
+    makeItem({ id: `${prefix}-${i + 1}`, input: `Question ${i + 1}`, expected: `Answer ${i + 1}` })
   )
 }
 
@@ -208,19 +208,14 @@ describe('Dataset', () => {
     })
 
     it('detects duplicate IDs', () => {
-      const ds = new Dataset([
-        makeItem({ id: 'dup-1' }),
-        makeItem({ id: 'dup-1' }),
-      ])
+      const ds = new Dataset([makeItem({ id: 'dup-1' }), makeItem({ id: 'dup-1' })])
       const report = ds.validate()
       expect(report.valid).toBe(false)
       expect(report.errors.some((e) => e.includes('duplicate'))).toBe(true)
     })
 
     it('detects missing input', () => {
-      const ds = new Dataset([
-        makeItem({ id: 'no-input-1', input: null as unknown as string }),
-      ])
+      const ds = new Dataset([makeItem({ id: 'no-input-1', input: null as unknown as string })])
       const report = ds.validate()
       expect(report.valid).toBe(false)
       expect(report.errors.some((e) => e.includes('input'))).toBe(true)
@@ -248,18 +243,14 @@ describe('Dataset', () => {
     })
 
     it('warns when no assertion criteria are set', () => {
-      const ds = new Dataset([
-        { id: 'no-criteria', input: 'Hello' },
-      ])
+      const ds = new Dataset([{ id: 'no-criteria', input: 'Hello' }])
       const report = ds.validate()
       expect(report.warnings.length).toBeGreaterThan(0)
       expect(report.warnings.some((w) => w.includes('no expected'))).toBe(true)
     })
 
     it('warns on empty string input', () => {
-      const ds = new Dataset([
-        makeItem({ id: 'empty-input', input: '', expected: 'something' }),
-      ])
+      const ds = new Dataset([makeItem({ id: 'empty-input', input: '', expected: 'something' })])
       const report = ds.validate()
       expect(report.warnings.some((w) => w.includes('empty string'))).toBe(true)
     })
@@ -321,8 +312,14 @@ describe('Dataset', () => {
       const a = ds.split({ train: 0.5, test: 0.5 }, undefined, 1)
       const b = ds.split({ train: 0.5, test: 0.5 }, undefined, 999)
       // Extremely unlikely to be identical with 50 items
-      const idsA = a.train.map((i) => i.id).sort().join(',')
-      const idsB = b.train.map((i) => i.id).sort().join(',')
+      const idsA = a.train
+        .map((i) => i.id)
+        .sort()
+        .join(',')
+      const idsB = b.train
+        .map((i) => i.id)
+        .sort()
+        .join(',')
       expect(idsA).not.toBe(idsB)
     })
   })
@@ -617,7 +614,7 @@ describe('Dataset edge cases', () => {
         id: `item-${i}`,
         input: `test input ${i}`,
         expected: `test expected ${i}`,
-      })),
+      }))
     )
     expect(ds.validate().valid).toBe(true)
     const result = ds.split({ train: 0.8, test: 0.2 })

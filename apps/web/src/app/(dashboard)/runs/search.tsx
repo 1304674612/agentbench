@@ -18,7 +18,7 @@ export function RunsSearch({ defaultValue }: { defaultValue?: string }) {
         }
       })
     },
-    [router],
+    [router]
   )
 
   return (

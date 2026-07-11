@@ -17,10 +17,7 @@ export function registerCompareCommand(program: Command): void {
       const spinner = options.json ? null : ora('Fetching runs...').start()
 
       try {
-        const [runA, runB] = await Promise.all([
-          apiClient.getRun(runAId),
-          apiClient.getRun(runBId),
-        ])
+        const [runA, runB] = await Promise.all([apiClient.getRun(runAId), apiClient.getRun(runBId)])
 
         spinner?.succeed('Runs fetched')
 
@@ -49,9 +46,7 @@ export function registerCompareCommand(program: Command): void {
           console.log(
             `  Cost:      $${(metricsA.totalCost as number)?.toFixed(4) ?? '—'} vs $${(metricsB.totalCost as number)?.toFixed(4) ?? '—'}`
           )
-          console.log(
-            `  Steps:     ${metricsA.stepCount ?? '—'} vs ${metricsB.stepCount ?? '—'}`
-          )
+          console.log(`  Steps:     ${metricsA.stepCount ?? '—'} vs ${metricsB.stepCount ?? '—'}`)
         }
       } catch (err) {
         spinner?.fail('Comparison failed')

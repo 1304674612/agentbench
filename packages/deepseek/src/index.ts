@@ -9,19 +9,14 @@
  * @packageDocumentation
  */
 
-import {
-  OpenAICompatibleProvider,
-} from '@agentbench/provider-utils'
+import { OpenAICompatibleProvider } from '@agentbench/provider-utils'
 import type {
   ProviderCapabilities,
   ProviderConfig,
   ChatCompletionResult,
 } from '@agentbench/provider-utils'
 
-const DEEPSEEK_MODELS = [
-  'deepseek-chat',
-  'deepseek-reasoner',
-]
+const DEEPSEEK_MODELS = ['deepseek-chat', 'deepseek-reasoner']
 
 export class DeepSeekProvider extends OpenAICompatibleProvider {
   readonly id = 'deepseek'
@@ -53,24 +48,27 @@ export class DeepSeekProvider extends OpenAICompatibleProvider {
     const message = choices[0]?.message as Record<string, unknown> | undefined
 
     return {
-      id: r.id as string ?? `deepseek-${Date.now()}`,
-      model: r.model as string ?? 'deepseek-chat',
+      id: (r.id as string) ?? `deepseek-${Date.now()}`,
+      model: (r.model as string) ?? 'deepseek-chat',
       choices: choices.map((c, i) => ({
         index: i,
         message: {
           role: (message?.role as 'assistant') ?? 'assistant',
           content: (message?.content as string) ?? null,
-          ...(message?.reasoning_content ? { reasoning_content: message.reasoning_content as string } : {}),
+          ...(message?.reasoning_content
+            ? { reasoning_content: message.reasoning_content as string }
+            : {}),
           ...(message?.tool_calls ? { tool_calls: message.tool_calls as unknown[] } : {}),
         } as any,
-        finishReason: (c.finish_reason as ChatCompletionResult['choices'][0]['finishReason']) ?? null,
+        finishReason:
+          (c.finish_reason as ChatCompletionResult['choices'][0]['finishReason']) ?? null,
       })),
       usage: {
         promptTokens: usage?.prompt_tokens ?? 0,
         completionTokens: usage?.completion_tokens ?? 0,
         totalTokens: usage?.total_tokens ?? 0,
       },
-      created: r.created as number ?? Math.floor(Date.now() / 1000),
+      created: (r.created as number) ?? Math.floor(Date.now() / 1000),
       provider: 'deepseek',
     }
   }

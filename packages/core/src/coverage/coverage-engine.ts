@@ -61,10 +61,7 @@ export function calculateCoverage(input: CoverageInput): CoverageReport {
   const suggestions: CoverageSuggestion[] = []
 
   // 1. Prompt Coverage
-  const promptDim = calculatePromptCoverage(
-    input.runs,
-    input.promptVariables ?? {},
-  )
+  const promptDim = calculatePromptCoverage(input.runs, input.promptVariables ?? {})
   dimensions.push(promptDim.dimension)
   uncoveredPaths.push(...promptDim.uncovered)
   suggestions.push(...promptDim.suggestions)
@@ -98,9 +95,7 @@ export function calculateCoverage(input: CoverageInput): CoverageReport {
     ? input.previousReports.map((r) => ({
         date: r.timestamp,
         overall: r.overall,
-        dimensions: Object.fromEntries(
-          r.dimensions.map((d) => [d.name, d.percentage]),
-        ),
+        dimensions: Object.fromEntries(r.dimensions.map((d) => [d.name, d.percentage])),
       }))
     : undefined
 
@@ -121,7 +116,7 @@ export function calculateCoverage(input: CoverageInput): CoverageReport {
 
 function calculatePromptCoverage(
   runs: CoverageInput['runs'],
-  variables: Record<string, string[]>,
+  variables: Record<string, string[]>
 ): {
   dimension: CoverageDimension
   uncovered: UncoveredPath[]
@@ -251,7 +246,10 @@ function calculateWorkflowCoverage(runs: CoverageInput['runs']): {
     if (!trace?.steps) continue
 
     const path = trace.steps
-      .map((s) => `${s.type}:${s.type === 'tool_call' ? s.toolName : s.type === 'llm_call' ? 'llm' : 'response'}`)
+      .map(
+        (s) =>
+          `${s.type}:${s.type === 'tool_call' ? s.toolName : s.type === 'llm_call' ? 'llm' : 'response'}`
+      )
       .join(' → ')
 
     paths.add(path)
@@ -262,7 +260,8 @@ function calculateWorkflowCoverage(runs: CoverageInput['runs']): {
   const totalRuns = runs.length
 
   // Coverage = unique paths / total runs (capped at 100%)
-  const percentage = totalRuns === 0 ? 0 : Math.min(100, Math.round((uniquePaths / Math.max(1, totalRuns)) * 100))
+  const percentage =
+    totalRuns === 0 ? 0 : Math.min(100, Math.round((uniquePaths / Math.max(1, totalRuns)) * 100))
 
   const details: CoverageDetail[] = Array.from(pathCounts.entries()).map(([path, count]) => ({
     label: path.length > 60 ? path.slice(0, 57) + '...' : path,
@@ -275,11 +274,13 @@ function calculateWorkflowCoverage(runs: CoverageInput['runs']): {
       dimension: 'workflow',
       description: 'Only one execution path observed across all runs',
       severity: 'high',
-      suggestedTest: 'Add test cases that trigger different workflows (error handling, edge cases, alternative tools)',
+      suggestedTest:
+        'Add test cases that trigger different workflows (error handling, edge cases, alternative tools)',
     })
     suggestions.push({
       dimension: 'workflow',
-      message: 'All runs follow the same execution path. Introduce variations to test alternative workflows.',
+      message:
+        'All runs follow the same execution path. Introduce variations to test alternative workflows.',
     })
   }
 
@@ -296,7 +297,7 @@ function calculateWorkflowCoverage(runs: CoverageInput['runs']): {
 
 function calculateToolCoverage(
   runs: CoverageInput['runs'],
-  availableTools: string[],
+  availableTools: string[]
 ): {
   dimension: CoverageDimension
   uncovered: UncoveredPath[]
@@ -331,7 +332,13 @@ function calculateToolCoverage(
     }))
 
     return {
-      dimension: { name: 'tool', percentage, covered: calledTools.size, total: calledTools.size || 1, details },
+      dimension: {
+        name: 'tool',
+        percentage,
+        covered: calledTools.size,
+        total: calledTools.size || 1,
+        details,
+      },
       uncovered,
       suggestions,
     }
@@ -397,12 +404,36 @@ function calculateEdgeCoverage(edgeCases: EdgeCaseDefinition[]): {
   if (edgeCases.length === 0) {
     // Default edge cases to suggest
     const defaults: EdgeCaseDefinition[] = [
-      { name: 'empty_input', description: 'Empty user input', testHint: 'Test with empty string or null input' },
-      { name: 'max_length', description: 'Very long input', testHint: 'Test with input exceeding token limits' },
-      { name: 'unicode', description: 'Unicode/special characters', testHint: 'Test with emoji, CJK, RTL text' },
-      { name: 'timeout', description: 'Timeout behavior', testHint: 'Set low timeout to test graceful handling' },
-      { name: 'error_tool', description: 'Tool returns error', testHint: 'Mock a tool to return an error' },
-      { name: 'no_tools', description: 'No tools available', testHint: 'Run agent without any tools configured' },
+      {
+        name: 'empty_input',
+        description: 'Empty user input',
+        testHint: 'Test with empty string or null input',
+      },
+      {
+        name: 'max_length',
+        description: 'Very long input',
+        testHint: 'Test with input exceeding token limits',
+      },
+      {
+        name: 'unicode',
+        description: 'Unicode/special characters',
+        testHint: 'Test with emoji, CJK, RTL text',
+      },
+      {
+        name: 'timeout',
+        description: 'Timeout behavior',
+        testHint: 'Set low timeout to test graceful handling',
+      },
+      {
+        name: 'error_tool',
+        description: 'Tool returns error',
+        testHint: 'Mock a tool to return an error',
+      },
+      {
+        name: 'no_tools',
+        description: 'No tools available',
+        testHint: 'Run agent without any tools configured',
+      },
     ]
 
     for (const ec of defaults) {
@@ -424,10 +455,13 @@ function calculateEdgeCoverage(edgeCases: EdgeCaseDefinition[]): {
         details,
       },
       uncovered,
-      suggestions: [{
-        dimension: 'edge',
-        message: 'No edge cases have been tested. Define and test at least 5 edge cases for robust coverage.',
-      }],
+      suggestions: [
+        {
+          dimension: 'edge',
+          message:
+            'No edge cases have been tested. Define and test at least 5 edge cases for robust coverage.',
+        },
+      ],
     }
   }
 
@@ -450,10 +484,12 @@ function calculateEdgeCoverage(edgeCases: EdgeCaseDefinition[]): {
       details,
     },
     uncovered,
-    suggestions: [{
-      dimension: 'edge',
-      message: `${edgeCases.length} edge case(s) defined but not yet verified. Run tests targeting each case.`,
-    }],
+    suggestions: [
+      {
+        dimension: 'edge',
+        message: `${edgeCases.length} edge case(s) defined but not yet verified. Run tests targeting each case.`,
+      },
+    ],
   }
 }
 
@@ -464,16 +500,15 @@ function calculateEdgeCoverage(edgeCases: EdgeCaseDefinition[]): {
 /**
  * Compute coverage trend from historical reports.
  */
-export function computeCoverageTrend(
-  reports: CoverageReport[],
-): { trend: 'improving' | 'declining' | 'stable'; change: number } {
+export function computeCoverageTrend(reports: CoverageReport[]): {
+  trend: 'improving' | 'declining' | 'stable'
+  change: number
+} {
   if (reports.length < 2) {
     return { trend: 'stable', change: 0 }
   }
 
-  const sorted = [...reports].sort(
-    (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
-  )
+  const sorted = [...reports].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
   const first = sorted[0].overall
   const last = sorted[sorted.length - 1].overall
   const change = last - first
@@ -491,14 +526,20 @@ export function generateCoverageSuggestions(report: CoverageReport): string[] {
 
   for (const dim of report.dimensions) {
     if (dim.percentage < 50) {
-      tips.push(`⚠️ ${dim.name} coverage is at ${dim.percentage}% — prioritize adding tests in this area`)
+      tips.push(
+        `⚠️ ${dim.name} coverage is at ${dim.percentage}% — prioritize adding tests in this area`
+      )
     } else if (dim.percentage < 80) {
-      tips.push(`📈 ${dim.name} coverage at ${dim.percentage}% — good, but consider adding more edge cases`)
+      tips.push(
+        `📈 ${dim.name} coverage at ${dim.percentage}% — good, but consider adding more edge cases`
+      )
     }
   }
 
   if (report.uncoveredPaths.length > 5) {
-    tips.push(`🔍 ${report.uncoveredPaths.length} uncovered paths — start with high-severity items first`)
+    tips.push(
+      `🔍 ${report.uncoveredPaths.length} uncovered paths — start with high-severity items first`
+    )
   }
 
   if (tips.length === 0) {

@@ -1,7 +1,13 @@
 /**
  * Analyst Agent — Analyzes data and identifies patterns.
  */
-export interface AnalystResult { agent: string; task: string; findings: string[]; confidence: number; timestamp: string }
+export interface AnalystResult {
+  agent: string
+  task: string
+  findings: string[]
+  confidence: number
+  timestamp: string
+}
 
 export async function runAnalyst(task: string): Promise<AnalystResult> {
   return {

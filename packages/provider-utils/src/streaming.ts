@@ -129,7 +129,11 @@ export function createSSEParser() {
             const index = typeof tc.index === 'number' ? tc.index : 0
             let acc = state.toolCalls.get(index)
             if (!acc) {
-              acc = { id: typeof tc.id === 'string' ? tc.id : `call_${index}`, name: '', arguments: '' }
+              acc = {
+                id: typeof tc.id === 'string' ? tc.id : `call_${index}`,
+                name: '',
+                arguments: '',
+              }
               state.toolCalls.set(index, acc)
             }
             if (typeof tc.id === 'string' && tc.id) acc.id = tc.id
@@ -184,7 +188,8 @@ export function createSSEParser() {
         case 'content_block_start': {
           const block = event.parsed.content_block as Record<string, unknown> | undefined
           if (block?.type === 'tool_use') {
-            const idx = typeof event.parsed.index === 'number' ? event.parsed.index : state.toolCalls.size
+            const idx =
+              typeof event.parsed.index === 'number' ? event.parsed.index : state.toolCalls.size
             state.toolCalls.set(idx, {
               id: typeof block.id === 'string' ? block.id : `toolu_${Date.now()}`,
               name: typeof block.name === 'string' ? block.name : 'unknown',

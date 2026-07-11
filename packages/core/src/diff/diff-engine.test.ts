@@ -62,7 +62,8 @@ function makeBaseSteps(): TraceStep[] {
 
 function makeRunResult(overrides: RunOverrides): RunResult {
   const systemPrompt = overrides.config?.agent?.systemPrompt ?? 'You are a helpful assistant.'
-  const userContent = overrides.config?.input?.messages?.[0]?.content ?? 'What is the meaning of life?'
+  const userContent =
+    overrides.config?.input?.messages?.[0]?.content ?? 'What is the meaning of life?'
   const agentModel = overrides.config?.agent?.model ?? 'gpt-4o'
 
   return {
@@ -103,9 +104,7 @@ function makeRunResult(overrides: RunOverrides): RunResult {
       toolSuccessCount: 1,
       toolFailureCount: 0,
     },
-    scores: overrides.scores ?? [
-      { evaluator: 'correctness', score: 8, maxScore: 10 },
-    ],
+    scores: overrides.scores ?? [{ evaluator: 'correctness', score: 8, maxScore: 10 }],
     assertionResults: [],
     startedAt: new Date(),
     endedAt: new Date(),

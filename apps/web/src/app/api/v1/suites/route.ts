@@ -20,13 +20,11 @@ export async function GET(req: NextRequest) {
       },
     })
 
-    const result = suites.map(
-      (s: { _count: { cases: number }; [key: string]: unknown }) => ({
-        ...s,
-        caseCount: s._count.cases,
-        _count: undefined,
-      }),
-    )
+    const result = suites.map((s: { _count: { cases: number }; [key: string]: unknown }) => ({
+      ...s,
+      caseCount: s._count.cases,
+      _count: undefined,
+    }))
 
     return NextResponse.json({ suites: result })
   } catch (error) {

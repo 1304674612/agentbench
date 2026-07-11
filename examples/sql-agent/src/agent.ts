@@ -39,12 +39,7 @@ export interface SqlAgentResult {
 }
 
 export async function runSqlAgent(params: RunSqlAgentParams): Promise<SqlAgentResult> {
-  const {
-    question,
-    apiKey,
-    model = 'gpt-4o',
-    temperature = 0.1,
-  } = params
+  const { question, apiKey, model = 'gpt-4o', temperature = 0.1 } = params
 
   const schema = getSchemaDescription()
 

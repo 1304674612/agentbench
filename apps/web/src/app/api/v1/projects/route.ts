@@ -10,24 +10,27 @@ const projectQuerySchema = paginationSchema.extend({
   search: z.string().optional(),
 })
 
-export const POST = withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
-  try {
-    const body = await req.json()
-    const parsed = createProjectSchema.parse(body)
+export const POST = withApiAuth(
+  async (req: NextRequest, _ctx: ApiContext) => {
+    try {
+      const body = await req.json()
+      const parsed = createProjectSchema.parse(body)
 
-    const project = await db.project.create({
-      data: {
-        name: parsed.name,
-        slug: parsed.slug,
-        description: parsed.description,
-      },
-    })
+      const project = await db.project.create({
+        data: {
+          name: parsed.name,
+          slug: parsed.slug,
+          description: parsed.description,
+        },
+      })
 
-    return NextResponse.json(project, { status: 201 })
-  } catch (error) {
-    return handleApiError(error)
-  }
-}, { requireWrite: true })
+      return NextResponse.json(project, { status: 201 })
+    } catch (error) {
+      return handleApiError(error)
+    }
+  },
+  { requireWrite: true }
+)
 
 export const GET = withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
   try {

@@ -18,7 +18,10 @@ export default function NewExperimentError({ error, reset }: { error: Error; res
         >
           <RefreshCw className="h-4 w-4" /> Try Again
         </button>
-        <Link href="/experiments" className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm hover:bg-muted">
+        <Link
+          href="/experiments"
+          className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm hover:bg-muted"
+        >
           Back to Experiments
         </Link>
       </div>

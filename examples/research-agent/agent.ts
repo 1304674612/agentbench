@@ -77,7 +77,7 @@ const mockSearchIndex: Record<string, SearchResult[]> = {
       title: 'Climate Change: Global Temperature — NOAA Climate.gov',
       url: 'https://www.climate.gov/news-features/understanding-climate/climate-change-global-temperature',
       snippet:
-        'Earth\'s average surface temperature has risen about 1.1 degrees Celsius since the late 19th century, with most warming occurring in the past 40 years.',
+        "Earth's average surface temperature has risen about 1.1 degrees Celsius since the late 19th century, with most warming occurring in the past 40 years.",
       relevance: 0.97,
     },
     {
@@ -99,13 +99,15 @@ const mockSearchIndex: Record<string, SearchResult[]> = {
     {
       title: 'Wikipedia — General Reference',
       url: 'https://en.wikipedia.org/wiki/Special:Search',
-      snippet: 'The free encyclopedia that anyone can edit. Contains articles on millions of topics.',
+      snippet:
+        'The free encyclopedia that anyone can edit. Contains articles on millions of topics.',
       relevance: 0.7,
     },
     {
       title: 'Google Scholar',
       url: 'https://scholar.google.com',
-      snippet: 'Search across scholarly literature from academic publishers, universities, and other research organizations.',
+      snippet:
+        'Search across scholarly literature from academic publishers, universities, and other research organizations.',
       relevance: 0.7,
     },
   ],
@@ -202,7 +204,7 @@ export function executeTool(name: string, args: Record<string, unknown>): Record
       if (!results) {
         // Partial match search
         const matchingKey = Object.keys(mockSearchIndex).find(
-          (key) => query.includes(key) || key.includes(query),
+          (key) => query.includes(key) || key.includes(query)
         )
         results = matchingKey ? mockSearchIndex[matchingKey] : mockSearchIndex.default
       }
@@ -219,7 +221,12 @@ export function executeTool(name: string, args: Record<string, unknown>): Record
       const url = String(args.url ?? '')
       const page = mockPageContent[url]
       if (!page) {
-        return { url, fetched: false, content: null, error: 'Page could not be fetched (404 or timeout)' }
+        return {
+          url,
+          fetched: false,
+          content: null,
+          error: 'Page could not be fetched (404 or timeout)',
+        }
       }
       return { ...page, fetched: true }
     }
@@ -238,7 +245,8 @@ export function executeTool(name: string, args: Record<string, unknown>): Record
         keyPoints: sentences.map((s, i) => ({ index: i + 1, point: s.trim() })),
         originalLength: text.length,
         summaryLength: sentences.join(' ').length,
-        compressionRatio: text.length > 0 ? (sentences.join(' ').length / text.length).toFixed(2) : '0',
+        compressionRatio:
+          text.length > 0 ? (sentences.join(' ').length / text.length).toFixed(2) : '0',
       }
     }
 
@@ -380,10 +388,22 @@ Process:
 
 Always search before answering. Cross-reference claims across sources. Do not fabricate citations.`,
       tools: [
-        { name: 'web_search', description: 'Search the web', parameters: { query: 'string', numResults: 'number' } },
+        {
+          name: 'web_search',
+          description: 'Search the web',
+          parameters: { query: 'string', numResults: 'number' },
+        },
         { name: 'fetch_page', description: 'Fetch page content', parameters: { url: 'string' } },
-        { name: 'summarize', description: 'Summarize text', parameters: { text: 'string', maxPoints: 'number' } },
-        { name: 'cite_sources', description: 'Format citations', parameters: { sources: 'object[]' } },
+        {
+          name: 'summarize',
+          description: 'Summarize text',
+          parameters: { text: 'string', maxPoints: 'number' },
+        },
+        {
+          name: 'cite_sources',
+          description: 'Format citations',
+          parameters: { sources: 'object[]' },
+        },
       ],
     },
     messages: [

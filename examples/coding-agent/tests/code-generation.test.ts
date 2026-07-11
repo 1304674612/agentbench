@@ -18,16 +18,16 @@ export async function generateUtilFunctionTest() {
     apiKey: API_KEY,
   })
 
-  const completed = await expect(result)
-    .status().toBeCompleted()
-    .run()
+  const completed = await expect(result).status().toBeCompleted().run()
 
   const hasOutput = await expect(result)
-    .output().toMatchRegex(/.{80,}/)
+    .output()
+    .toMatchRegex(/.{80,}/)
     .run()
 
   const mentionsCapitalize = await expect(result)
-    .output().toMatchRegex(/capitalize/i)
+    .output()
+    .toMatchRegex(/capitalize/i)
     .run()
 
   return {
@@ -45,9 +45,7 @@ export async function generateWithFileWritesTest() {
     apiKey: API_KEY,
   })
 
-  const completed = await expect(result)
-    .status().toBeCompleted()
-    .run()
+  const completed = await expect(result).status().toBeCompleted().run()
 
   const mentionsFunctions = await expect(result)
     .any([

@@ -21,12 +21,7 @@
  * ```
  */
 
-import type {
-  AgentConfig,
-  ExecutionTrace,
-  TraceStep,
-  ToolDefinition,
-} from '@agentbench/core'
+import type { AgentConfig, ExecutionTrace, TraceStep, ToolDefinition } from '@agentbench/core'
 import { tokenCounter, costCalculator, StreamCapture } from '@agentbench/core'
 import type {
   ChatMessage,
@@ -66,9 +61,21 @@ export interface OpenAIInterceptContext {
 // ============================================================
 
 const OPENAI_MODELS = [
-  'gpt-5', 'gpt-5-mini', 'gpt-5-nano',
-  'gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini', 'gpt-4.1-nano',
-  'o5', 'o4-mini', 'o3', 'o3-mini', 'o1', 'o1-mini', 'o1-pro',
+  'gpt-5',
+  'gpt-5-mini',
+  'gpt-5-nano',
+  'gpt-4o',
+  'gpt-4o-mini',
+  'gpt-4.1',
+  'gpt-4.1-mini',
+  'gpt-4.1-nano',
+  'o5',
+  'o4-mini',
+  'o3',
+  'o3-mini',
+  'o1',
+  'o1-mini',
+  'o1-pro',
 ]
 
 export class AgentBenchOpenAI {
@@ -190,7 +197,7 @@ export class AgentBenchOpenAI {
       const cost = costCalculator.calculate(
         params.model,
         response.usage?.prompt_tokens ?? promptTokens,
-        response.usage?.completion_tokens ?? completionTokens,
+        response.usage?.completion_tokens ?? completionTokens
       )
 
       // Complete the trace step
@@ -204,14 +211,16 @@ export class AgentBenchOpenAI {
         duration,
         llmResponse: {
           content: response.content ?? null,
-          toolCalls: response.tool_calls?.map((tc: { id: string; type: string; function: { name: string; arguments: string } }) => ({
-            id: tc.id,
-            type: 'function' as const,
-            function: {
-              name: tc.function.name,
-              arguments: tc.function.arguments,
-            },
-          })),
+          toolCalls: response.tool_calls?.map(
+            (tc: { id: string; type: string; function: { name: string; arguments: string } }) => ({
+              id: tc.id,
+              type: 'function' as const,
+              function: {
+                name: tc.function.name,
+                arguments: tc.function.arguments,
+              },
+            })
+          ),
           finishReason: response.finish_reason ?? 'stop',
           usage: {
             promptTokens: response.usage?.prompt_tokens ?? promptTokens,
@@ -337,7 +346,8 @@ export class AgentBenchOpenAI {
       // Emit trace step for the full streaming response
       if (this._context.onStep) {
         const promptText = params.messages.map((m) => m.content).join('\n')
-        const promptTokens = assembled.usage?.promptTokens ?? tokenCounter.estimateTokens(promptText)
+        const promptTokens =
+          assembled.usage?.promptTokens ?? tokenCounter.estimateTokens(promptText)
         const completionTokens =
           assembled.usage?.completionTokens ?? tokenCounter.estimateTokens(assembled.fullText)
         const totalTokens = assembled.usage?.totalTokens ?? promptTokens + completionTokens
@@ -475,8 +485,7 @@ export class AgentBenchOpenAI {
       const metrics = capture.getStreamingMetrics()
 
       const promptText = params.messages.map((m) => m.content ?? '').join('\n')
-      const promptTokens =
-        assembled.usage?.promptTokens ?? tokenCounter.estimateTokens(promptText)
+      const promptTokens = assembled.usage?.promptTokens ?? tokenCounter.estimateTokens(promptText)
       const completionTokens =
         assembled.usage?.completionTokens ?? tokenCounter.estimateTokens(assembled.fullText)
       const totalTokens = assembled.usage?.totalTokens ?? promptTokens + completionTokens
@@ -544,7 +553,11 @@ export class AgentBenchOpenAI {
         content: assembled.fullText || null,
         tool_calls: assembledToolCalls,
         finish_reason: assembled.finishReason,
-        usage: { prompt_tokens: promptTokens, completion_tokens: completionTokens, total_tokens: totalTokens },
+        usage: {
+          prompt_tokens: promptTokens,
+          completion_tokens: completionTokens,
+          total_tokens: totalTokens,
+        },
         cost,
         duration: assembleEndTime - streamStart,
         trace: step,
@@ -577,7 +590,7 @@ export class AgentBenchOpenAI {
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}))
         throw new Error(
-          `OpenAI API error ${res.status}: ${(errBody as { error?: { message?: string } }).error?.message ?? res.statusText}`,
+          `OpenAI API error ${res.status}: ${(errBody as { error?: { message?: string } }).error?.message ?? res.statusText}`
         )
       }
 
@@ -600,7 +613,9 @@ export class AgentBenchOpenAI {
   /**
    * Internal: Stream from OpenAI API, returning a ReadableStream.
    */
-  private async _callOpenAIStreamRaw(body: Record<string, unknown>): Promise<ReadableStream<Uint8Array>> {
+  private async _callOpenAIStreamRaw(
+    body: Record<string, unknown>
+  ): Promise<ReadableStream<Uint8Array>> {
     const url = `${this.config.baseURL ?? 'https://api.openai.com/v1'}/chat/completions`
     const res = await fetch(url, {
       method: 'POST',
@@ -615,7 +630,7 @@ export class AgentBenchOpenAI {
     if (!res.ok) {
       const errBody = await res.json().catch(() => ({}))
       throw new Error(
-        `OpenAI API error ${res.status}: ${(errBody as { error?: { message?: string } }).error?.message ?? res.statusText}`,
+        `OpenAI API error ${res.status}: ${(errBody as { error?: { message?: string } }).error?.message ?? res.statusText}`
       )
     }
 
@@ -638,11 +653,19 @@ export class AgentBenchOpenAI {
   }
 
   async countTokens(params: TokenCountParams): Promise<TokenCountResult> {
-    return { tokens: await Promise.resolve(tokenCounter.estimateTokens(
-      typeof params.text === 'string'
-        ? params.text
-        : params.messages?.map((m: ChatMessage) => typeof m.content === 'string' ? m.content : '').join('\n') ?? ''
-    )), model: params.model, method: 'heuristic' }
+    return {
+      tokens: await Promise.resolve(
+        tokenCounter.estimateTokens(
+          typeof params.text === 'string'
+            ? params.text
+            : (params.messages
+                ?.map((m: ChatMessage) => (typeof m.content === 'string' ? m.content : ''))
+                .join('\n') ?? '')
+        )
+      ),
+      model: params.model,
+      method: 'heuristic',
+    }
   }
 
   calculateCost(usage: Usage, model: string): CostBreakdown {
@@ -650,8 +673,11 @@ export class AgentBenchOpenAI {
     const promptCost = (usage.promptTokens / 1_000_000) * pricing.input
     const completionCost = (usage.completionTokens / 1_000_000) * pricing.output
     return {
-      promptCost, completionCost, totalCost: promptCost + completionCost,
-      currency: 'USD', model,
+      promptCost,
+      completionCost,
+      totalCost: promptCost + completionCost,
+      currency: 'USD',
+      model,
       rates: { promptPer1K: pricing.input / 1000, completionPer1K: pricing.output / 1000 },
     }
   }
@@ -663,9 +689,17 @@ export class AgentBenchOpenAI {
         headers: { Authorization: `Bearer ${this.config.apiKey}` },
         signal: AbortSignal.timeout(10000),
       })
-      return { healthy: res.ok, latency: Date.now() - start, message: res.ok ? 'Connected' : `HTTP ${res.status}` }
+      return {
+        healthy: res.ok,
+        latency: Date.now() - start,
+        message: res.ok ? 'Connected' : `HTTP ${res.status}`,
+      }
     } catch (err) {
-      return { healthy: false, latency: Date.now() - start, message: err instanceof Error ? err.message : 'Unknown error' }
+      return {
+        healthy: false,
+        latency: Date.now() - start,
+        message: err instanceof Error ? err.message : 'Unknown error',
+      }
     }
   }
 
@@ -681,7 +715,10 @@ export class AgentBenchOpenAI {
   }
 
   /** Adapt request body for reasoning models */
-  private _adaptForReasoning(body: Record<string, unknown>, model: string): Record<string, unknown> {
+  private _adaptForReasoning(
+    body: Record<string, unknown>,
+    model: string
+  ): Record<string, unknown> {
     const adapted = { ...body }
     // Reasoning models use max_completion_tokens instead of max_tokens
     if ('max_tokens' in adapted) {
@@ -704,7 +741,6 @@ export class AgentBenchOpenAI {
     }
     return adapted
   }
-
 }
 
 // ============================================================
@@ -826,10 +862,7 @@ export async function runWithOpenAI(params: {
   for (let i = 0; i < maxSteps; i++) {
     const result = await client.createChatCompletion({
       model: agent.model,
-      messages: [
-        { role: 'system', content: agent.systemPrompt },
-        ...currentMessages,
-      ],
+      messages: [{ role: 'system', content: agent.systemPrompt }, ...currentMessages],
       temperature: agent.temperature,
       max_tokens: agent.maxTokens,
       tools: tools?.map((t) => ({

@@ -23,13 +23,9 @@ export async function replayGreetingTest() {
   ])
 
   // Both runs completed
-  const bothCompleted = await expect(run1)
-    .status().toBeCompleted()
-    .run()
+  const bothCompleted = await expect(run1).status().toBeCompleted().run()
 
-  const run2Completed = await expect(run2)
-    .status().toBeCompleted()
-    .run()
+  const run2Completed = await expect(run2).status().toBeCompleted().run()
 
   // Both runs contain greeting language
   const run1Friendly = await expect(run1)
@@ -51,9 +47,7 @@ export async function replayGreetingTest() {
     .run()
 
   // Both runs have reasonable token counts
-  const tokensReasonable = await expect(run1)
-    .tokens().toBeLessThan(500)
-    .run()
+  const tokensReasonable = await expect(run1).tokens().toBeLessThan(500).run()
 
   return {
     bothCompleted: bothCompleted.allPassed && run2Completed.allPassed,
@@ -67,31 +61,29 @@ export async function replayGreetingTest() {
 /** Test Case 2: Two identical factual questions should produce the same answer. */
 export async function replayFactualTest() {
   const [run1, run2] = await Promise.all([
-    runHelloAgent({ message: 'What is the chemical symbol for water?', apiKey: API_KEY, temperature: 0 }),
-    runHelloAgent({ message: 'What is the chemical symbol for water?', apiKey: API_KEY, temperature: 0 }),
+    runHelloAgent({
+      message: 'What is the chemical symbol for water?',
+      apiKey: API_KEY,
+      temperature: 0,
+    }),
+    runHelloAgent({
+      message: 'What is the chemical symbol for water?',
+      apiKey: API_KEY,
+      temperature: 0,
+    }),
   ])
 
-  const bothCompleted = await expect(run1)
-    .status().toBeCompleted()
-    .run()
+  const bothCompleted = await expect(run1).status().toBeCompleted().run()
 
-  const run2Completed = await expect(run2)
-    .status().toBeCompleted()
-    .run()
+  const run2Completed = await expect(run2).status().toBeCompleted().run()
 
   // At least one run contains H2O
   const mentionsWater = await expect(run1)
-    .any([
-      (b) => b.output().toMatchRegex(/H[₂2]O|water/i),
-      (b) => b.output().toContain('H2O'),
-    ])
+    .any([(b) => b.output().toMatchRegex(/H[₂2]O|water/i), (b) => b.output().toContain('H2O')])
     .run()
 
   const run2MentionsWater = await expect(run2)
-    .any([
-      (b) => b.output().toMatchRegex(/H[₂2]O|water/i),
-      (b) => b.output().toContain('H2O'),
-    ])
+    .any([(b) => b.output().toMatchRegex(/H[₂2]O|water/i), (b) => b.output().toContain('H2O')])
     .run()
 
   return {

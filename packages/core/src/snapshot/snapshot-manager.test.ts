@@ -44,8 +44,16 @@ function createSnapshotInput(overrides?: Partial<SnapshotCreateInput>): Snapshot
       topP: 0.9,
     },
     tools: [
-      { name: 'search', description: 'Search the web', parameters: { type: 'object', properties: { query: { type: 'string' } } } },
-      { name: 'calculator', description: 'Perform calculations', parameters: { type: 'object', properties: { expression: { type: 'string' } } } },
+      {
+        name: 'search',
+        description: 'Search the web',
+        parameters: { type: 'object', properties: { query: { type: 'string' } } },
+      },
+      {
+        name: 'calculator',
+        description: 'Perform calculations',
+        parameters: { type: 'object', properties: { expression: { type: 'string' } } },
+      },
     ],
     context: {
       messages: [
@@ -53,7 +61,9 @@ function createSnapshotInput(overrides?: Partial<SnapshotCreateInput>): Snapshot
         { role: 'user', content: 'What is AI?' },
       ],
       memory: { previous_topic: 'machine learning' },
-      documents: [{ id: 'doc_1', content: 'AI is artificial intelligence.', metadata: { source: 'wiki' } }],
+      documents: [
+        { id: 'doc_1', content: 'AI is artificial intelligence.', metadata: { source: 'wiki' } },
+      ],
     },
     input: {
       messages: [{ role: 'user', content: 'What is AI?' }],
@@ -403,7 +413,13 @@ describe('Snapshot Manager', () => {
         tools: [{ name: 'search', description: 'Search', parameters: { type: 'object' } }],
       })
       const dataB = makeSnapshotData({
-        tools: [{ name: 'search', description: 'Search', parameters: { type: 'object', properties: { q: { type: 'string' } } } }],
+        tools: [
+          {
+            name: 'search',
+            description: 'Search',
+            parameters: { type: 'object', properties: { q: { type: 'string' } } },
+          },
+        ],
       })
 
       const diff = compareSnapshots(dataA, dataB)

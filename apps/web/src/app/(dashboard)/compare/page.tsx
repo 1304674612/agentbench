@@ -13,12 +13,34 @@ interface RunSummary {
 }
 
 interface ComparisonResult {
-  runA: { id: string; name: string; status: string; model: string; duration: number; metrics: Record<string, number>; scores: Array<{ evaluator: string; score: number }> }
-  runB: { id: string; name: string; status: string; model: string; duration: number; metrics: Record<string, number>; scores: Array<{ evaluator: string; score: number }> }
+  runA: {
+    id: string
+    name: string
+    status: string
+    model: string
+    duration: number
+    metrics: Record<string, number>
+    scores: Array<{ evaluator: string; score: number }>
+  }
+  runB: {
+    id: string
+    name: string
+    status: string
+    model: string
+    duration: number
+    metrics: Record<string, number>
+    scores: Array<{ evaluator: string; score: number }>
+  }
   diffs: {
     status: string
     duration: { diff: number; changePercent: number }
-    metrics: Array<{ metric: string; valueA: number; valueB: number; diff: number; changePercent: number }>
+    metrics: Array<{
+      metric: string
+      valueA: number
+      valueB: number
+      diff: number
+      changePercent: number
+    }>
     scores: Array<{ evaluator: string; scoreA: number; scoreB: number; diff: number }>
   }
   traceDiff: { stepsA: number; stepsB: number; diff: number }
@@ -51,7 +73,9 @@ export default function ComparePage() {
   useEffect(() => {
     async function loadRuns() {
       try {
-        const data = await apiGet<{ runs: RunSummary[]; total: number }>('/api/v1/runs', { limit: '50' })
+        const data = await apiGet<{ runs: RunSummary[]; total: number }>('/api/v1/runs', {
+          limit: '50',
+        })
         setRuns(data.runs || [])
       } catch (err) {
         console.error('[Compare] Failed to load runs:', err)
@@ -219,7 +243,9 @@ export default function ComparePage() {
                     <h3 className="font-semibold text-sm truncate">{run.name}</h3>
                     <span className={statusBadge(run.status)}>{run.status}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground font-mono">{run.id.slice(0, 12)}...</p>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    {run.id.slice(0, 12)}...
+                  </p>
                   <p className="text-xs text-muted-foreground mt-1">Model: {run.model || '—'}</p>
                   <p className="text-xs text-muted-foreground">Duration: {run.duration}ms</p>
                 </div>
@@ -235,10 +261,18 @@ export default function ComparePage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border bg-muted/30">
-                      <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase">Metric</th>
-                      <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground uppercase">Run A</th>
-                      <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground uppercase">Run B</th>
-                      <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground uppercase">Change</th>
+                      <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase">
+                        Metric
+                      </th>
+                      <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground uppercase">
+                        Run A
+                      </th>
+                      <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground uppercase">
+                        Run B
+                      </th>
+                      <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground uppercase">
+                        Change
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -248,12 +282,33 @@ export default function ComparePage() {
                       return (
                         <tr key={m.metric} className="hover:bg-muted/20">
                           <td className="px-4 py-2.5 text-sm">{LABELS[m.metric] ?? m.metric}</td>
-                          <td className="px-4 py-2.5 text-right font-mono text-sm">{isCost ? `$${m.valueA.toFixed(4)}` : isLatency ? `${m.valueA}ms` : m.valueA}</td>
-                          <td className="px-4 py-2.5 text-right font-mono text-sm">{isCost ? `$${m.valueB.toFixed(4)}` : isLatency ? `${m.valueB}ms` : m.valueB}</td>
+                          <td className="px-4 py-2.5 text-right font-mono text-sm">
+                            {isCost
+                              ? `$${m.valueA.toFixed(4)}`
+                              : isLatency
+                                ? `${m.valueA}ms`
+                                : m.valueA}
+                          </td>
+                          <td className="px-4 py-2.5 text-right font-mono text-sm">
+                            {isCost
+                              ? `$${m.valueB.toFixed(4)}`
+                              : isLatency
+                                ? `${m.valueB}ms`
+                                : m.valueB}
+                          </td>
                           <td className="px-4 py-2.5 text-right">
-                            <span className={`inline-flex items-center gap-1 text-xs font-mono ${m.changePercent > 0 ? 'text-amber-400' : m.changePercent < 0 ? 'text-emerald-400' : 'text-muted-foreground'}`}>
-                              {m.changePercent > 0 ? <TrendingUp className="h-3 w-3" /> : m.changePercent < 0 ? <TrendingDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
-                              {m.changePercent > 0 ? '+' : ''}{m.changePercent}%
+                            <span
+                              className={`inline-flex items-center gap-1 text-xs font-mono ${m.changePercent > 0 ? 'text-amber-400' : m.changePercent < 0 ? 'text-emerald-400' : 'text-muted-foreground'}`}
+                            >
+                              {m.changePercent > 0 ? (
+                                <TrendingUp className="h-3 w-3" />
+                              ) : m.changePercent < 0 ? (
+                                <TrendingDown className="h-3 w-3" />
+                              ) : (
+                                <Minus className="h-3 w-3" />
+                              )}
+                              {m.changePercent > 0 ? '+' : ''}
+                              {m.changePercent}%
                             </span>
                           </td>
                         </tr>
@@ -273,18 +328,36 @@ export default function ComparePage() {
                 {result.diffs.scores.map((s) => (
                   <div key={s.evaluator} className="rounded-xl border border-border bg-card p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium capitalize">{s.evaluator.replace(/_/g, ' ')}</span>
-                      <span className={`text-xs font-mono font-bold ${s.diff > 0 ? 'text-emerald-400' : s.diff < 0 ? 'text-red-400' : 'text-muted-foreground'}`}>
+                      <span className="text-sm font-medium capitalize">
+                        {s.evaluator.replace(/_/g, ' ')}
+                      </span>
+                      <span
+                        className={`text-xs font-mono font-bold ${s.diff > 0 ? 'text-emerald-400' : s.diff < 0 ? 'text-red-400' : 'text-muted-foreground'}`}
+                      >
                         {s.diff > 0 ? '↑' : s.diff < 0 ? '↓' : '—'} {Math.abs(s.diff).toFixed(1)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-emerald-500/60" style={{ width: `${(s.scoreA / 10) * 100}%` }} /></div>
-                      <span className="text-xs font-mono text-muted-foreground">{s.scoreA.toFixed(1)}</span>
+                      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-emerald-500/60"
+                          style={{ width: `${(s.scoreA / 10) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-mono text-muted-foreground">
+                        {s.scoreA.toFixed(1)}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-blue-500/60" style={{ width: `${(s.scoreB / 10) * 100}%` }} /></div>
-                      <span className="text-xs font-mono text-muted-foreground">{s.scoreB.toFixed(1)}</span>
+                      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-blue-500/60"
+                          style={{ width: `${(s.scoreB / 10) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-mono text-muted-foreground">
+                        {s.scoreB.toFixed(1)}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -306,7 +379,12 @@ export default function ComparePage() {
               </div>
               <div className="rounded-xl border border-border bg-card p-4">
                 <div className="text-sm text-muted-foreground mb-1">Difference</div>
-                <div className={`text-xl font-bold ${result.traceDiff.diff !== 0 ? 'text-amber-400' : ''}`}>{result.traceDiff.diff > 0 ? '+' : ''}{result.traceDiff.diff}</div>
+                <div
+                  className={`text-xl font-bold ${result.traceDiff.diff !== 0 ? 'text-amber-400' : ''}`}
+                >
+                  {result.traceDiff.diff > 0 ? '+' : ''}
+                  {result.traceDiff.diff}
+                </div>
               </div>
             </div>
           </div>

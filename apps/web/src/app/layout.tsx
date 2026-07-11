@@ -64,27 +64,17 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'AgentBench — Agent Regression Testing Framework',
-    description: 'The Verification Framework for AI Agents. Replay, evaluate, compare, and regression test your AI agents with confidence.',
+    description:
+      'The Verification Framework for AI Agents. Replay, evaluate, compare, and regression test your AI agents with confidence.',
     images: ['/api/og?title=AgentBench'],
   },
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
+      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <SessionProvider>
             {children}
             <Toaster

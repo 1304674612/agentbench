@@ -10,7 +10,8 @@ export interface McpAgentProjectConfig {
 
 const config: McpAgentProjectConfig = {
   name: 'mcp-agent',
-  description: 'MCP (Model Context Protocol) agent with tool discovery, resource access, multi-server support, and lifecycle management',
+  description:
+    'MCP (Model Context Protocol) agent with tool discovery, resource access, multi-server support, and lifecycle management',
 
   agent: {
     provider: 'openai',
@@ -31,15 +32,56 @@ Guidelines:
 - Support multiple simultaneous server connections
 - Respect the MCP protocol lifecycle (initialize -> ready -> shutdown)`,
     tools: [
-      { name: 'mcp_list_tools', description: 'List all tools available on an MCP server', parameters: { type: 'object', properties: { serverId: { type: 'string' } }, required: ['serverId'] } },
-      { name: 'mcp_call_tool', description: 'Call a tool on an MCP server', parameters: { type: 'object', properties: { serverId: { type: 'string' }, toolName: { type: 'string' }, arguments: { type: 'object' } }, required: ['serverId', 'toolName'] } },
-      { name: 'mcp_list_resources', description: 'List all resources on an MCP server', parameters: { type: 'object', properties: { serverId: { type: 'string' } }, required: ['serverId'] } },
-      { name: 'mcp_read_resource', description: 'Read a resource from an MCP server', parameters: { type: 'object', properties: { serverId: { type: 'string' }, uri: { type: 'string' } }, required: ['serverId', 'uri'] } },
+      {
+        name: 'mcp_list_tools',
+        description: 'List all tools available on an MCP server',
+        parameters: {
+          type: 'object',
+          properties: { serverId: { type: 'string' } },
+          required: ['serverId'],
+        },
+      },
+      {
+        name: 'mcp_call_tool',
+        description: 'Call a tool on an MCP server',
+        parameters: {
+          type: 'object',
+          properties: {
+            serverId: { type: 'string' },
+            toolName: { type: 'string' },
+            arguments: { type: 'object' },
+          },
+          required: ['serverId', 'toolName'],
+        },
+      },
+      {
+        name: 'mcp_list_resources',
+        description: 'List all resources on an MCP server',
+        parameters: {
+          type: 'object',
+          properties: { serverId: { type: 'string' } },
+          required: ['serverId'],
+        },
+      },
+      {
+        name: 'mcp_read_resource',
+        description: 'Read a resource from an MCP server',
+        parameters: {
+          type: 'object',
+          properties: { serverId: { type: 'string' }, uri: { type: 'string' } },
+          required: ['serverId', 'uri'],
+        },
+      },
     ],
   },
 
   options: { timeout: 30000, maxSteps: 8, retries: 1, concurrency: 1 },
-  testSuites: ['./tests/tool-discovery.test.ts', './tests/resource-access.test.ts', './tests/multi-server.test.ts', './tests/lifecycle.test.ts'],
+  testSuites: [
+    './tests/tool-discovery.test.ts',
+    './tests/resource-access.test.ts',
+    './tests/multi-server.test.ts',
+    './tests/lifecycle.test.ts',
+  ],
 }
 
 export default config

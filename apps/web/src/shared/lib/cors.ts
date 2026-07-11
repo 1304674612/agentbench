@@ -31,7 +31,10 @@ const DEFAULT_MAX_AGE = '86400' // 24 hours
 function getAllowedOrigins(): string[] {
   const envOrigins = process.env.ALLOWED_ORIGINS
   if (envOrigins) {
-    return envOrigins.split(',').map((o) => o.trim()).filter(Boolean)
+    return envOrigins
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean)
   }
   return DEFAULT_ALLOWED_ORIGINS
 }
@@ -47,14 +50,15 @@ function isOriginAllowed(origin: string | null, allowedOrigins: string[]): boole
 
 export function corsHeaders(origin?: string): Record<string, string> {
   const allowedOrigins = getAllowedOrigins()
-  const allowedOrigin = origin && isOriginAllowed(origin, allowedOrigins) ? origin : allowedOrigins[0]
+  const allowedOrigin =
+    origin && isOriginAllowed(origin, allowedOrigins) ? origin : allowedOrigins[0]
 
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': DEFAULT_ALLOWED_METHODS.join(', '),
     'Access-Control-Allow-Headers': DEFAULT_ALLOWED_HEADERS.join(', '),
     'Access-Control-Max-Age': DEFAULT_MAX_AGE,
-    'Vary': 'Origin',
+    Vary: 'Origin',
   }
 }
 
@@ -81,10 +85,7 @@ type ApiHandler = (req: NextRequest, ...args: any[]) => Promise<NextResponse> | 
  * Automatically handles OPTIONS preflight requests and adds CORS headers
  * to all responses.
  */
-export function withCORS(
-  handler: ApiHandler,
-  options?: CORSOptions
-): ApiHandler {
+export function withCORS(handler: ApiHandler, options?: CORSOptions): ApiHandler {
   return async function corsHandler(req: NextRequest, ...args: any[]): Promise<NextResponse> {
     const origin = req.headers.get('origin')
     const validOrigins = options?.allowedOrigins ?? getAllowedOrigins()

@@ -10,7 +10,10 @@ export default function DatasetsError({ error, reset }: { error: Error; reset: (
       <p className="text-sm text-muted-foreground mb-6 max-w-md">
         {error.message || 'An unexpected error occurred.'}
       </p>
-      <button onClick={reset} className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-foreground/90">
+      <button
+        onClick={reset}
+        className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-foreground/90"
+      >
         <RefreshCw className="h-4 w-4" /> Try Again
       </button>
     </div>

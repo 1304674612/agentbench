@@ -20,17 +20,20 @@ export async function validTableNamesTest() {
   })
 
   const hasSelect = await expect(result)
-    .output().toMatchRegex(/SELECT/i)
+    .output()
+    .toMatchRegex(/SELECT/i)
     .run()
 
   // Should use actual schema tables: products, categories
   const usesProducts = await expect(result)
-    .output().toMatchRegex(/products/i)
+    .output()
+    .toMatchRegex(/products/i)
     .run()
 
   // Should NOT reference non-existent tables
   const noHallucination = await expect(result)
-    .output().not.toMatchRegex(/inventory|items|goods/i)
+    .output()
+    .not.toMatchRegex(/inventory|items|goods/i)
     .run()
 
   return {
@@ -49,17 +52,17 @@ export async function validColumnNamesTest() {
   })
 
   // Should use 'email' not 'mail' or 'email_address'
-  const usesEmail = await expect(result)
-    .output().toMatchRegex(/email/i)
-    .run()
+  const usesEmail = await expect(result).output().toMatchRegex(/email/i).run()
 
   // Should use 'status' not 'state' or 'active_status'
   const usesStatus = await expect(result)
-    .output().toMatchRegex(/status/i)
+    .output()
+    .toMatchRegex(/status/i)
     .run()
 
   const fromUsers = await expect(result)
-    .output().toMatchRegex(/FROM\s+users/i)
+    .output()
+    .toMatchRegex(/FROM\s+users/i)
     .run()
 
   return {
@@ -78,7 +81,8 @@ export async function unsupportedQueryTest() {
   })
 
   const hasOutput = await expect(result)
-    .output().toMatchRegex(/.{20,}/)
+    .output()
+    .toMatchRegex(/.{20,}/)
     .run()
 
   // Agent should either explain it can't do plotting, or generate a data-fetching query

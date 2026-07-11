@@ -31,7 +31,7 @@ function makeTrace(steps?: Partial<TraceStep>[]): ExecutionTrace {
     steps: (steps ?? [makeTraceStep()]).map((s, i) => ({
       id: `step_${i + 1}`,
       sequence: i + 1,
-      ...s as TraceStep,
+      ...(s as TraceStep),
     })),
     metadata: { agentName: 'test', environment: 'development' },
     createdAt: new Date(),
@@ -80,7 +80,11 @@ function makeCoverageInput(overrides?: Partial<CoverageInput>): CoverageInput {
     availableTools: ['search', 'translate', 'calculator', 'summarize'],
     edgeCases: [
       { name: 'empty_input', description: 'Empty user input', testHint: 'Test with empty input' },
-      { name: 'very_long_input', description: 'Very long input', testHint: 'Test with 50k char input' },
+      {
+        name: 'very_long_input',
+        description: 'Very long input',
+        testHint: 'Test with 50k char input',
+      },
     ],
     ...overrides,
   }
@@ -341,9 +345,7 @@ describe('Coverage Engine', () => {
         projectId: 'proj_1',
         timestamp: new Date(),
         overall: 95,
-        dimensions: [
-          { name: 'prompt', percentage: 95, covered: 19, total: 20 },
-        ],
+        dimensions: [{ name: 'prompt', percentage: 95, covered: 19, total: 20 }],
         uncoveredPaths: [],
         suggestions: [],
       }
@@ -358,9 +360,7 @@ describe('Coverage Engine', () => {
         projectId: 'proj_1',
         timestamp: new Date(),
         overall: 60,
-        dimensions: [
-          { name: 'tool', percentage: 60, covered: 6, total: 10 },
-        ],
+        dimensions: [{ name: 'tool', percentage: 60, covered: 6, total: 10 }],
         uncoveredPaths: [],
         suggestions: [],
       }

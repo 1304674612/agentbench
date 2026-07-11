@@ -9,9 +9,7 @@
  * @packageDocumentation
  */
 
-import {
-  OpenAICompatibleProvider,
-} from '@agentbench/provider-utils'
+import { OpenAICompatibleProvider } from '@agentbench/provider-utils'
 import type {
   ProviderCapabilities,
   ProviderConfig,
@@ -143,8 +141,8 @@ export class AzureOpenAIProvider extends OpenAICompatibleProvider {
     const message = choices[0]?.message as Record<string, unknown> | undefined
 
     return {
-      id: r.id as string ?? `azure-${Date.now()}`,
-      model: r.model as string ?? this.deployment,
+      id: (r.id as string) ?? `azure-${Date.now()}`,
+      model: (r.model as string) ?? this.deployment,
       choices: choices.map((c, i) => ({
         index: i,
         message: {
@@ -152,7 +150,8 @@ export class AzureOpenAIProvider extends OpenAICompatibleProvider {
           content: (message?.content as string) ?? null,
           ...(message?.tool_calls ? { tool_calls: message.tool_calls as ToolCall[] } : {}),
         },
-        finishReason: (c.finish_reason as ChatCompletionResult['choices'][0]['finishReason']) ?? null,
+        finishReason:
+          (c.finish_reason as ChatCompletionResult['choices'][0]['finishReason']) ?? null,
         // Azure content filter results
         ...(c.content_filter_results ? { content_filter_results: c.content_filter_results } : {}),
       })),
@@ -161,7 +160,7 @@ export class AzureOpenAIProvider extends OpenAICompatibleProvider {
         completionTokens: usage?.completion_tokens ?? 0,
         totalTokens: usage?.total_tokens ?? 0,
       },
-      created: r.created as number ?? Math.floor(Date.now() / 1000),
+      created: (r.created as number) ?? Math.floor(Date.now() / 1000),
       provider: 'azure-openai',
     }
   }
@@ -262,7 +261,9 @@ export class AzureOpenAIProvider extends OpenAICompatibleProvider {
   }
 }
 
-export async function createAzureOpenAIProvider(config: ProviderConfig = {}): Promise<AzureOpenAIProvider> {
+export async function createAzureOpenAIProvider(
+  config: ProviderConfig = {}
+): Promise<AzureOpenAIProvider> {
   const provider = new AzureOpenAIProvider()
   await provider.initialize(config)
   return provider

@@ -35,7 +35,7 @@ export interface Report {
 export function generateReport(
   run: RunResult,
   format: ReportFormat,
-  options?: ReportOptions,
+  options?: ReportOptions
 ): Report {
   switch (format) {
     case 'json':
@@ -55,7 +55,7 @@ export function generateReport(
 export function generateBatchReport(
   runs: RunResult[],
   format: ReportFormat,
-  title?: string,
+  title?: string
 ): Report {
   switch (format) {
     case 'json':
@@ -71,7 +71,7 @@ export function generateBatchReport(
             runs: runs.map((r) => summarizeRun(r)),
           },
           null,
-          2,
+          2
         ),
         filename: 'batch-report.json',
         mimeType: 'application/json',
@@ -227,7 +227,7 @@ function generateHTMLReport(run: RunResult, _options?: ReportOptions): Report {
   const assertionRows = assertions
     .map(
       (a) =>
-        `<tr class="${a.status}"><td>${a.type}</td><td>${a.status.toUpperCase()}</td><td>${a.message ?? ''}</td></tr>`,
+        `<tr class="${a.status}"><td>${a.type}</td><td>${a.status.toUpperCase()}</td><td>${a.message ?? ''}</td></tr>`
     )
     .join('')
 

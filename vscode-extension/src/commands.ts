@@ -1,165 +1,155 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
-import { runTests, runSingleTest, runSuite as runSuiteTests, showOutput } from './testRunner';
-import { updateStatusBar, setRunning, setIdle } from './statusBar';
-import { updateDiagnostics, clearDiagnostics } from './diagnostics';
-import { getProjectId } from './config';
-import type { TestRunOutput, HistoryEntry } from './types';
+import * as vscode from 'vscode'
+import * as path from 'path'
+import { runTests, runSingleTest, runSuite as runSuiteTests, showOutput } from './testRunner'
+import { updateStatusBar, setRunning, setIdle } from './statusBar'
+import { updateDiagnostics, clearDiagnostics } from './diagnostics'
+import { getProjectId } from './config'
+import type { TestRunOutput, HistoryEntry } from './types'
 
 /**
  * All 13 command registrations for the AgentBench extension.
  */
 
-let context: vscode.ExtensionContext;
-let onHistoryAdd: ((entry: HistoryEntry) => void) | undefined;
+let context: vscode.ExtensionContext
+let onHistoryAdd: ((entry: HistoryEntry) => void) | undefined
 
 export function setCommandContext(ctx: vscode.ExtensionContext): void {
-  context = ctx;
+  context = ctx
 }
 
 export function setHistoryCallback(cb: (entry: HistoryEntry) => void): void {
-  onHistoryAdd = cb;
+  onHistoryAdd = cb
 }
 
 // ---- 1. runAllTests ----
 export async function runAllTestsCommand(): Promise<void> {
   try {
-    setRunning();
+    setRunning()
 
-    const projectId = await resolveProjectId();
+    const projectId = await resolveProjectId()
     if (!projectId) {
-      return;
+      return
     }
 
-    showOutput();
-    const result = await runTests({ projectId });
+    showOutput()
+    const result = await runTests({ projectId })
 
-    handleTestResult(result.output);
+    handleTestResult(result.output)
   } catch (err) {
     vscode.window.showErrorMessage(
-      `AgentBench: ${err instanceof Error ? err.message : String(err)}`,
-    );
-    setIdle();
+      `AgentBench: ${err instanceof Error ? err.message : String(err)}`
+    )
+    setIdle()
   }
 }
 
 // ---- 2. runCurrentTest ----
 export async function runCurrentTestCommand(testName?: string): Promise<void> {
   try {
-    const editor = vscode.window.activeTextEditor;
+    const editor = vscode.window.activeTextEditor
     if (!editor && !testName) {
-      vscode.window.showInformationMessage(
-        'Open a test file to run the current test.',
-      );
-      return;
+      vscode.window.showInformationMessage('Open a test file to run the current test.')
+      return
     }
 
-    const resolvedName = testName || getTestNameAtCursor(editor!);
+    const resolvedName = testName || getTestNameAtCursor(editor!)
     if (!resolvedName) {
-      vscode.window.showInformationMessage(
-        'Place cursor on a test name to run it.',
-      );
-      return;
+      vscode.window.showInformationMessage('Place cursor on a test name to run it.')
+      return
     }
 
-    setRunning();
+    setRunning()
 
-    const projectId = await resolveProjectId();
+    const projectId = await resolveProjectId()
     if (!projectId) {
-      setIdle();
-      return;
+      setIdle()
+      return
     }
 
-    showOutput();
-    const result = await runSingleTest(resolvedName, projectId);
+    showOutput()
+    const result = await runSingleTest(resolvedName, projectId)
 
-    handleTestResult(result.output);
+    handleTestResult(result.output)
   } catch (err) {
     vscode.window.showErrorMessage(
-      `AgentBench: ${err instanceof Error ? err.message : String(err)}`,
-    );
-    setIdle();
+      `AgentBench: ${err instanceof Error ? err.message : String(err)}`
+    )
+    setIdle()
   }
 }
 
 // ---- 3. runSuite ----
 export async function runSuiteCommand(suiteId?: string): Promise<void> {
   try {
-    let resolvedSuiteId = suiteId;
+    let resolvedSuiteId = suiteId
 
     if (!resolvedSuiteId) {
       // Try to find suite name from the active file
-      const editor = vscode.window.activeTextEditor;
+      const editor = vscode.window.activeTextEditor
       if (editor) {
-        const document = editor.document;
-        const text = document.getText();
-        const suiteMatch = text.match(
-          /(?:suite|describe)\s*\(\s*['"`](.+?)['"`]/,
-        );
+        const document = editor.document
+        const text = document.getText()
+        const suiteMatch = text.match(/(?:suite|describe)\s*\(\s*['"`](.+?)['"`]/)
         if (suiteMatch) {
-          resolvedSuiteId = suiteMatch[1];
+          resolvedSuiteId = suiteMatch[1]
         } else {
           // Ask user to input suite name
           resolvedSuiteId = await vscode.window.showInputBox({
             prompt: 'Enter suite name or ID to run',
             placeHolder: 'e.g., greeting',
-          });
+          })
         }
       }
     }
 
     if (!resolvedSuiteId) {
-      return;
+      return
     }
 
-    setRunning();
+    setRunning()
 
-    const projectId = await resolveProjectId();
+    const projectId = await resolveProjectId()
     if (!projectId) {
-      setIdle();
-      return;
+      setIdle()
+      return
     }
 
-    showOutput();
-    const result = await runSuiteTests(resolvedSuiteId, projectId);
+    showOutput()
+    const result = await runSuiteTests(resolvedSuiteId, projectId)
 
-    handleTestResult(result.output);
+    handleTestResult(result.output)
   } catch (err) {
     vscode.window.showErrorMessage(
-      `AgentBench: ${err instanceof Error ? err.message : String(err)}`,
-    );
-    setIdle();
+      `AgentBench: ${err instanceof Error ? err.message : String(err)}`
+    )
+    setIdle()
   }
 }
 
 // ---- 4. debugTest ----
 export async function debugTestCommand(testName?: string): Promise<void> {
-  const editor = vscode.window.activeTextEditor;
+  const editor = vscode.window.activeTextEditor
   if (!editor && !testName) {
-    vscode.window.showInformationMessage(
-      'Open a test file to debug a test.',
-    );
-    return;
+    vscode.window.showInformationMessage('Open a test file to debug a test.')
+    return
   }
 
-  const resolvedName = testName || getTestNameAtCursor(editor!);
+  const resolvedName = testName || getTestNameAtCursor(editor!)
   if (!resolvedName) {
-    vscode.window.showInformationMessage(
-      'Place cursor on a test name to debug it.',
-    );
-    return;
+    vscode.window.showInformationMessage('Place cursor on a test name to debug it.')
+    return
   }
 
-  const projectId = await resolveProjectId();
+  const projectId = await resolveProjectId()
   if (!projectId) {
-    return;
+    return
   }
 
   // Create a debug configuration and start debugging
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
   if (!workspaceFolder) {
-    vscode.window.showErrorMessage('No workspace folder open.');
-    return;
+    vscode.window.showErrorMessage('No workspace folder open.')
+    return
   }
 
   const debugConfig: vscode.DebugConfiguration = {
@@ -171,37 +161,37 @@ export async function debugTestCommand(testName?: string): Promise<void> {
     console: 'integratedTerminal',
     cwd: workspaceFolder.uri.fsPath,
     skipFiles: ['<node_internals>/**'],
-  };
+  }
 
-  const started = await vscode.debug.startDebugging(workspaceFolder, debugConfig);
+  const started = await vscode.debug.startDebugging(workspaceFolder, debugConfig)
   if (!started) {
-    vscode.window.showErrorMessage('Failed to start debug session.');
+    vscode.window.showErrorMessage('Failed to start debug session.')
   }
 }
 
 // ---- 5. replayLast ----
 export async function replayLastCommand(runId?: string): Promise<void> {
   try {
-    setRunning();
+    setRunning()
 
-    const projectId = await resolveProjectId();
+    const projectId = await resolveProjectId()
     if (!projectId) {
-      setIdle();
-      return;
+      setIdle()
+      return
     }
 
-    showOutput();
+    showOutput()
 
     // Replay uses the CLI's replay command
-    const { runTests } = require('./testRunner');
-    const result = await runTests({ projectId });
+    const { runTests } = require('./testRunner')
+    const result = await runTests({ projectId })
 
-    handleTestResult(result.output);
+    handleTestResult(result.output)
   } catch (err) {
     vscode.window.showErrorMessage(
-      `AgentBench replay: ${err instanceof Error ? err.message : String(err)}`,
-    );
-    setIdle();
+      `AgentBench replay: ${err instanceof Error ? err.message : String(err)}`
+    )
+    setIdle()
   }
 }
 
@@ -211,35 +201,35 @@ export async function replaySelectCommand(testName?: string): Promise<void> {
     // Prompt user to select a test from history
     const items: vscode.QuickPickItem[] = [
       { label: 'Last run', description: 'Replay the most recent run' },
-    ];
+    ]
     const picked = await vscode.window.showQuickPick(items, {
       placeHolder: 'Select a run to replay',
-    });
+    })
     if (!picked) {
-      return;
+      return
     }
   }
 
   try {
-    setRunning();
+    setRunning()
 
-    const projectId = await resolveProjectId();
+    const projectId = await resolveProjectId()
     if (!projectId) {
-      setIdle();
-      return;
+      setIdle()
+      return
     }
 
-    showOutput();
-    const { runTests } = require('./testRunner');
-    const grepOpt = testName ? { grep: testName, projectId } : { projectId };
-    const result = await runTests(grepOpt);
+    showOutput()
+    const { runTests } = require('./testRunner')
+    const grepOpt = testName ? { grep: testName, projectId } : { projectId }
+    const result = await runTests(grepOpt)
 
-    handleTestResult(result.output);
+    handleTestResult(result.output)
   } catch (err) {
     vscode.window.showErrorMessage(
-      `AgentBench replay: ${err instanceof Error ? err.message : String(err)}`,
-    );
-    setIdle();
+      `AgentBench replay: ${err instanceof Error ? err.message : String(err)}`
+    )
+    setIdle()
   }
 }
 
@@ -249,14 +239,14 @@ export async function viewTraceCommand(): Promise<void> {
   const traceFiles = await vscode.workspace.findFiles(
     '**/.agentbench/traces/*.json',
     '**/node_modules/**',
-    50,
-  );
+    50
+  )
 
   if (traceFiles.length === 0) {
     vscode.window.showInformationMessage(
-      'No execution traces found. Run a test first to generate trace data.',
-    );
-    return;
+      'No execution traces found. Run a test first to generate trace data.'
+    )
+    return
   }
 
   // Let user pick which trace to view
@@ -264,19 +254,19 @@ export async function viewTraceCommand(): Promise<void> {
     label: path.basename(uri.fsPath),
     description: vscode.workspace.asRelativePath(uri),
     uri,
-  }));
+  }))
 
   const selected = await vscode.window.showQuickPick(items, {
     placeHolder: 'Select an execution trace to view',
     matchOnDescription: true,
-  });
+  })
 
   if (selected) {
-    const document = await vscode.workspace.openTextDocument(selected.uri);
+    const document = await vscode.workspace.openTextDocument(selected.uri)
     await vscode.window.showTextDocument(document, {
       preview: false,
       viewColumn: vscode.ViewColumn.Beside,
-    });
+    })
   }
 }
 
@@ -291,10 +281,10 @@ export async function compareRunsCommand(): Promise<void> {
     {
       enableScripts: true,
       retainContextWhenHidden: true,
-    },
-  );
+    }
+  )
 
-  panel.webview.html = generateComparisonHtml();
+  panel.webview.html = generateComparisonHtml()
 }
 
 // ---- 9. showCoverage ----
@@ -302,37 +292,33 @@ export async function showCoverageCommand(): Promise<void> {
   const coverageFiles = await vscode.workspace.findFiles(
     '**/.agentbench/coverage/*.json',
     '**/node_modules/**',
-    10,
-  );
+    10
+  )
 
   if (coverageFiles.length === 0) {
     vscode.window.showInformationMessage(
-      'No coverage data found. Run tests with coverage enabled to generate coverage reports.',
-    );
-    return;
+      'No coverage data found. Run tests with coverage enabled to generate coverage reports.'
+    )
+    return
   }
 
   // Open the most recent coverage file
-  const sorted = coverageFiles.sort((a, b) =>
-    b.fsPath.localeCompare(a.fsPath),
-  );
-  const document = await vscode.workspace.openTextDocument(sorted[0]);
+  const sorted = coverageFiles.sort((a, b) => b.fsPath.localeCompare(a.fsPath))
+  const document = await vscode.workspace.openTextDocument(sorted[0])
   await vscode.window.showTextDocument(document, {
     preview: false,
     viewColumn: vscode.ViewColumn.Beside,
-  });
+  })
 
   // Show summary from the coverage data
   try {
-    const coverageData = JSON.parse(document.getText());
+    const coverageData = JSON.parse(document.getText())
     if (coverageData.coverage !== undefined) {
       const pct =
         typeof coverageData.coverage === 'number'
           ? `${coverageData.coverage}%`
-          : `${coverageData.coverage.percentage || coverageData.coverage}%`;
-      vscode.window.showInformationMessage(
-        `AgentBench Coverage: ${pct}`,
-      );
+          : `${coverageData.coverage.percentage || coverageData.coverage}%`
+      vscode.window.showInformationMessage(`AgentBench Coverage: ${pct}`)
     }
   } catch {
     // Not valid JSON -- just show the file
@@ -341,27 +327,27 @@ export async function showCoverageCommand(): Promise<void> {
 
 // ---- 10. updateSnapshots ----
 export async function updateSnapshotsCommand(): Promise<void> {
-  const projectId = await resolveProjectId();
+  const projectId = await resolveProjectId()
   if (!projectId) {
-    return;
+    return
   }
 
   const confirmed = await vscode.window.showWarningMessage(
     'Update all snapshots? This will overwrite existing snapshots with current output.',
     { modal: true },
-    'Update All',
-  );
+    'Update All'
+  )
 
   if (confirmed !== 'Update All') {
-    return;
+    return
   }
 
   // Run the CLI snapshot update command
-  const terminal = vscode.window.createTerminal('AgentBench Snapshots');
-  terminal.show();
-  terminal.sendText(`agentbench snapshot update --project ${projectId}`);
+  const terminal = vscode.window.createTerminal('AgentBench Snapshots')
+  terminal.show()
+  terminal.sendText(`agentbench snapshot update --project ${projectId}`)
 
-  vscode.window.showInformationMessage('Snapshots updated.');
+  vscode.window.showInformationMessage('Snapshots updated.')
 }
 
 // ---- 11. createSnapshot ----
@@ -369,22 +355,22 @@ export async function createSnapshotCommand(): Promise<void> {
   const name = await vscode.window.showInputBox({
     prompt: 'Enter a name for the new snapshot',
     placeHolder: 'e.g., baseline-v1',
-  });
+  })
 
   if (!name) {
-    return;
+    return
   }
 
-  const projectId = await resolveProjectId();
+  const projectId = await resolveProjectId()
   if (!projectId) {
-    return;
+    return
   }
 
-  const terminal = vscode.window.createTerminal('AgentBench Snapshot');
-  terminal.show();
-  terminal.sendText(`agentbench snapshot create "${name}" --project ${projectId}`);
+  const terminal = vscode.window.createTerminal('AgentBench Snapshot')
+  terminal.show()
+  terminal.sendText(`agentbench snapshot create "${name}" --project ${projectId}`)
 
-  vscode.window.showInformationMessage(`Snapshot "${name}" creation started.`);
+  vscode.window.showInformationMessage(`Snapshot "${name}" creation started.`)
 }
 
 // ---- 12. openDashboard ----
@@ -392,34 +378,34 @@ export async function openDashboardCommand(): Promise<void> {
   // Open the AgentBench Web dashboard
   const url = vscode.workspace
     .getConfiguration('agentbench')
-    .get<string>('dashboardUrl', 'http://localhost:3000');
+    .get<string>('dashboardUrl', 'http://localhost:3000')
 
-  vscode.env.openExternal(vscode.Uri.parse(url));
+  vscode.env.openExternal(vscode.Uri.parse(url))
 }
 
 // ---- 13. init ----
 export async function initCommand(): Promise<void> {
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
   if (!workspaceFolder) {
-    vscode.window.showErrorMessage('Open a workspace folder first.');
-    return;
+    vscode.window.showErrorMessage('Open a workspace folder first.')
+    return
   }
 
   // Check if config already exists
   const configFiles = await vscode.workspace.findFiles(
     'agentbench.config.{ts,js,mjs,json}',
     undefined,
-    1,
-  );
+    1
+  )
 
   if (configFiles.length > 0) {
     const overwrite = await vscode.window.showWarningMessage(
       'An agentbench.config file already exists. Overwrite?',
       'Yes',
-      'No',
-    );
+      'No'
+    )
     if (overwrite !== 'Yes') {
-      return;
+      return
     }
   }
 
@@ -427,45 +413,45 @@ export async function initCommand(): Promise<void> {
     prompt: 'Project name',
     placeHolder: 'my-agent-tests',
     value: workspaceFolder.name,
-  });
+  })
 
   if (!name) {
-    return;
+    return
   }
 
-  const configContent = generateDefaultConfig(name);
-  const configUri = vscode.Uri.joinPath(workspaceFolder.uri, 'agentbench.config.ts');
+  const configContent = generateDefaultConfig(name)
+  const configUri = vscode.Uri.joinPath(workspaceFolder.uri, 'agentbench.config.ts')
 
-  await vscode.workspace.fs.writeFile(configUri, Buffer.from(configContent, 'utf-8'));
+  await vscode.workspace.fs.writeFile(configUri, Buffer.from(configContent, 'utf-8'))
 
   // Create test directory and example test
-  const testsDir = vscode.Uri.joinPath(workspaceFolder.uri, 'tests');
+  const testsDir = vscode.Uri.joinPath(workspaceFolder.uri, 'tests')
   try {
-    await vscode.workspace.fs.createDirectory(testsDir);
+    await vscode.workspace.fs.createDirectory(testsDir)
   } catch {
     // Directory might already exist
   }
 
-  const exampleTestUri = vscode.Uri.joinPath(testsDir, 'example.test.ts');
-  const exampleContent = generateExampleTest();
-  await vscode.workspace.fs.writeFile(exampleTestUri, Buffer.from(exampleContent, 'utf-8'));
+  const exampleTestUri = vscode.Uri.joinPath(testsDir, 'example.test.ts')
+  const exampleContent = generateExampleTest()
+  await vscode.workspace.fs.writeFile(exampleTestUri, Buffer.from(exampleContent, 'utf-8'))
 
   // Open the config file
-  const doc = await vscode.workspace.openTextDocument(configUri);
-  await vscode.window.showTextDocument(doc);
+  const doc = await vscode.workspace.openTextDocument(configUri)
+  await vscode.window.showTextDocument(doc)
 
   vscode.window.showInformationMessage(
-    `AgentBench project "${name}" initialized. Edit agentbench.config.ts to configure your agent.`,
-  );
+    `AgentBench project "${name}" initialized. Edit agentbench.config.ts to configure your agent.`
+  )
 }
 
 // ---- Internal Helpers ----
 
 async function resolveProjectId(): Promise<string | undefined> {
-  const projectId = getProjectId();
+  const projectId = getProjectId()
 
   if (projectId) {
-    return projectId;
+    return projectId
   }
 
   // Prompt user for project ID
@@ -473,64 +459,60 @@ async function resolveProjectId(): Promise<string | undefined> {
     prompt: 'Enter the AgentBench project ID',
     placeHolder: 'e.g., proj_abc123',
     ignoreFocusOut: true,
-  });
+  })
 
   if (input) {
     // Save it to workspace config temporarily
-    const config = vscode.workspace.getConfiguration('agentbench');
-    await config.update('projectId', input, vscode.ConfigurationTarget.Workspace);
-    return input;
+    const config = vscode.workspace.getConfiguration('agentbench')
+    await config.update('projectId', input, vscode.ConfigurationTarget.Workspace)
+    return input
   }
 
-  return undefined;
+  return undefined
 }
 
 function getTestNameAtCursor(editor: vscode.TextEditor): string | undefined {
-  const document = editor.document;
-  const position = editor.selection.active;
-  const line = document.lineAt(position.line).text;
+  const document = editor.document
+  const position = editor.selection.active
+  const line = document.lineAt(position.line).text
 
   // Try to extract test name from the current line
   // Pattern: test('name', ...) or it('name', ...)
-  const testMatch = line.match(/(?:test|it)\s*\(\s*['"`](.+?)['"`]/);
+  const testMatch = line.match(/(?:test|it)\s*\(\s*['"`](.+?)['"`]/)
   if (testMatch) {
-    return testMatch[1];
+    return testMatch[1]
   }
 
   // Pattern: suite('name', ...) or describe('name', ...)
-  const suiteMatch = line.match(/(?:suite|describe)\s*\(\s*['"`](.+?)['"`]/);
+  const suiteMatch = line.match(/(?:suite|describe)\s*\(\s*['"`](.+?)['"`]/)
   if (suiteMatch) {
-    return suiteMatch[1];
+    return suiteMatch[1]
   }
 
   // Pattern: export async function xxxTest()
-  const funcMatch = line.match(
-    /export\s+(?:async\s+)?function\s+(\w*(?:Test|Spec|Suite)\w*)\s*\(/,
-  );
+  const funcMatch = line.match(/export\s+(?:async\s+)?function\s+(\w*(?:Test|Spec|Suite)\w*)\s*\(/)
   if (funcMatch) {
-    return funcMatch[1];
+    return funcMatch[1]
   }
 
   // Scan surrounding lines for a test/suite definition
   for (let i = position.line - 1; i >= 0; i--) {
-    const prevLine = document.lineAt(i).text;
-    const prevMatch = prevLine.match(
-      /(?:test|it|suite|describe)\s*\(\s*['"`](.+?)['"`]/,
-    );
+    const prevLine = document.lineAt(i).text
+    const prevMatch = prevLine.match(/(?:test|it|suite|describe)\s*\(\s*['"`](.+?)['"`]/)
     if (prevMatch) {
-      return prevMatch[1];
+      return prevMatch[1]
     }
   }
 
-  return undefined;
+  return undefined
 }
 
 function handleTestResult(output: TestRunOutput): void {
   // Update status bar
-  updateStatusBar(output.summary);
+  updateStatusBar(output.summary)
 
   // Update diagnostics
-  updateDiagnostics(output);
+  updateDiagnostics(output)
 
   // Add to history
   if (onHistoryAdd) {
@@ -539,7 +521,7 @@ function handleTestResult(output: TestRunOutput): void {
       timestamp: new Date().toISOString(),
       summary: output.summary,
       command: 'agentbench test --json',
-    });
+    })
   }
 
   // Show notification
@@ -547,17 +529,15 @@ function handleTestResult(output: TestRunOutput): void {
     const message =
       output.summary.failed > 0
         ? `${output.summary.failed} test(s) failed, ${output.summary.passed} passed`
-        : `${output.summary.errored} test(s) errored, ${output.summary.passed} passed`;
+        : `${output.summary.errored} test(s) errored, ${output.summary.passed} passed`
 
     vscode.window.showErrorMessage(`AgentBench: ${message}`, 'View Output').then((choice) => {
       if (choice === 'View Output') {
-        showOutput();
+        showOutput()
       }
-    });
+    })
   } else {
-    vscode.window.showInformationMessage(
-      `AgentBench: All ${output.summary.total} test(s) passed!`,
-    );
+    vscode.window.showInformationMessage(`AgentBench: All ${output.summary.total} test(s) passed!`)
   }
 }
 
@@ -591,7 +571,7 @@ const config = {
 }
 
 export default config
-`;
+`
 }
 
 function generateExampleTest(): string {
@@ -639,7 +619,7 @@ export async function exampleGreetingTest() {
     details: { completed, tokens, latency },
   }
 }
-`;
+`
 }
 
 function generateComparisonHtml(): string {
@@ -710,5 +690,5 @@ function generateComparisonHtml(): string {
     </div>
   </div>
 </body>
-</html>`;
+</html>`
 }

@@ -24,11 +24,7 @@ export type WorkflowStatus =
   | 'human_review'
   | 'failed'
 
-export type ValidationResult =
-  | 'pass'
-  | 'needs_revision'
-  | 'needs_human'
-  | 'fail'
+export type ValidationResult = 'pass' | 'needs_revision' | 'needs_human' | 'fail'
 
 export interface WorkflowState {
   /** Unique ID for this workflow execution */
@@ -103,10 +99,7 @@ export function createInitialState(userInput: string): WorkflowState {
 /**
  * Update specific fields in the state and return a new state object.
  */
-export function updateState(
-  state: WorkflowState,
-  updates: Partial<WorkflowState>,
-): WorkflowState {
+export function updateState(state: WorkflowState, updates: Partial<WorkflowState>): WorkflowState {
   const next = { ...state, ...updates }
   if (updates.currentNode && !state.nodeTraversalPath.includes(updates.currentNode)) {
     next.nodeTraversalPath = [...state.nodeTraversalPath, updates.currentNode]

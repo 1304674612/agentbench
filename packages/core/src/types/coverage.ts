@@ -16,12 +16,7 @@ export interface CoverageDimension {
   details?: CoverageDetail[]
 }
 
-export type CoverageDimensionName =
-  | 'prompt'
-  | 'workflow'
-  | 'tool'
-  | 'state'
-  | 'edge'
+export type CoverageDimensionName = 'prompt' | 'workflow' | 'tool' | 'state' | 'edge'
 
 export interface CoverageDetail {
   label: string

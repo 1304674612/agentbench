@@ -9,13 +9,8 @@
  * @packageDocumentation
  */
 
-import {
-  OpenAICompatibleProvider,
-} from '@agentbench/provider-utils'
-import type {
-  ProviderCapabilities,
-  ProviderConfig,
-} from '@agentbench/provider-utils'
+import { OpenAICompatibleProvider } from '@agentbench/provider-utils'
+import type { ProviderCapabilities, ProviderConfig } from '@agentbench/provider-utils'
 
 const GROQ_MODELS = [
   'llama-3.3-70b-versatile',

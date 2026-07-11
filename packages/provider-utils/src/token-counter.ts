@@ -39,11 +39,19 @@ const ROLE_OVERHEAD: Record<string, number> = {
 
 function detectModelFamily(model: string): string {
   const lower = model.toLowerCase()
-  if (lower.includes('gpt') || lower.includes('o1') || lower.includes('o3') || lower.includes('o4') || lower.includes('davinci')) return 'openai'
+  if (
+    lower.includes('gpt') ||
+    lower.includes('o1') ||
+    lower.includes('o3') ||
+    lower.includes('o4') ||
+    lower.includes('davinci')
+  )
+    return 'openai'
   if (lower.includes('claude')) return 'anthropic'
   if (lower.includes('gemini')) return 'gemini'
   if (lower.includes('deepseek')) return 'deepseek'
-  if (lower.includes('mistral') || lower.includes('codestral') || lower.includes('ministral')) return 'mistral'
+  if (lower.includes('mistral') || lower.includes('codestral') || lower.includes('ministral'))
+    return 'mistral'
   if (lower.includes('llama')) return 'llama'
   if (lower.includes('groq')) return 'openai' // Groq serves OpenAI-compatible models
   return 'default'
@@ -81,10 +89,10 @@ const MODEL_ENCODING_MAP: Record<string, string> = {
   'gpt-4-turbo': 'cl100k_base',
   'gpt-4': 'cl100k_base',
   'gpt-3.5-turbo': 'cl100k_base',
-  'o1': 'o200k_base',
+  o1: 'o200k_base',
   'o1-mini': 'o200k_base',
   'o1-pro': 'o200k_base',
-  'o3': 'o200k_base',
+  o3: 'o200k_base',
   'o3-mini': 'o200k_base',
   'o4-mini': 'o200k_base',
 }
@@ -97,7 +105,10 @@ function getEncodingForModel(model: string): string {
     if (model.startsWith(key)) return encoding
   }
   // Default to o200k_base for newer models, cl100k_base for older
-  return model.includes('gpt-4') || model.includes('o1') || model.includes('o3') || model.includes('o4')
+  return model.includes('gpt-4') ||
+    model.includes('o1') ||
+    model.includes('o3') ||
+    model.includes('o4')
     ? 'o200k_base'
     : 'cl100k_base'
 }
@@ -150,7 +161,11 @@ export class TokenCounter {
 
     if (params.text) {
       const tokens = await this._countText(params.text, encoding, family)
-      return { tokens, model: params.model, method: this.tiktokenAvailable ? 'tiktoken' : 'heuristic' }
+      return {
+        tokens,
+        model: params.model,
+        method: this.tiktokenAvailable ? 'tiktoken' : 'heuristic',
+      }
     }
 
     if (params.messages) {
@@ -201,18 +216,20 @@ export class TokenCounter {
     return estimateTokensHeuristic(text, family)
   }
 
-  private async _countText(
-    text: string,
-    _encoding: string,
-    family: string
-  ): Promise<number> {
+  private async _countText(text: string, _encoding: string, family: string): Promise<number> {
     // Try tiktoken if available
     this.tiktokenAvailable = await tryLoadTiktoken()
     if (this.tiktokenAvailable && tiktokenModule) {
       try {
         const mod = tiktokenModule as {
-          encodingForModel?: (model: string) => { encode: (text: string) => { length: number }; free: () => void }
-          getEncoding?: (name: string) => { encode: (text: string) => { length: number }; free: () => void }
+          encodingForModel?: (model: string) => {
+            encode: (text: string) => { length: number }
+            free: () => void
+          }
+          getEncoding?: (name: string) => {
+            encode: (text: string) => { length: number }
+            free: () => void
+          }
         }
         let encoder: { encode: (t: string) => { length: number }; free: () => void } | null = null
         if (mod.encodingForModel) {

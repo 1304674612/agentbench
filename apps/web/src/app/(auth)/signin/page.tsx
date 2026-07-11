@@ -14,9 +14,7 @@ function SignInForm() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(
-    errorParam ? 'Invalid email or password' : null,
-  )
+  const [error, setError] = useState<string | null>(errorParam ? 'Invalid email or password' : null)
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,22 +58,15 @@ function SignInForm() {
               <Shield className="h-4 w-4 text-white" />
             </div>
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Welcome back
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Sign in to your AgentBench account
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Welcome back</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Sign in to your AgentBench account</p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email */}
           <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-foreground mb-1.5"
-            >
+            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
               Email
             </label>
             <div className="relative">
@@ -95,10 +86,7 @@ function SignInForm() {
 
           {/* Password */}
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-foreground mb-1.5"
-            >
+            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1.5">
               Password
             </label>
             <div className="relative">
@@ -129,27 +117,20 @@ function SignInForm() {
             disabled={isLoading}
             className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-background hover:bg-foreground/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : null}
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             Sign in
           </button>
         </form>
 
         {/* OAuth Providers */}
-        {(
-          process.env.NEXT_PUBLIC_AUTH_GITHUB_ID ||
-          process.env.NEXT_PUBLIC_AUTH_GOOGLE_ID
-        ) && (
+        {(process.env.NEXT_PUBLIC_AUTH_GITHUB_ID || process.env.NEXT_PUBLIC_AUTH_GOOGLE_ID) && (
           <>
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
+                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
               </div>
             </div>
 

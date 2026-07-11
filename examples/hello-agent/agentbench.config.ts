@@ -39,11 +39,7 @@ When greeted, respond warmly but briefly.`,
     concurrency: 1,
   },
 
-  testSuites: [
-    './tests/greeting.test.ts',
-    './tests/factual.test.ts',
-    './tests/replay.test.ts',
-  ],
+  testSuites: ['./tests/greeting.test.ts', './tests/factual.test.ts', './tests/replay.test.ts'],
 }
 
 export default config

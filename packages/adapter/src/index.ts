@@ -33,7 +33,15 @@ import { LangGraphAdapter } from '@agentbench/langgraph'
 // Types
 // ============================================================
 
-export type AgentProvider = 'openai' | 'anthropic' | 'gemini' | 'deepseek' | 'langgraph' | 'crewai' | 'llamaindex' | 'custom'
+export type AgentProvider =
+  | 'openai'
+  | 'anthropic'
+  | 'gemini'
+  | 'deepseek'
+  | 'langgraph'
+  | 'crewai'
+  | 'llamaindex'
+  | 'custom'
 
 export interface AdapterConfig {
   name: string
@@ -103,7 +111,7 @@ export class GenericAgentAdapter {
 
       const totalTokens = output.metrics?.totalTokens ?? 0
       const totalCost = output.metrics?.totalCost ?? 0
-      const stepCount = output.metrics?.stepCount ?? (output.trace?.length ?? 0)
+      const stepCount = output.metrics?.stepCount ?? output.trace?.length ?? 0
 
       const result: AdapterRunOutput = {
         ...output,
@@ -129,7 +137,10 @@ export class GenericAgentAdapter {
    */
   toAgentConfig(): AgentConfig {
     return {
-      provider: this.config.provider === 'custom' ? 'openai' : this.config.provider as AgentConfig['provider'],
+      provider:
+        this.config.provider === 'custom'
+          ? 'openai'
+          : (this.config.provider as AgentConfig['provider']),
       model: this.config.name,
       temperature: 0.7,
       maxTokens: 4096,
@@ -247,9 +258,9 @@ export function createCrewAIAdapter(options: {
     run: async () => {
       throw new Error(
         'CrewAI is a Python-native framework. ' +
-        'Use the @agentbench Python SDK (pip install agentbench crewai) to evaluate CrewAI agents, ' +
-        'or wrap your CrewAI agent behind an HTTP API and use createAdapter() with fetch calls. ' +
-        'See https://docs.agentbench.dev/integrations/crewai for details.'
+          'Use the @agentbench Python SDK (pip install agentbench crewai) to evaluate CrewAI agents, ' +
+          'or wrap your CrewAI agent behind an HTTP API and use createAdapter() with fetch calls. ' +
+          'See https://docs.agentbench.dev/integrations/crewai for details.'
       )
     },
   })
@@ -293,9 +304,9 @@ export function createLlamaIndexAdapter(options: {
     run: async () => {
       throw new Error(
         'LlamaIndex is a Python-native framework. ' +
-        'Use the @agentbench Python SDK (pip install agentbench llama-index) to evaluate LlamaIndex agents, ' +
-        'or wrap your LlamaIndex agent behind an HTTP API and use createAdapter() with fetch calls. ' +
-        'See https://docs.agentbench.dev/integrations/llamaindex for details.'
+          'Use the @agentbench Python SDK (pip install agentbench llama-index) to evaluate LlamaIndex agents, ' +
+          'or wrap your LlamaIndex agent behind an HTTP API and use createAdapter() with fetch calls. ' +
+          'See https://docs.agentbench.dev/integrations/llamaindex for details.'
       )
     },
   })
@@ -318,7 +329,11 @@ export function getAdapter(name: string): GenericAgentAdapter | undefined {
   return adapterRegistry.get(name)
 }
 
-export function listAdapters(): Array<{ name: string; provider: AgentProvider; description?: string }> {
+export function listAdapters(): Array<{
+  name: string
+  provider: AgentProvider
+  description?: string
+}> {
   return Array.from(adapterRegistry.values()).map((a) => ({
     name: a.config.name,
     provider: a.config.provider,

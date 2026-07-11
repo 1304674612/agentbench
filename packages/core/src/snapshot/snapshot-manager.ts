@@ -136,7 +136,7 @@ export function captureSnapshotFromRun(
   name: string,
   config: RunConfig,
   trace: ExecutionTrace,
-  options?: { description?: string; tags?: string[]; type?: 'manual' | 'auto' | 'ci' },
+  options?: { description?: string; tags?: string[]; type?: 'manual' | 'auto' | 'ci' }
 ): SnapshotCreateInput {
   return {
     projectId,
@@ -220,10 +220,7 @@ export interface SnapshotChange {
 /**
  * Compare two snapshots and return the differences.
  */
-export function compareSnapshots(
-  snapshotA: SnapshotData,
-  snapshotB: SnapshotData,
-): SnapshotDiff {
+export function compareSnapshots(snapshotA: SnapshotData, snapshotB: SnapshotData): SnapshotDiff {
   const changes: SnapshotChange[] = []
 
   // Compare prompt
@@ -351,9 +348,7 @@ export function compareSnapshots(
     identical: changes.length === 0,
     changes,
     summary:
-      changes.length === 0
-        ? 'Snapshots are identical'
-        : `${changes.length} change(s) detected`,
+      changes.length === 0 ? 'Snapshots are identical' : `${changes.length} change(s) detected`,
   }
 }
 

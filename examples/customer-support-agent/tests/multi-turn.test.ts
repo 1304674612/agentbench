@@ -40,19 +40,13 @@ export async function multiTurnTest() {
   })
 
   // Assertion 1: Agent completed the multi-turn interaction
-  const completed = await expect(result)
-    .status().toBeCompleted()
-    .run()
+  const completed = await expect(result).status().toBeCompleted().run()
 
   // Assertion 2: Agent used order lookup tool in the conversation
-  const checkedOrder = await expect(result)
-    .tool('check_order_status').toBeCalled()
-    .run()
+  const checkedOrder = await expect(result).tool('check_order_status').toBeCalled().run()
 
   // Assertion 3: Agent used knowledge base to look up refund policy
-  const checkedPolicy = await expect(result)
-    .tool('search_knowledge_base').toBeCalled()
-    .run()
+  const checkedPolicy = await expect(result).tool('search_knowledge_base').toBeCalled().run()
 
   // Assertion 4: Output should contain resolution-related language
   const resolution = await expect(result)
@@ -65,9 +59,7 @@ export async function multiTurnTest() {
     .run()
 
   // Assertion 5: Agent handled multi-turn without excessive token bloat
-  const tokensReasonable = await expect(result)
-    .tokens().toBeLessThan(3000)
-    .run()
+  const tokensReasonable = await expect(result).tokens().toBeLessThan(3000).run()
 
   return {
     completed: completed.allPassed,

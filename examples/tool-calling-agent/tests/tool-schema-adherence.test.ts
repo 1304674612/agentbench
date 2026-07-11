@@ -18,13 +18,9 @@ export async function calculatorSchemaTest() {
     apiKey: API_KEY,
   })
 
-  const usedCalculator = await expect(result)
-    .tool('calculator').toBeCalled()
-    .run()
+  const usedCalculator = await expect(result).tool('calculator').toBeCalled().run()
 
-  const hasAnswer = await expect(result)
-    .output().toMatchRegex(/\d+/)
-    .run()
+  const hasAnswer = await expect(result).output().toMatchRegex(/\d+/).run()
 
   return {
     usedCalculator: usedCalculator.allPassed,
@@ -36,16 +32,15 @@ export async function calculatorSchemaTest() {
 /** Test Case 2: Weather should receive city string. */
 export async function weatherSchemaTest() {
   const result = await runToolCallingAgent({
-    request: "Is it raining in London right now?",
+    request: 'Is it raining in London right now?',
     apiKey: API_KEY,
   })
 
-  const usedWeather = await expect(result)
-    .tool('get_weather').toBeCalled()
-    .run()
+  const usedWeather = await expect(result).tool('get_weather').toBeCalled().run()
 
   const mentionsResult = await expect(result)
-    .output().toMatchRegex(/London|rain|weather/i)
+    .output()
+    .toMatchRegex(/London|rain|weather/i)
     .run()
 
   return {
@@ -62,12 +57,11 @@ export async function translateSchemaTest() {
     apiKey: API_KEY,
   })
 
-  const usedTranslate = await expect(result)
-    .tool('translate_text').toBeCalled()
-    .run()
+  const usedTranslate = await expect(result).tool('translate_text').toBeCalled().run()
 
   const mentionsTranslation = await expect(result)
-    .output().toMatchRegex(/german|morgen|guten/i)
+    .output()
+    .toMatchRegex(/german|morgen|guten/i)
     .run()
 
   return {

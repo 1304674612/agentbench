@@ -34,11 +34,22 @@ export interface AnthropicInterceptContext {
 }
 
 const ANTHROPIC_MODELS = [
-  'claude-opus-4-20250514', 'claude-sonnet-4-20250514', 'claude-haiku-4-5-20251001',
-  'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022',
-  'claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307',
-  'claude-opus-4', 'claude-sonnet-4', 'claude-haiku-4-5',
-  'claude-3-5-sonnet', 'claude-3-5-haiku', 'claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku',
+  'claude-opus-4-20250514',
+  'claude-sonnet-4-20250514',
+  'claude-haiku-4-5-20251001',
+  'claude-3-5-sonnet-20241022',
+  'claude-3-5-haiku-20241022',
+  'claude-3-opus-20240229',
+  'claude-3-sonnet-20240229',
+  'claude-3-haiku-20240307',
+  'claude-opus-4',
+  'claude-sonnet-4',
+  'claude-haiku-4-5',
+  'claude-3-5-sonnet',
+  'claude-3-5-haiku',
+  'claude-3-opus',
+  'claude-3-sonnet',
+  'claude-3-haiku',
 ]
 
 export class AgentBenchAnthropic {
@@ -61,10 +72,18 @@ export class AgentBenchAnthropic {
   private _context: AnthropicInterceptContext = {}
 
   constructor(config: AgentBenchAnthropicConfig) {
-    this.config = { tracing: true, timeout: 60000, maxRetries: 2, anthropicVersion: '2023-06-01', ...config }
+    this.config = {
+      tracing: true,
+      timeout: 60000,
+      maxRetries: 2,
+      anthropicVersion: '2023-06-01',
+      ...config,
+    }
   }
 
-  setContext(ctx: AnthropicInterceptContext): void { this._context = ctx }
+  setContext(ctx: AnthropicInterceptContext): void {
+    this._context = ctx
+  }
 
   async createMessage(params: {
     model: string
@@ -92,7 +111,8 @@ export class AgentBenchAnthropic {
       const inputText = params.messages.map((m) => m.content).join('\n') + (params.system ?? '')
       const outputText = response.content?.map((b) => b.text).join('\n') ?? ''
       const promptTokens = response.usage?.input_tokens ?? tokenCounter.estimateTokens(inputText)
-      const completionTokens = response.usage?.output_tokens ?? tokenCounter.estimateTokens(outputText)
+      const completionTokens =
+        response.usage?.output_tokens ?? tokenCounter.estimateTokens(outputText)
       const totalTokens = promptTokens + completionTokens
       const cost = costCalculator.calculate(params.model, promptTokens, completionTokens)
 
@@ -172,14 +192,15 @@ export class AgentBenchAnthropic {
           const newText = assembled.fullText.slice(lastFullText.length)
           lastFullText = assembled.fullText
 
-          const toolCallsInfo = assembled.toolCalls.length > 0
-            ? assembled.toolCalls.map((tc, idx) => ({
-                index: idx,
-                id: tc.id,
-                name: tc.name,
-                arguments: JSON.stringify(tc.arguments),
-              }))
-            : undefined
+          const toolCallsInfo =
+            assembled.toolCalls.length > 0
+              ? assembled.toolCalls.map((tc, idx) => ({
+                  index: idx,
+                  id: tc.id,
+                  name: tc.name,
+                  arguments: JSON.stringify(tc.arguments),
+                }))
+              : undefined
 
           yield {
             content: newText,
@@ -257,10 +278,17 @@ export class AgentBenchAnthropic {
     const endTime = Date.now()
     this._context.onStep?.({
       id: `step-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      sequence: 0, type: 'error',
-      startedAt: new Date(startTime), endedAt: new Date(endTime), duration: endTime - startTime,
+      sequence: 0,
+      type: 'error',
+      startedAt: new Date(startTime),
+      endedAt: new Date(endTime),
+      duration: endTime - startTime,
       status: 'error',
-      error: { message: err instanceof Error ? err.message : String(err), type: 'api_error', retryable: true },
+      error: {
+        message: err instanceof Error ? err.message : String(err),
+        type: 'api_error',
+        retryable: true,
+      },
     } as TraceStep)
   }
 
@@ -281,10 +309,14 @@ export class AgentBenchAnthropic {
       })
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}))
-        throw new Error(`Anthropic API error ${res.status}: ${(errBody as { error?: { message?: string } }).error?.message ?? res.statusText}`)
+        throw new Error(
+          `Anthropic API error ${res.status}: ${(errBody as { error?: { message?: string } }).error?.message ?? res.statusText}`
+        )
       }
       return (await res.json()) as AnthropicAPIResponse
-    } finally { clearTimeout(timeoutId) }
+    } finally {
+      clearTimeout(timeoutId)
+    }
   }
 
   // ── AgentBenchProvider Lifecycle ─────────────────────────────────────────
@@ -294,14 +326,22 @@ export class AgentBenchAnthropic {
     if (config.baseUrl) this.config.baseURL = config.baseUrl
     if (config.timeout) this.config.timeout = config.timeout
     if (config.maxRetries !== undefined) this.config.maxRetries = config.maxRetries
-    if (config.extra?.anthropicVersion) this.config.anthropicVersion = config.extra.anthropicVersion as string
+    if (config.extra?.anthropicVersion)
+      this.config.anthropicVersion = config.extra.anthropicVersion as string
   }
 
   async countTokens(params: TokenCountParams): Promise<TokenCountResult> {
-    const text = typeof params.text === 'string'
-      ? params.text
-      : params.messages?.map((m: ChatMessage) => typeof m.content === 'string' ? m.content : '').join('\n') ?? ''
-    return { tokens: tokenCounter.estimateTokens(text, 'anthropic'), model: params.model, method: 'heuristic' }
+    const text =
+      typeof params.text === 'string'
+        ? params.text
+        : (params.messages
+            ?.map((m: ChatMessage) => (typeof m.content === 'string' ? m.content : ''))
+            .join('\n') ?? '')
+    return {
+      tokens: tokenCounter.estimateTokens(text, 'anthropic'),
+      model: params.model,
+      method: 'heuristic',
+    }
   }
 
   calculateCost(usage: Usage, model: string): CostBreakdown {
@@ -309,8 +349,11 @@ export class AgentBenchAnthropic {
     const promptCost = (usage.promptTokens / 1_000_000) * pricing.input
     const completionCost = (usage.completionTokens / 1_000_000) * pricing.output
     return {
-      promptCost, completionCost, totalCost: promptCost + completionCost,
-      currency: 'USD', model,
+      promptCost,
+      completionCost,
+      totalCost: promptCost + completionCost,
+      currency: 'USD',
+      model,
       rates: { promptPer1K: pricing.input / 1000, completionPer1K: pricing.output / 1000 },
     }
   }
@@ -332,9 +375,17 @@ export class AgentBenchAnthropic {
         }),
         signal: AbortSignal.timeout(10000),
       })
-      return { healthy: res.ok || res.status === 400, latency: Date.now() - start, message: res.ok ? 'Connected' : `HTTP ${res.status}` }
+      return {
+        healthy: res.ok || res.status === 400,
+        latency: Date.now() - start,
+        message: res.ok ? 'Connected' : `HTTP ${res.status}`,
+      }
     } catch (err) {
-      return { healthy: false, latency: Date.now() - start, message: err instanceof Error ? err.message : 'Unknown error' }
+      return {
+        healthy: false,
+        latency: Date.now() - start,
+        message: err instanceof Error ? err.message : 'Unknown error',
+      }
     }
   }
 
@@ -399,11 +450,15 @@ export class AgentBenchAnthropic {
 }
 
 export interface AnthropicMessageResult {
-  id: string; model: string; content: string
+  id: string
+  model: string
+  content: string
   content_blocks: Array<{ type: string; text: string }>
   stop_reason: string
   usage: { input_tokens: number; output_tokens: number }
-  cost: number; duration: number; trace: TraceStep
+  cost: number
+  duration: number
+  trace: TraceStep
 }
 
 export interface AnthropicStreamChunk {
@@ -420,7 +475,8 @@ export interface AnthropicStreamChunk {
 }
 
 interface AnthropicAPIResponse {
-  id: string; model: string
+  id: string
+  model: string
   content?: Array<{ type: string; text: string; thinking?: string }>
   stop_reason?: string
   usage?: { input_tokens: number; output_tokens: number }

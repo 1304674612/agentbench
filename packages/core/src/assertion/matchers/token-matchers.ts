@@ -13,10 +13,7 @@ export interface TokenMetrics {
 /**
  * Assert total tokens are less than a threshold.
  */
-export function tokensToBeLessThan(
-  metrics: TokenMetrics,
-  threshold: number,
-): AssertionResult {
+export function tokensToBeLessThan(metrics: TokenMetrics, threshold: number): AssertionResult {
   const actual = metrics.totalTokens
   const passed = actual < threshold
   return {
@@ -31,10 +28,7 @@ export function tokensToBeLessThan(
 /**
  * Assert total tokens are greater than a threshold.
  */
-export function tokensToBeGreaterThan(
-  metrics: TokenMetrics,
-  threshold: number,
-): AssertionResult {
+export function tokensToBeGreaterThan(metrics: TokenMetrics, threshold: number): AssertionResult {
   const actual = metrics.totalTokens
   const passed = actual > threshold
   return {
@@ -52,7 +46,7 @@ export function tokensToBeGreaterThan(
 export function tokensToBeBetween(
   metrics: TokenMetrics,
   min: number,
-  max: number,
+  max: number
 ): AssertionResult {
   const actual = metrics.totalTokens
   const passed = actual >= min && actual <= max
@@ -70,7 +64,7 @@ export function tokensToBeBetween(
  */
 export function promptTokensToBeLessThan(
   metrics: TokenMetrics,
-  threshold: number,
+  threshold: number
 ): AssertionResult {
   const actual = metrics.promptTokens
   const passed = actual < threshold

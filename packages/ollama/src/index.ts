@@ -9,9 +9,7 @@
  * @packageDocumentation
  */
 
-import {
-  OpenAICompatibleProvider,
-} from '@agentbench/provider-utils'
+import { OpenAICompatibleProvider } from '@agentbench/provider-utils'
 import type {
   ProviderCapabilities,
   ProviderConfig,
@@ -149,8 +147,8 @@ export class OllamaProvider extends OpenAICompatibleProvider {
     const message = choices[0]?.message as Record<string, unknown> | undefined
 
     return {
-      id: r.id as string ?? `ollama-${Date.now()}`,
-      model: r.model as string ?? 'llama3.2',
+      id: (r.id as string) ?? `ollama-${Date.now()}`,
+      model: (r.model as string) ?? 'llama3.2',
       choices: choices.map((c, i) => ({
         index: i,
         message: {
@@ -158,22 +156,25 @@ export class OllamaProvider extends OpenAICompatibleProvider {
           content: (message?.content as string) ?? null,
           ...(message?.tool_calls ? { tool_calls: message.tool_calls as ToolCall[] } : {}),
         },
-        finishReason: (c.finish_reason as ChatCompletionResult['choices'][0]['finishReason']) ?? null,
+        finishReason:
+          (c.finish_reason as ChatCompletionResult['choices'][0]['finishReason']) ?? null,
       })),
       usage: {
         promptTokens: usage?.prompt_tokens ?? 0,
         completionTokens: usage?.completion_tokens ?? 0,
         totalTokens: usage?.total_tokens ?? 0,
         // Ollama provides eval_count and prompt_eval_count
-        breakdown: usage ? {
-          promptEvalCount: usage.prompt_eval_count ?? usage.prompt_tokens ?? 0,
-          evalCount: usage.eval_count ?? usage.completion_tokens ?? 0,
-          evalDuration: usage.eval_duration ?? 0,
-          loadDuration: usage.load_duration ?? 0,
-          totalDuration: usage.total_duration ?? 0,
-        } : undefined,
+        breakdown: usage
+          ? {
+              promptEvalCount: usage.prompt_eval_count ?? usage.prompt_tokens ?? 0,
+              evalCount: usage.eval_count ?? usage.completion_tokens ?? 0,
+              evalDuration: usage.eval_duration ?? 0,
+              loadDuration: usage.load_duration ?? 0,
+              totalDuration: usage.total_duration ?? 0,
+            }
+          : undefined,
       },
-      created: r.created as number ?? Math.floor(Date.now() / 1000),
+      created: (r.created as number) ?? Math.floor(Date.now() / 1000),
       provider: 'ollama',
     }
   }
@@ -197,7 +198,7 @@ export class OllamaProvider extends OpenAICompatibleProvider {
         signal: AbortSignal.timeout(5000),
       })
       if (res.ok) {
-        const data = await res.json().catch(() => null) as { data?: Array<{ id: string }> } | null
+        const data = (await res.json().catch(() => null)) as { data?: Array<{ id: string }> } | null
         const models = data?.data?.map((m) => m.id) ?? []
         // Update supported models dynamically
         if (models.length > 0) {
@@ -231,7 +232,9 @@ export class OllamaProvider extends OpenAICompatibleProvider {
       signal: AbortSignal.timeout(10000),
     })
     if (!res.ok) return []
-    const data = await res.json() as { models?: Array<{ name: string; size: number; modified_at: string }> }
+    const data = (await res.json()) as {
+      models?: Array<{ name: string; size: number; modified_at: string }>
+    }
     return (data.models ?? []).map((m) => ({
       id: m.name,
       size: m.size,

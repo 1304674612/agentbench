@@ -36,7 +36,7 @@ export interface JudgeContext {
 export function buildJudgePrompt(
   dimension: JudgeDimension,
   context: JudgeContext,
-  options?: LLMJudgeOptions,
+  options?: LLMJudgeOptions
 ): { systemPrompt: string; userPrompt: string } {
   const prompt = getJudgePrompt(dimension)
 
@@ -49,7 +49,7 @@ export function buildJudgePrompt(
       expected: context.expected,
       tools: context.tools,
       tool_calls: context.toolCalls,
-    },
+    }
   )
 
   return { systemPrompt, userPrompt }
@@ -58,10 +58,7 @@ export function buildJudgePrompt(
 /**
  * Parse and validate the LLM judge's JSON response.
  */
-export function parseJudgeResponse(
-  rawResponse: string,
-  dimension: JudgeDimension,
-): JudgeScore {
+export function parseJudgeResponse(rawResponse: string, dimension: JudgeDimension): JudgeScore {
   // Try to extract JSON from the response
   let parsed: { score?: number; reasoning?: string; confidence?: number } = {}
 
@@ -114,7 +111,7 @@ export async function runLLMJudge(
   context: JudgeContext,
   config: LLMJudgeConfig,
   callLLM: (systemPrompt: string, userPrompt: string, model: string) => Promise<string>,
-  options?: LLMJudgeOptions,
+  options?: LLMJudgeOptions
 ): Promise<JudgeScore> {
   const { systemPrompt, userPrompt } = buildJudgePrompt(dimension, context, options)
 
@@ -144,10 +141,10 @@ export async function runMultiDimensionJudge(
   context: JudgeContext,
   config: LLMJudgeConfig,
   callLLM: (systemPrompt: string, userPrompt: string, model: string) => Promise<string>,
-  options?: LLMJudgeOptions,
+  options?: LLMJudgeOptions
 ): Promise<JudgeScore[]> {
   const results = await Promise.all(
-    dimensions.map((dim) => runLLMJudge(dim, context, config, callLLM, options)),
+    dimensions.map((dim) => runLLMJudge(dim, context, config, callLLM, options))
   )
   return results
 }
@@ -158,7 +155,7 @@ export async function runMultiDimensionJudge(
 export function aggregateScores(
   scores: JudgeScore[],
   strategy: 'average' | 'weighted' | 'min' | 'max' = 'average',
-  weights?: Partial<Record<JudgeDimension, number>>,
+  weights?: Partial<Record<JudgeDimension, number>>
 ): { overallScore: number; maxScore: number; scores: JudgeScore[] } {
   if (scores.length === 0) {
     return { overallScore: 0, maxScore: 10, scores: [] }

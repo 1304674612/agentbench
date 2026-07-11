@@ -9,20 +9,27 @@ const createCaseSchema = z.object({
   input: z.record(z.unknown()).optional().default({}),
   options: z.record(z.unknown()).optional().default({}),
   tags: z.array(z.string()).optional().default([]),
-  assertions: z.array(z.object({
-    type: z.string(),
-    params: z.record(z.unknown()).optional().default({}),
-  })).optional().default([]),
-  evaluators: z.array(z.object({
-    type: z.enum(['RULE_BASED', 'LLM_JUDGE', 'HYBRID']).optional().default('RULE_BASED'),
-    config: z.record(z.unknown()).optional().default({}),
-  })).optional().default([]),
+  assertions: z
+    .array(
+      z.object({
+        type: z.string(),
+        params: z.record(z.unknown()).optional().default({}),
+      })
+    )
+    .optional()
+    .default([]),
+  evaluators: z
+    .array(
+      z.object({
+        type: z.enum(['RULE_BASED', 'LLM_JUDGE', 'HYBRID']).optional().default('RULE_BASED'),
+        config: z.record(z.unknown()).optional().default({}),
+      })
+    )
+    .optional()
+    .default([]),
 })
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ suiteId: string }> },
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ suiteId: string }> }) {
   try {
     const { suiteId } = await params
     const { searchParams } = new URL(req.url)
@@ -51,16 +58,16 @@ export async function GET(
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ suiteId: string }> },
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ suiteId: string }> }) {
   try {
     const { suiteId } = await params
     const body = await req.json()
     const parsed = createCaseSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsed.error.flatten() },
+        { status: 400 }
+      )
     }
 
     const { assertions, evaluators, ...caseData } = parsed.data

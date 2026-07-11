@@ -13,7 +13,10 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -22,8 +25,19 @@
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": { "@agentbench/core": "workspace:*" },
-  "devDependencies": { "@agentbench/typescript-config": "workspace:*", "tsup": "^8.0.0", "typescript": "^5.7.0" },
-  "keywords": ["agentbench", "mcp", "model-context-protocol", "tracing"],
+  "peerDependencies": {
+    "@agentbench/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@agentbench/typescript-config": "workspace:*",
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0"
+  },
+  "keywords": [
+    "agentbench",
+    "mcp",
+    "model-context-protocol",
+    "tracing"
+  ],
   "license": "Apache-2.0"
 }

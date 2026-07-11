@@ -25,7 +25,10 @@ function makeVariantConfig(overrides?: Partial<VariantConfig>): VariantConfig {
   }
 }
 
-function makeRunResult(metrics?: Partial<RunResult['metrics']>, scores?: RunResult['scores']): RunResult {
+function makeRunResult(
+  metrics?: Partial<RunResult['metrics']>,
+  scores?: RunResult['scores']
+): RunResult {
   return {
     id: 'run_1',
     config: {
@@ -61,9 +64,7 @@ function makeRunResult(metrics?: Partial<RunResult['metrics']>, scores?: RunResu
       stepCount: metrics?.stepCount ?? 4,
       llmCallCount: metrics?.llmCallCount ?? 2,
     },
-    scores: scores ?? [
-      { evaluator: 'correctness', score: 8, maxScore: 10 },
-    ],
+    scores: scores ?? [{ evaluator: 'correctness', score: 8, maxScore: 10 }],
     assertionResults: [],
     startedAt: new Date(),
     endedAt: new Date(),
@@ -106,7 +107,12 @@ describe('Experiment Engine', () => {
 
     it('accepts custom metrics', () => {
       const customMetrics: ExperimentMetric[] = [
-        { name: 'accuracy', type: 'score', evaluator: 'correctness', direction: 'higher_is_better' },
+        {
+          name: 'accuracy',
+          type: 'score',
+          evaluator: 'correctness',
+          direction: 'higher_is_better',
+        },
         { name: 'speed', type: 'latency', direction: 'lower_is_better' },
       ]
 
@@ -219,9 +225,7 @@ describe('Experiment Engine', () => {
     ]
 
     it('extracts score metric from run scores', () => {
-      const run = makeRunResult(undefined, [
-        { evaluator: 'correctness', score: 8.5, maxScore: 10 },
-      ])
+      const run = makeRunResult(undefined, [{ evaluator: 'correctness', score: 8.5, maxScore: 10 }])
 
       const values = extractMetrics(run, metrics)
 
@@ -335,7 +339,7 @@ describe('Experiment Engine', () => {
       const result = runBootstrap(
         [8, 9, 8, 9, 8, 9, 8, 9, 8, 9],
         [6, 7, 6, 7, 6, 7, 6, 7, 6, 7],
-        1000,
+        1000
       )
 
       expect(result.meanDiff).toBeGreaterThan(0)
@@ -405,11 +409,15 @@ describe('Experiment Engine', () => {
       const runs: ExperimentRunInput[] = [
         ...Array.from({ length: 5 }, (_, i) => ({
           variant: { name: 'A', config: config.variants[0].config },
-          runResult: makeRunResult(undefined, [{ evaluator: 'correctness', score: 8 + i * 0.2, maxScore: 10 }]),
+          runResult: makeRunResult(undefined, [
+            { evaluator: 'correctness', score: 8 + i * 0.2, maxScore: 10 },
+          ]),
         })),
         ...Array.from({ length: 5 }, (_, i) => ({
           variant: { name: 'B', config: config.variants[1].config },
-          runResult: makeRunResult(undefined, [{ evaluator: 'correctness', score: 7 + i * 0.1, maxScore: 10 }]),
+          runResult: makeRunResult(undefined, [
+            { evaluator: 'correctness', score: 7 + i * 0.1, maxScore: 10 },
+          ]),
         })),
       ]
 
@@ -439,11 +447,15 @@ describe('Experiment Engine', () => {
       const runs: ExperimentRunInput[] = [
         ...Array.from({ length: 5 }, () => ({
           variant: { name: 'A', config: config.variants[0].config },
-          runResult: makeRunResult(undefined, [{ evaluator: 'correctness', score: 8.0, maxScore: 10 }]),
+          runResult: makeRunResult(undefined, [
+            { evaluator: 'correctness', score: 8.0, maxScore: 10 },
+          ]),
         })),
         ...Array.from({ length: 5 }, () => ({
           variant: { name: 'B', config: config.variants[1].config },
-          runResult: makeRunResult(undefined, [{ evaluator: 'correctness', score: 8.0, maxScore: 10 }]),
+          runResult: makeRunResult(undefined, [
+            { evaluator: 'correctness', score: 8.0, maxScore: 10 },
+          ]),
         })),
       ]
 

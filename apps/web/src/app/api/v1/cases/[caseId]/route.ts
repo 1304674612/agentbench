@@ -13,10 +13,7 @@ const updateCaseSchema = z.object({
   sortOrder: z.number().int().optional(),
 })
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ caseId: string }> },
-) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ caseId: string }> }) {
   try {
     const { caseId } = await params
     const testCase = await db.testCase.findUnique({
@@ -39,16 +36,16 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ caseId: string }> },
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ caseId: string }> }) {
   try {
     const { caseId } = await params
     const body = await req.json()
     const parsed = updateCaseSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsed.error.flatten() },
+        { status: 400 }
+      )
     }
 
     const testCase = await db.testCase.update({
@@ -69,7 +66,7 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: Promise<{ caseId: string }> },
+  { params }: { params: Promise<{ caseId: string }> }
 ) {
   try {
     const { caseId } = await params

@@ -35,12 +35,14 @@ export async function validateApiKey(apiKey: string): Promise<AuthContext | null
   if (record.expiresAt && record.expiresAt < new Date()) return null
 
   // Update last used timestamp (fire and forget)
-  db.apiKey.update({
-    where: { id: record.id },
-    data: { lastUsedAt: new Date() },
-  }).catch((error: unknown) => {
-    console.error('[AUTH] Failed to update API key lastUsedAt:', error)
-  })
+  db.apiKey
+    .update({
+      where: { id: record.id },
+      data: { lastUsedAt: new Date() },
+    })
+    .catch((error: unknown) => {
+      console.error('[AUTH] Failed to update API key lastUsedAt:', error)
+    })
 
   const scopeSet = new Set(record.scopes)
   const scopes: Array<'read' | 'write' | 'admin'> = []

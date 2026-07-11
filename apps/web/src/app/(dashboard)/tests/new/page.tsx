@@ -62,10 +62,7 @@ export default function NewTestSuitePage() {
   }, [])
 
   function addTestCase() {
-    setCases((prev) => [
-      ...prev,
-      { id: generateId(), name: '', input: '', expected: '' },
-    ])
+    setCases((prev) => [...prev, { id: generateId(), name: '', input: '', expected: '' }])
   }
 
   function removeTestCase(id: string) {
@@ -73,9 +70,7 @@ export default function NewTestSuitePage() {
   }
 
   function updateTestCase(id: string, field: keyof TestCaseRow, value: string) {
-    setCases((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, [field]: value } : c)),
-    )
+    setCases((prev) => prev.map((c) => (c.id === id ? { ...c, [field]: value } : c)))
   }
 
   function validate(): boolean {
@@ -155,7 +150,9 @@ export default function NewTestSuitePage() {
       for (const tc of validCases) {
         let inputJson: Record<string, unknown> = {}
         if (tc.input.trim()) {
-          try { inputJson = JSON.parse(tc.input) } catch {
+          try {
+            inputJson = JSON.parse(tc.input)
+          } catch {
             inputJson = { input: tc.input }
           }
         }
@@ -235,9 +232,7 @@ export default function NewTestSuitePage() {
               placeholder="e.g. Customer Support Accuracy"
               className={`w-full rounded-lg border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors ${fieldErrors.name ? 'border-red-400' : 'border-border'}`}
             />
-            {fieldErrors.name && (
-              <p className="text-red-400 text-xs mt-1">{fieldErrors.name}</p>
-            )}
+            {fieldErrors.name && <p className="text-red-400 text-xs mt-1">{fieldErrors.name}</p>}
           </div>
 
           {/* Description */}

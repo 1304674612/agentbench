@@ -18,12 +18,11 @@ export async function invalidEmailTest() {
     apiKey: API_KEY,
   })
 
-  const usedEmail = await expect(result)
-    .tool('send_email').toBeCalled()
-    .run()
+  const usedEmail = await expect(result).tool('send_email').toBeCalled().run()
 
   const handledError = await expect(result)
-    .output().toMatchRegex(/invalid|error|fail|not valid/i)
+    .output()
+    .toMatchRegex(/invalid|error|fail|not valid/i)
     .run()
 
   return {
@@ -40,12 +39,11 @@ export async function missingFileTest() {
     apiKey: API_KEY,
   })
 
-  const usedFileRead = await expect(result)
-    .tool('read_file').toBeCalled()
-    .run()
+  const usedFileRead = await expect(result).tool('read_file').toBeCalled().run()
 
   const handled = await expect(result)
-    .output().toMatchRegex(/not found|error|missing|doesn't exist|no/i)
+    .output()
+    .toMatchRegex(/not found|error|missing|doesn't exist|no/i)
     .run()
 
   return {
@@ -63,7 +61,8 @@ export async function unknownCapabilityTest() {
   })
 
   const handled = await expect(result)
-    .output().toMatchRegex(/cannot|can't|not able|don't have|unable|sorry/i)
+    .output()
+    .toMatchRegex(/cannot|can't|not able|don't have|unable|sorry/i)
     .run()
 
   return {

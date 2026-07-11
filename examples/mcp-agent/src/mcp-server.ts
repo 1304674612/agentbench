@@ -40,13 +40,47 @@ const PREDEFINED_SERVERS: McpServer[] = [
     version: '1.0.0',
     status: 'ready',
     tools: [
-      { name: 'read_file', description: 'Read a file from the filesystem', inputSchema: { type: 'object', properties: { path: { type: 'string' } }, required: ['path'] } },
-      { name: 'write_file', description: 'Write a file to the filesystem', inputSchema: { type: 'object', properties: { path: { type: 'string' }, content: { type: 'string' } }, required: ['path', 'content'] } },
-      { name: 'list_directory', description: 'List contents of a directory', inputSchema: { type: 'object', properties: { path: { type: 'string' } }, required: ['path'] } },
+      {
+        name: 'read_file',
+        description: 'Read a file from the filesystem',
+        inputSchema: {
+          type: 'object',
+          properties: { path: { type: 'string' } },
+          required: ['path'],
+        },
+      },
+      {
+        name: 'write_file',
+        description: 'Write a file to the filesystem',
+        inputSchema: {
+          type: 'object',
+          properties: { path: { type: 'string' }, content: { type: 'string' } },
+          required: ['path', 'content'],
+        },
+      },
+      {
+        name: 'list_directory',
+        description: 'List contents of a directory',
+        inputSchema: {
+          type: 'object',
+          properties: { path: { type: 'string' } },
+          required: ['path'],
+        },
+      },
     ],
     resources: [
-      { uri: 'file:///workspace/readme.md', name: 'README', description: 'Project readme', mimeType: 'text/markdown' },
-      { uri: 'file:///workspace/config.json', name: 'Config', description: 'Project configuration', mimeType: 'application/json' },
+      {
+        uri: 'file:///workspace/readme.md',
+        name: 'README',
+        description: 'Project readme',
+        mimeType: 'text/markdown',
+      },
+      {
+        uri: 'file:///workspace/config.json',
+        name: 'Config',
+        description: 'Project configuration',
+        mimeType: 'application/json',
+      },
     ],
   },
   {
@@ -55,12 +89,30 @@ const PREDEFINED_SERVERS: McpServer[] = [
     version: '2.1.0',
     status: 'ready',
     tools: [
-      { name: 'query', description: 'Execute a SQL query', inputSchema: { type: 'object', properties: { sql: { type: 'string' } }, required: ['sql'] } },
-      { name: 'list_tables', description: 'List all database tables', inputSchema: { type: 'object', properties: {} } },
+      {
+        name: 'query',
+        description: 'Execute a SQL query',
+        inputSchema: { type: 'object', properties: { sql: { type: 'string' } }, required: ['sql'] },
+      },
+      {
+        name: 'list_tables',
+        description: 'List all database tables',
+        inputSchema: { type: 'object', properties: {} },
+      },
     ],
     resources: [
-      { uri: 'db://schema/users', name: 'Users Schema', description: 'Users table schema', mimeType: 'application/json' },
-      { uri: 'db://schema/products', name: 'Products Schema', description: 'Products table schema', mimeType: 'application/json' },
+      {
+        uri: 'db://schema/users',
+        name: 'Users Schema',
+        description: 'Users table schema',
+        mimeType: 'application/json',
+      },
+      {
+        uri: 'db://schema/products',
+        name: 'Products Schema',
+        description: 'Products table schema',
+        mimeType: 'application/json',
+      },
     ],
   },
   {
@@ -69,10 +121,23 @@ const PREDEFINED_SERVERS: McpServer[] = [
     version: '1.2.0',
     status: 'ready',
     tools: [
-      { name: 'get_forecast', description: 'Get weather forecast', inputSchema: { type: 'object', properties: { city: { type: 'string' }, days: { type: 'number' } }, required: ['city'] } },
+      {
+        name: 'get_forecast',
+        description: 'Get weather forecast',
+        inputSchema: {
+          type: 'object',
+          properties: { city: { type: 'string' }, days: { type: 'number' } },
+          required: ['city'],
+        },
+      },
     ],
     resources: [
-      { uri: 'weather://alerts', name: 'Weather Alerts', description: 'Active weather alerts', mimeType: 'application/json' },
+      {
+        uri: 'weather://alerts',
+        name: 'Weather Alerts',
+        description: 'Active weather alerts',
+        mimeType: 'application/json',
+      },
     ],
   },
 ]
@@ -83,11 +148,16 @@ PREDEFINED_SERVERS.forEach((s) => servers.set(s.serverId, { ...s }))
 export async function listTools(serverId: string): Promise<{ serverId: string; tools: McpTool[] }> {
   const server = servers.get(serverId)
   if (!server) throw new Error(`MCP server not found: ${serverId}`)
-  if (server.status !== 'ready') throw new Error(`Server ${serverId} is not ready (status: ${server.status})`)
+  if (server.status !== 'ready')
+    throw new Error(`Server ${serverId} is not ready (status: ${server.status})`)
   return { serverId, tools: server.tools }
 }
 
-export async function callTool(serverId: string, toolName: string, args: Record<string, unknown>): Promise<{ serverId: string; toolName: string; result: unknown }> {
+export async function callTool(
+  serverId: string,
+  toolName: string,
+  args: Record<string, unknown>
+): Promise<{ serverId: string; toolName: string; result: unknown }> {
   const server = servers.get(serverId)
   if (!server) throw new Error(`MCP server not found: ${serverId}`)
   const tool = server.tools.find((t) => t.name === toolName)
@@ -95,13 +165,18 @@ export async function callTool(serverId: string, toolName: string, args: Record<
   return { serverId, toolName, result: { executed: true, tool: toolName, args } }
 }
 
-export async function listResources(serverId: string): Promise<{ serverId: string; resources: McpResource[] }> {
+export async function listResources(
+  serverId: string
+): Promise<{ serverId: string; resources: McpResource[] }> {
   const server = servers.get(serverId)
   if (!server) throw new Error(`MCP server not found: ${serverId}`)
   return { serverId, resources: server.resources }
 }
 
-export async function readResource(serverId: string, uri: string): Promise<{ serverId: string; uri: string; content: string }> {
+export async function readResource(
+  serverId: string,
+  uri: string
+): Promise<{ serverId: string; uri: string; content: string }> {
   const server = servers.get(serverId)
   if (!server) throw new Error(`MCP server not found: ${serverId}`)
   const resource = server.resources.find((r) => r.uri === uri)
@@ -109,14 +184,18 @@ export async function readResource(serverId: string, uri: string): Promise<{ ser
   return { serverId, uri, content: `[Content of ${uri} on ${serverId}]` }
 }
 
-export async function initializeServer(serverId: string): Promise<{ serverId: string; status: string }> {
+export async function initializeServer(
+  serverId: string
+): Promise<{ serverId: string; status: string }> {
   const server = servers.get(serverId)
   if (!server) throw new Error(`MCP server not found: ${serverId}`)
   server.status = 'ready'
   return { serverId, status: server.status }
 }
 
-export async function shutdownServer(serverId: string): Promise<{ serverId: string; status: string }> {
+export async function shutdownServer(
+  serverId: string
+): Promise<{ serverId: string; status: string }> {
   const server = servers.get(serverId)
   if (!server) throw new Error(`MCP server not found: ${serverId}`)
   server.status = 'disconnected'

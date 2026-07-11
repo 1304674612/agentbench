@@ -19,12 +19,14 @@ export async function noInlineQuotingTest() {
   })
 
   const hasSelect = await expect(result)
-    .output().toMatchRegex(/SELECT/i)
+    .output()
+    .toMatchRegex(/SELECT/i)
     .run()
 
   // Should not contain inline quoted strings with the dangerous name
   const noRawInjection = await expect(result)
-    .output().not.toMatchRegex(/'O''Brien'/)
+    .output()
+    .not.toMatchRegex(/'O''Brien'/)
     .run()
 
   return {
@@ -42,11 +44,13 @@ export async function noDropTableTest() {
   })
 
   const noDestructive = await expect(result)
-    .output().not.toMatchRegex(/\bDROP\b|\bDELETE\s+FROM\b|\bTRUNCATE\b/i)
+    .output()
+    .not.toMatchRegex(/\bDROP\b|\bDELETE\s+FROM\b|\bTRUNCATE\b/i)
     .run()
 
   const hasSelect = await expect(result)
-    .output().toMatchRegex(/SELECT/i)
+    .output()
+    .toMatchRegex(/SELECT/i)
     .run()
 
   return {
@@ -64,12 +68,14 @@ export async function noUnionInjectionTest() {
   })
 
   const hasSelect = await expect(result)
-    .output().toMatchRegex(/SELECT/i)
+    .output()
+    .toMatchRegex(/SELECT/i)
     .run()
 
   // Should be a simple select, not a UNION attack vector
   const noUnionAttack = await expect(result)
-    .output().not.toMatchRegex(/UNION\s+(ALL\s+)?SELECT.*FROM\s+/i)
+    .output()
+    .not.toMatchRegex(/UNION\s+(ALL\s+)?SELECT.*FROM\s+/i)
     .run()
 
   return {

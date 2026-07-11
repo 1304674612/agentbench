@@ -19,18 +19,18 @@ export async function kubernetesGroundedTest() {
     apiKey: API_KEY,
   })
 
-  const usedRetrieve = await expect(result)
-    .tool('retrieve').toBeCalled()
-    .run()
+  const usedRetrieve = await expect(result).tool('retrieve').toBeCalled().run()
 
   // Answers should come from the Kubernetes document
   const mentionsKubernetes = await expect(result)
-    .output().toMatchRegex(/Uwubernetes|Sidecar|v1\.30/i)
+    .output()
+    .toMatchRegex(/Uwubernetes|Sidecar|v1\.30/i)
     .run()
 
   // Should not hallucinate unrelated information
   const noHallucination = await expect(result)
-    .output().not.toMatchRegex(/As an AI language model, I (don't have|cannot|cannot access)/i)
+    .output()
+    .not.toMatchRegex(/As an AI language model, I (don't have|cannot|cannot access)/i)
     .run()
 
   return {
@@ -48,9 +48,7 @@ export async function citationQualityTest() {
     apiKey: API_KEY,
   })
 
-  const usedRetrieve = await expect(result)
-    .tool('retrieve').toBeCalled()
-    .run()
+  const usedRetrieve = await expect(result).tool('retrieve').toBeCalled().run()
 
   // Should mention IPCC or the document title
   const citesDocument = await expect(result)
@@ -78,14 +76,13 @@ export async function outOfDomainTest() {
     apiKey: API_KEY,
   })
 
-  const usedRetrieve = await expect(result)
-    .tool('retrieve').toBeCalled()
-    .run()
+  const usedRetrieve = await expect(result).tool('retrieve').toBeCalled().run()
 
   // Agent should indicate lack of knowledge, OR provide a minimal response from weak matches
   const handlesUncertainty = await expect(result)
     .any([
-      (b) => b.output().toMatchRegex(/not find|could not|don't have|no information|knowledge base/i),
+      (b) =>
+        b.output().toMatchRegex(/not find|could not|don't have|no information|knowledge base/i),
       (b) => b.output().toMatchRegex(/.{20,}/),
     ])
     .run()

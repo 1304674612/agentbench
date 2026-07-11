@@ -8,10 +8,7 @@ const createEvaluatorSchema = z.object({
   sortOrder: z.number().int().optional().default(0),
 })
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ caseId: string }> },
-) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ caseId: string }> }) {
   try {
     const { caseId } = await params
     const evaluators = await db.testEvaluator.findMany({
@@ -25,16 +22,16 @@ export async function GET(
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ caseId: string }> },
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ caseId: string }> }) {
   try {
     const { caseId } = await params
     const body = await req.json()
     const parsed = createEvaluatorSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsed.error.flatten() },
+        { status: 400 }
+      )
     }
 
     const evaluator = await db.testEvaluator.create({
@@ -55,7 +52,7 @@ export async function POST(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ caseId: string }> },
+  { params }: { params: Promise<{ caseId: string }> }
 ) {
   try {
     const { caseId } = await params

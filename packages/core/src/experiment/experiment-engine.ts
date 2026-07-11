@@ -34,8 +34,8 @@ export interface ExperimentRunResult {
 }
 
 export interface StatisticsInput {
-  variantA: number[]  // metric values for variant A
-  variantB: number[]  // metric values for variant B
+  variantA: number[] // metric values for variant A
+  variantB: number[] // metric values for variant B
   direction: 'higher_is_better' | 'lower_is_better'
 }
 
@@ -44,7 +44,7 @@ export interface TTestResult {
   pValue: number
   significant: boolean
   confidenceLevel: number
-  effectSize: number  // Cohen's d
+  effectSize: number // Cohen's d
   winner?: string
 }
 
@@ -128,7 +128,7 @@ export function validateExperimentConfig(config: ExperimentConfig): {
  */
 export function extractMetrics(
   runResult: RunResult,
-  metrics: ExperimentMetric[],
+  metrics: ExperimentMetric[]
 ): Record<string, number> {
   const values: Record<string, number> = {}
   const { metrics: runMetrics } = runResult
@@ -203,7 +203,7 @@ export function runTTest(input: StatisticsInput): TTestResult {
   // Approximate p-value from t-distribution
   const pValue = approximatePValue(Math.abs(tStatistic), df)
   const confidenceLevel = 0.95
-  const significant = pValue < (1 - confidenceLevel)
+  const significant = pValue < 1 - confidenceLevel
 
   // Cohen's d effect size
   const pooledSD = Math.sqrt(((nA - 1) * varA + (nB - 1) * varB) / (nA + nB - 2))
@@ -235,7 +235,7 @@ export function runTTest(input: StatisticsInput): TTestResult {
 export function runBootstrap(
   variantA: number[],
   variantB: number[],
-  iterations = 1000,
+  iterations = 1000
 ): { meanDiff: number; ciLower: number; ciUpper: number; significant: boolean } {
   if (variantA.length === 0 || variantB.length === 0) {
     return { meanDiff: 0, ciLower: 0, ciUpper: 0, significant: false }
@@ -251,7 +251,7 @@ export function runBootstrap(
     const sampleB = bootstrapSample(variantB)
     diffs.push(
       sampleA.reduce((a, b) => a + b, 0) / sampleA.length -
-        sampleB.reduce((a, b) => a + b, 0) / sampleB.length,
+        sampleB.reduce((a, b) => a + b, 0) / sampleB.length
     )
   }
 
@@ -286,7 +286,7 @@ function bootstrapSample(arr: number[]): number[] {
 export function computeVariantResult(
   name: string,
   runs: RunResult[],
-  metrics: ExperimentMetric[],
+  metrics: ExperimentMetric[]
 ): VariantResult {
   const metricValues: Record<string, number[]> = {}
 
@@ -308,7 +308,15 @@ export function computeVariantResult(
     resultMetrics[key] = {
       mean: Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 100) / 100,
       median: sorted[Math.floor(sorted.length / 2)],
-      stdDev: Math.round(Math.sqrt(values.reduce((s, v) => s + (v - values.reduce((a, b) => a + b, 0) / values.length) ** 2, 0) / values.length) * 100) / 100,
+      stdDev:
+        Math.round(
+          Math.sqrt(
+            values.reduce(
+              (s, v) => s + (v - values.reduce((a, b) => a + b, 0) / values.length) ** 2,
+              0
+            ) / values.length
+          ) * 100
+        ) / 100,
       significant: false,
     }
   }
@@ -321,7 +329,7 @@ export function computeVariantResult(
  */
 export function computeExperimentResults(
   runs: ExperimentRunInput[],
-  config: ExperimentConfig,
+  config: ExperimentConfig
 ): ExperimentResult {
   const variantRuns = new Map<string, RunResult[]>()
   for (const input of runs) {
@@ -343,8 +351,12 @@ export function computeExperimentResults(
   const [resultA, resultB] = variantResults
   if (resultA && resultB) {
     for (const metric of config.metrics) {
-      const valuesA = (variantRuns.get('A') ?? []).map((r) => extractMetrics(r, [metric])[metric.name])
-      const valuesB = (variantRuns.get('B') ?? []).map((r) => extractMetrics(r, [metric])[metric.name])
+      const valuesA = (variantRuns.get('A') ?? []).map(
+        (r) => extractMetrics(r, [metric])[metric.name]
+      )
+      const valuesB = (variantRuns.get('B') ?? []).map(
+        (r) => extractMetrics(r, [metric])[metric.name]
+      )
 
       if (valuesA.length >= 2 && valuesB.length >= 2) {
         const tResult = runTTest({
@@ -428,7 +440,14 @@ function approximatePValue(t: number, df: number): number {
     const p = Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI)
     const z = Math.abs(x)
     let y = 1 / (1 + 0.2316419 * z)
-    y = 1 - p * (0.3193815 * y - 0.3565638 * y * y + 1.781478 * y * y * y - 1.821256 * y * y * y * y + 1.330274 * y * y * y * y * y)
+    y =
+      1 -
+      p *
+        (0.3193815 * y -
+          0.3565638 * y * y +
+          1.781478 * y * y * y -
+          1.821256 * y * y * y * y +
+          1.330274 * y * y * y * y * y)
     return 2 * (1 - y)
   }
 
@@ -438,13 +457,14 @@ function approximatePValue(t: number, df: number): number {
   const z = Math.abs(x)
   let y = 1 / (1 + 0.2316419 * z)
   const p = Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI)
-  y = 1 - p * (
-    0.319381530 * y +
-    -0.356563782 * Math.pow(y, 2) +
-    1.781477937 * Math.pow(y, 3) +
-    -1.821255978 * Math.pow(y, 4) +
-    1.330274429 * Math.pow(y, 5)
-  )
+  y =
+    1 -
+    p *
+      (0.31938153 * y +
+        -0.356563782 * Math.pow(y, 2) +
+        1.781477937 * Math.pow(y, 3) +
+        -1.821255978 * Math.pow(y, 4) +
+        1.330274429 * Math.pow(y, 5))
 
   // Adjust for small df
   const adjustedP = 2 * (1 - y)

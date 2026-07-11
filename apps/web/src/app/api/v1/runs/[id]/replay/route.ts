@@ -20,16 +20,16 @@ const replaySchema = z.object({
   parallel: z.boolean().optional().default(true),
 })
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: runId } = await params
     const body = await req.json()
     const parsed = replaySchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsed.error.flatten() },
+        { status: 400 }
+      )
     }
 
     const originalRun = await db.run.findUnique({ where: { id: runId } })
@@ -66,9 +66,8 @@ export async function POST(
         data: {
           projectId: originalRun.projectId,
           testCaseId: originalRun.testCaseId,
-          name: count > 1
-            ? `${originalRun.name} (replay #${i + 1})`
-            : `${originalRun.name} (replay)`,
+          name:
+            count > 1 ? `${originalRun.name} (replay #${i + 1})` : `${originalRun.name} (replay)`,
           config: replayConfig as any,
           tags: ['replay', `original:${runId}`, parsed.data.mode],
         },
@@ -88,7 +87,7 @@ export async function POST(
           status: r.status,
         })),
       },
-      { status: 201 },
+      { status: 201 }
     )
   } catch (error) {
     console.error('Failed to create replay:', error)

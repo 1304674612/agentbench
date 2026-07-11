@@ -8,14 +8,12 @@ const exportQuerySchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ datasetId: string }> },
+  { params }: { params: Promise<{ datasetId: string }> }
 ) {
   try {
     const { datasetId } = await params
     const { searchParams } = new URL(req.url)
-    const parsed = exportQuerySchema.safeParse(
-      Object.fromEntries(searchParams.entries())
-    )
+    const parsed = exportQuerySchema.safeParse(Object.fromEntries(searchParams.entries()))
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Invalid query parameters', details: parsed.error.flatten() },

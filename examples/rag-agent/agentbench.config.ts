@@ -38,7 +38,8 @@ Rules:
     tools: [
       {
         name: 'retrieve',
-        description: 'Search the document knowledge base using semantic similarity. Returns the top-k most relevant document chunks with relevance scores.',
+        description:
+          'Search the document knowledge base using semantic similarity. Returns the top-k most relevant document chunks with relevance scores.',
         parameters: {
           type: 'object',
           properties: {

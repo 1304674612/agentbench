@@ -13,10 +13,7 @@ import { defaults } from './defaults'
  * - `undefined` values in `source` are ignored (they do not clobber `target`).
  * - `null` values in `source` **do** replace `target` values.
  */
-export function deepMerge<T extends Record<string, unknown>>(
-  target: T,
-  source: DeepPartial<T>
-): T {
+export function deepMerge<T extends Record<string, unknown>>(target: T, source: DeepPartial<T>): T {
   // Cast to plain record types so we can index with string keys freely.
   const result = { ...target } as Record<string, unknown>
   const src = source as Record<string, unknown>
@@ -51,9 +48,7 @@ export function deepMerge<T extends Record<string, unknown>>(
 }
 
 /** Recursive partial — mirrors the type exported from types.ts. */
-type DeepPartial<T> = T extends object
-  ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : T
+type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Public API
@@ -70,7 +65,10 @@ type DeepPartial<T> = T extends object
  * @returns A fully-populated `AgentBenchConfig` with all defaults applied.
  */
 export function resolveConfig(userConfig: AgentBenchUserConfig): AgentBenchConfig {
-  return deepMerge(defaults as unknown as Record<string, unknown>, userConfig as unknown as Record<string, unknown>) as unknown as AgentBenchConfig
+  return deepMerge(
+    defaults as unknown as Record<string, unknown>,
+    userConfig as unknown as Record<string, unknown>
+  ) as unknown as AgentBenchConfig
 }
 
 /**
@@ -116,9 +114,7 @@ export function defineConfig(
   config: () => AgentBenchUserConfig | Promise<AgentBenchUserConfig>
 ): () => Promise<AgentBenchConfig>
 export function defineConfig(
-  config:
-    | AgentBenchUserConfig
-    | (() => AgentBenchUserConfig | Promise<AgentBenchUserConfig>)
+  config: AgentBenchUserConfig | (() => AgentBenchUserConfig | Promise<AgentBenchUserConfig>)
 ): AgentBenchConfig | (() => Promise<AgentBenchConfig>) {
   if (typeof config === 'function') {
     return async () => {

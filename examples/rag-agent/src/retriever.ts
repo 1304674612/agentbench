@@ -53,7 +53,7 @@ export const DOCUMENT_STORE: DocumentChunk[] = [
     documentId: 'doc1',
     title: 'Tesla Vehicle Safety Report Q4 2025',
     content:
-      'Autopilot includes eight external cameras providing 360-degree visibility at up to 250 meters of range. The system processes visual data through a custom neural network architecture designed by Tesla\'s AI team. All new Tesla vehicles come standard with Autopilot hardware, and over-the-air software updates continuously improve safety features without requiring service center visits.',
+      "Autopilot includes eight external cameras providing 360-degree visibility at up to 250 meters of range. The system processes visual data through a custom neural network architecture designed by Tesla's AI team. All new Tesla vehicles come standard with Autopilot hardware, and over-the-air software updates continuously improve safety features without requiring service center visits.",
     page: 2,
     chunkIndex: 1,
     totalChunks: 3,
@@ -63,7 +63,7 @@ export const DOCUMENT_STORE: DocumentChunk[] = [
     documentId: 'doc1',
     title: 'Tesla Vehicle Safety Report Q4 2025',
     content:
-      'Tesla\'s quarterly safety data is sourced from its global fleet of over 5 million vehicles. The data is aggregated and anonymized. In 2025, Tesla introduced vision-based driver monitoring that uses the cabin camera to detect driver inattention and issue escalating alerts. This system contributed to a 12% reduction in distracted driving incidents compared to 2024.',
+      "Tesla's quarterly safety data is sourced from its global fleet of over 5 million vehicles. The data is aggregated and anonymized. In 2025, Tesla introduced vision-based driver monitoring that uses the cabin camera to detect driver inattention and issue escalating alerts. This system contributed to a 12% reduction in distracted driving incidents compared to 2024.",
     page: 3,
     chunkIndex: 2,
     totalChunks: 3,
@@ -73,9 +73,9 @@ export const DOCUMENT_STORE: DocumentChunk[] = [
   {
     chunkId: 'doc2-chunk1',
     documentId: 'doc2',
-    title: 'Python 3.13 Release Notes — What\'s New',
+    title: "Python 3.13 Release Notes — What's New",
     content:
-      'Python 3.13 introduces an experimental free-threaded build mode that disables the Global Interpreter Lock (GIL), allowing threads to run in parallel on multiple CPU cores. This is the most significant change to CPython\'s concurrency model since its inception. The feature is experimental and must be enabled at build time with the --disable-gil flag.',
+      "Python 3.13 introduces an experimental free-threaded build mode that disables the Global Interpreter Lock (GIL), allowing threads to run in parallel on multiple CPU cores. This is the most significant change to CPython's concurrency model since its inception. The feature is experimental and must be enabled at build time with the --disable-gil flag.",
     page: 1,
     chunkIndex: 0,
     totalChunks: 3,
@@ -83,7 +83,7 @@ export const DOCUMENT_STORE: DocumentChunk[] = [
   {
     chunkId: 'doc2-chunk2',
     documentId: 'doc2',
-    title: 'Python 3.13 Release Notes — What\'s New',
+    title: "Python 3.13 Release Notes — What's New",
     content:
       'A new JIT (Just-In-Time) compiler was added in Python 3.13, based on a copy-and-patch technique. It provides speedups of 2-9% on the standard benchmark suite. The JIT is enabled by default on supported platforms. Additionally, the new typing features include TypeIs for type narrowing and ReadOnly for TypedDict, improving static type checking capabilities.',
     page: 2,
@@ -93,7 +93,7 @@ export const DOCUMENT_STORE: DocumentChunk[] = [
   {
     chunkId: 'doc2-chunk3',
     documentId: 'doc2',
-    title: 'Python 3.13 Release Notes — What\'s New',
+    title: "Python 3.13 Release Notes — What's New",
     content:
       'Python 3.13 removes several deprecated modules including lib2to3, tkinter.tix, and the audioop module. The release also improves error messages with better suggestions for common mistakes like mis-typed imports. The platform support matrix now includes official Windows ARM64 builds and improved macOS Apple Silicon support with optimized memory allocators.',
     page: 3,
@@ -223,7 +223,7 @@ function buildInvertedIndex(): void {
         .toLowerCase()
         .replace(/[^a-z0-9\s]/g, '')
         .split(/\s+/)
-        .filter((t) => t.length > 2),
+        .filter((t) => t.length > 2)
     )
     for (const token of tokens) {
       const entries = invertedIndex.get(token) ?? []
@@ -271,9 +271,7 @@ function computeRelevance(query: string, chunkIndex: number): number {
   idfBoost = idfBoost / queryTokens.length
 
   // Title match bonus
-  const titleMatch = chunk.title.toLowerCase().includes(query.toLowerCase())
-    ? 0.3
-    : 0
+  const titleMatch = chunk.title.toLowerCase().includes(query.toLowerCase()) ? 0.3 : 0
 
   return Math.min(1.0, tf * 0.6 + idfBoost * 0.1 + titleMatch)
 }
@@ -282,20 +280,16 @@ function computeRelevance(query: string, chunkIndex: number): number {
 // Retriever function
 // ---------------------------------------------------------------------------
 
-export async function retrieve(
-  query: string,
-  topK = 5,
-): Promise<RetrieveResult> {
+export async function retrieve(query: string, topK = 5): Promise<RetrieveResult> {
   buildInvertedIndex()
 
   const startTime = performance.now()
 
   // Score all chunks
-  const scored = DOCUMENT_STORE
-    .map((chunk, index) => ({
-      ...chunk,
-      score: computeRelevance(query, index),
-    }))
+  const scored = DOCUMENT_STORE.map((chunk, index) => ({
+    ...chunk,
+    score: computeRelevance(query, index),
+  }))
     .filter((c) => c.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, topK)
@@ -320,14 +314,14 @@ export function computeEmbeddingSimilarity(query: string, content: string): numb
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, '')
       .split(/\s+/)
-      .filter((t) => t.length > 2),
+      .filter((t) => t.length > 2)
   )
   const contentSet = new Set(
     content
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, '')
       .split(/\s+/)
-      .filter((t) => t.length > 2),
+      .filter((t) => t.length > 2)
   )
 
   if (querySet.size === 0 || contentSet.size === 0) return 0

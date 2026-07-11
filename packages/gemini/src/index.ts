@@ -70,9 +70,10 @@ function convertMessages(messages: ChatCompletionParams['messages']): {
   for (const msg of messages) {
     // Extract system message as system instruction
     if (msg.role === 'system') {
-      const text = typeof msg.content === 'string'
-        ? msg.content
-        : (msg.content as ChatContentPart[])?.find((p) => p.type === 'text')?.text ?? ''
+      const text =
+        typeof msg.content === 'string'
+          ? msg.content
+          : ((msg.content as ChatContentPart[])?.find((p) => p.type === 'text')?.text ?? '')
       systemInstruction = (systemInstruction ?? '') + text + '\n'
       continue
     }
@@ -82,8 +83,7 @@ function convertMessages(messages: ChatCompletionParams['messages']): {
 
     // Map roles: assistant -> model, tool -> function
     const role: GeminiContent['role'] =
-      msg.role === 'assistant' ? 'model' :
-      msg.role === 'tool' ? 'function' : 'user'
+      msg.role === 'assistant' ? 'model' : msg.role === 'tool' ? 'function' : 'user'
 
     // If previous content has the same role, merge parts
     const last = contents[contents.length - 1]
@@ -97,7 +97,9 @@ function convertMessages(messages: ChatCompletionParams['messages']): {
     if (msg.tool_calls && msg.role === 'assistant') {
       for (const tc of msg.tool_calls) {
         let args: Record<string, unknown> = {}
-        try { args = JSON.parse(tc.function.arguments) } catch (error) {
+        try {
+          args = JSON.parse(tc.function.arguments)
+        } catch (error) {
           console.error('[GEMINI] Failed to parse tool call arguments:', error)
           /* keep empty */
         }
@@ -148,13 +150,15 @@ function convertContentToParts(content: string | ChatContentPart[]): GeminiPart[
 
 function convertTools(tools?: ToolDefinition[]): GeminiTool[] | undefined {
   if (!tools || tools.length === 0) return undefined
-  return [{
-    functionDeclarations: tools.map((t) => ({
-      name: t.function.name,
-      description: t.function.description,
-      parameters: t.function.parameters,
-    })),
-  }]
+  return [
+    {
+      functionDeclarations: tools.map((t) => ({
+        name: t.function.name,
+        description: t.function.description,
+        parameters: t.function.parameters,
+      })),
+    },
+  ]
 }
 
 // ── Helper: Build Gemini generation config ─────────────────────────────────────
@@ -187,17 +191,20 @@ function buildGenerationConfig(params: ChatCompletionParams): GeminiGenerationCo
 
 // ── Helper: Parse Gemini response to unified format ────────────────────────────
 
-function parseGeminiResponse(
-  raw: Record<string, unknown>,
-  model: string
-): ChatCompletionResult {
+function parseGeminiResponse(raw: Record<string, unknown>, model: string): ChatCompletionResult {
   const candidates = raw.candidates as Array<Record<string, unknown>> | undefined
   const usageMeta = raw.usageMetadata as Record<string, number> | undefined
   const firstCandidate = candidates?.[0]
-  const content = firstCandidate?.content as { role: string; parts: Array<Record<string, unknown>> } | undefined
+  const content = firstCandidate?.content as
+    | { role: string; parts: Array<Record<string, unknown>> }
+    | undefined
 
   let textContent: string | null = null
-  const toolCalls: Array<{ id: string; type: 'function'; function: { name: string; arguments: string } }> = []
+  const toolCalls: Array<{
+    id: string
+    type: 'function'
+    function: { name: string; arguments: string }
+  }> = []
 
   if (content?.parts) {
     for (const part of content.parts) {
@@ -221,17 +228,19 @@ function parseGeminiResponse(
   return {
     id: `gemini-${Date.now()}`,
     model,
-    choices: [{
-      index: 0,
-      message: {
-        role: 'assistant',
-        content: textContent ?? '',
-        ...(toolCalls.length > 0 ? { tool_calls: toolCalls } : {}),
+    choices: [
+      {
+        index: 0,
+        message: {
+          role: 'assistant',
+          content: textContent ?? '',
+          ...(toolCalls.length > 0 ? { tool_calls: toolCalls } : {}),
+        },
+        finishReason: firstCandidate?.finishReason
+          ? mapGeminiFinishReason(firstCandidate.finishReason as string)
+          : null,
       },
-      finishReason: firstCandidate?.finishReason
-        ? mapGeminiFinishReason(firstCandidate.finishReason as string)
-        : null,
-    }],
+    ],
     usage: {
       promptTokens: usageMeta?.promptTokenCount ?? 0,
       completionTokens: usageMeta?.candidatesTokenCount ?? 0,
@@ -244,13 +253,19 @@ function parseGeminiResponse(
 
 function mapGeminiFinishReason(reason: string): ChatCompletionResult['choices'][0]['finishReason'] {
   switch (reason) {
-    case 'STOP': return 'stop'
-    case 'MAX_TOKENS': return 'length'
-    case 'SAFETY': return 'content_filter'
-    case 'RECITATION': return 'content_filter'
+    case 'STOP':
+      return 'stop'
+    case 'MAX_TOKENS':
+      return 'length'
+    case 'SAFETY':
+      return 'content_filter'
+    case 'RECITATION':
+      return 'content_filter'
     case 'MALFORMED_FUNCTION_CALL':
-    case 'FUNCTION_CALL': return 'tool_calls'
-    default: return null
+    case 'FUNCTION_CALL':
+      return 'tool_calls'
+    default:
+      return null
   }
 }
 
@@ -301,12 +316,19 @@ export class GeminiProvider {
       body.systemInstruction = { parts: [{ text: systemInstruction }] }
     }
     if (tools) body.tools = tools
-    if (params.toolChoice === 'auto' || params.toolChoice === 'required' || params.toolChoice === 'none') {
+    if (
+      params.toolChoice === 'auto' ||
+      params.toolChoice === 'required' ||
+      params.toolChoice === 'none'
+    ) {
       body.toolConfig = {
         functionCallingConfig: {
-          mode: params.toolChoice === 'required' ? 'ANY'
-            : params.toolChoice === 'none' ? 'NONE'
-            : 'AUTO',
+          mode:
+            params.toolChoice === 'required'
+              ? 'ANY'
+              : params.toolChoice === 'none'
+                ? 'NONE'
+                : 'AUTO',
         },
       }
     }
@@ -318,7 +340,7 @@ export class GeminiProvider {
       body: JSON.stringify(body),
     })
 
-    const raw = await res.json() as Record<string, unknown>
+    const raw = (await res.json()) as Record<string, unknown>
     return parseGeminiResponse(raw, params.model)
   }
 
@@ -375,11 +397,14 @@ export class GeminiProvider {
             if (!candidates?.[0]) continue
 
             const candidate = candidates[0]
-            const content = candidate.content as { parts?: Array<Record<string, unknown>>; role?: string } | undefined
-            const text = content?.parts
-              ?.filter((p) => p.text)
-              .map((p) => p.text as string)
-              .join('') ?? ''
+            const content = candidate.content as
+              | { parts?: Array<Record<string, unknown>>; role?: string }
+              | undefined
+            const text =
+              content?.parts
+                ?.filter((p) => p.text)
+                .map((p) => p.text as string)
+                .join('') ?? ''
 
             if (text) {
               fullText += text
@@ -392,16 +417,16 @@ export class GeminiProvider {
             yield {
               id: `gemini-${Date.now()}`,
               model: params.model,
-              choices: [{
-                index: 0,
-                delta: {
-                  role: 'assistant',
-                  content: text || undefined,
+              choices: [
+                {
+                  index: 0,
+                  delta: {
+                    role: 'assistant',
+                    content: text || undefined,
+                  },
+                  finishReason: finishReason ? mapGeminiFinishReason(finishReason) : null,
                 },
-                finishReason: finishReason
-                  ? mapGeminiFinishReason(finishReason)
-                  : null,
-              }],
+              ],
               created: Math.floor(Date.now() / 1000),
               provider: 'gemini',
             }
@@ -458,7 +483,11 @@ export class GeminiProvider {
     }
   }
 
-  private async _fetch(url: string, init: RequestInit, retries = this.maxRetries): Promise<Response> {
+  private async _fetch(
+    url: string,
+    init: RequestInit,
+    retries = this.maxRetries
+  ): Promise<Response> {
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         const res = await fetch(url, {

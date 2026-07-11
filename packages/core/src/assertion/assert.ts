@@ -108,11 +108,12 @@ export function buildContextFromRun(run: RunResult): AssertionContext {
       toolSuccessCount: run.metrics.toolSuccessCount,
       toolFailureCount: run.metrics.toolFailureCount,
     },
-    scores: run.scores?.map((s) => ({
-      evaluator: s.evaluator,
-      score: s.score,
-      maxScore: s.maxScore,
-    })) ?? [],
+    scores:
+      run.scores?.map((s) => ({
+        evaluator: s.evaluator,
+        score: s.score,
+        maxScore: s.maxScore,
+      })) ?? [],
     status: run.status,
   }
 }
@@ -142,25 +143,19 @@ class ToolAssertionBuilder {
 
   /** Assert this tool was called at least once */
   toBeCalled(): AssertionBuilder {
-    this.assertions._add((ctx) =>
-      toolToBeCalled(ctx.toolCalls, this.toolName),
-    )
+    this.assertions._add((ctx) => toolToBeCalled(ctx.toolCalls, this.toolName))
     return this.assertions
   }
 
   /** Assert this tool was called with specific arguments */
   toBeCalledWith(args: Record<string, unknown>): AssertionBuilder {
-    this.assertions._add((ctx) =>
-      toolToBeCalledWith(ctx.toolCalls, this.toolName, args),
-    )
+    this.assertions._add((ctx) => toolToBeCalledWith(ctx.toolCalls, this.toolName, args))
     return this.assertions
   }
 
   /** Assert this tool was called exactly N times */
   toBeCalledTimes(count: number): AssertionBuilder {
-    this.assertions._add((ctx) =>
-      toolToBeCalledTimes(ctx.toolCalls, this.toolName, count),
-    )
+    this.assertions._add((ctx) => toolToBeCalledTimes(ctx.toolCalls, this.toolName, count))
     return this.assertions
   }
 
@@ -169,9 +164,7 @@ class ToolAssertionBuilder {
     toBeCalled(): AssertionBuilder
   } = {
     toBeCalled: () => {
-      this.assertions._add((ctx) =>
-        toolNotToBeCalled(ctx.toolCalls, this.toolName),
-      )
+      this.assertions._add((ctx) => toolNotToBeCalled(ctx.toolCalls, this.toolName))
       return this.assertions
     },
   }
@@ -185,23 +178,17 @@ class TokenAssertionBuilder {
   }
 
   toBeLessThan(threshold: number): AssertionBuilder {
-    this.assertions._add((ctx) =>
-      tokensToBeLessThan(ctx.metrics, threshold),
-    )
+    this.assertions._add((ctx) => tokensToBeLessThan(ctx.metrics, threshold))
     return this.assertions
   }
 
   toBeGreaterThan(threshold: number): AssertionBuilder {
-    this.assertions._add((ctx) =>
-      tokensToBeGreaterThan(ctx.metrics, threshold),
-    )
+    this.assertions._add((ctx) => tokensToBeGreaterThan(ctx.metrics, threshold))
     return this.assertions
   }
 
   toBeBetween(min: number, max: number): AssertionBuilder {
-    this.assertions._add((ctx) =>
-      tokensToBeBetween(ctx.metrics, min, max),
-    )
+    this.assertions._add((ctx) => tokensToBeBetween(ctx.metrics, min, max))
     return this.assertions
   }
 
@@ -209,9 +196,7 @@ class TokenAssertionBuilder {
   prompt(): { toBeLessThan(threshold: number): AssertionBuilder } {
     return {
       toBeLessThan: (threshold: number) => {
-        this.assertions._add((ctx) =>
-          promptTokensToBeLessThan(ctx.metrics, threshold),
-        )
+        this.assertions._add((ctx) => promptTokensToBeLessThan(ctx.metrics, threshold))
         return this.assertions
       },
     }
@@ -226,16 +211,12 @@ class LatencyAssertionBuilder {
   }
 
   toBeLessThan(threshold: number): AssertionBuilder {
-    this.assertions._add((ctx) =>
-      latencyToBeLessThan(ctx.metrics, threshold),
-    )
+    this.assertions._add((ctx) => latencyToBeLessThan(ctx.metrics, threshold))
     return this.assertions
   }
 
   toBeGreaterThan(threshold: number): AssertionBuilder {
-    this.assertions._add((ctx) =>
-      latencyToBeGreaterThan(ctx.metrics, threshold),
-    )
+    this.assertions._add((ctx) => latencyToBeGreaterThan(ctx.metrics, threshold))
     return this.assertions
   }
 
@@ -243,9 +224,7 @@ class LatencyAssertionBuilder {
   firstToken(): { toBeLessThan(threshold: number): AssertionBuilder } {
     return {
       toBeLessThan: (threshold: number) => {
-        this.assertions._add((ctx) =>
-          firstTokenToBeLessThan(ctx.metrics, threshold),
-        )
+        this.assertions._add((ctx) => firstTokenToBeLessThan(ctx.metrics, threshold))
         return this.assertions
       },
     }
@@ -276,14 +255,30 @@ class OutputAssertionBuilder {
     toEqual: (expected: string) => {
       this.assertions._add((ctx) => {
         const result = outputToEqual(ctx.output, expected)
-        return { ...result, status: result.status === 'passed' ? 'failed' : result.status === 'failed' ? 'passed' : result.status }
+        return {
+          ...result,
+          status:
+            result.status === 'passed'
+              ? 'failed'
+              : result.status === 'failed'
+                ? 'passed'
+                : result.status,
+        }
       })
       return this.assertions
     },
     toMatchRegex: (pattern: string, flags?: string) => {
       this.assertions._add((ctx) => {
         const result = outputToMatchRegex(ctx.output, pattern, flags)
-        return { ...result, status: result.status === 'passed' ? 'failed' : result.status === 'failed' ? 'passed' : result.status }
+        return {
+          ...result,
+          status:
+            result.status === 'passed'
+              ? 'failed'
+              : result.status === 'failed'
+                ? 'passed'
+                : result.status,
+        }
       })
       return this.assertions
     },
@@ -320,23 +315,17 @@ class ScoreAssertionBuilder {
   }
 
   toBeGreaterThan(threshold: number): AssertionBuilder {
-    this.assertions._add((ctx) =>
-      scoreToBeGreaterThan(ctx.scores, threshold, this.dimension),
-    )
+    this.assertions._add((ctx) => scoreToBeGreaterThan(ctx.scores, threshold, this.dimension))
     return this.assertions
   }
 
   toBeLessThan(threshold: number): AssertionBuilder {
-    this.assertions._add((ctx) =>
-      scoreToBeLessThan(ctx.scores, threshold, this.dimension),
-    )
+    this.assertions._add((ctx) => scoreToBeLessThan(ctx.scores, threshold, this.dimension))
     return this.assertions
   }
 
   toBeBetween(min: number, max: number): AssertionBuilder {
-    this.assertions._add((ctx) =>
-      scoreToBeBetween(ctx.scores, min, max, this.dimension),
-    )
+    this.assertions._add((ctx) => scoreToBeBetween(ctx.scores, min, max, this.dimension))
     return this.assertions
   }
 }
@@ -354,7 +343,10 @@ class StatusAssertionBuilder {
       status: ctx.status === expectedStatus ? 'passed' : 'failed',
       expected: expectedStatus,
       actual: ctx.status,
-      message: ctx.status === expectedStatus ? undefined : `Expected status "${expectedStatus}", got "${ctx.status}"`,
+      message:
+        ctx.status === expectedStatus
+          ? undefined
+          : `Expected status "${expectedStatus}", got "${ctx.status}"`,
     }))
     return this.assertions
   }
@@ -365,7 +357,10 @@ class StatusAssertionBuilder {
       status: ctx.status === 'passed' || ctx.status === 'completed' ? 'passed' : 'failed',
       expected: 'completed',
       actual: ctx.status,
-      message: ctx.status === 'passed' || ctx.status === 'completed' ? undefined : `Expected completion, got ${ctx.status}`,
+      message:
+        ctx.status === 'passed' || ctx.status === 'completed'
+          ? undefined
+          : `Expected completion, got ${ctx.status}`,
     }))
     return this.assertions
   }
@@ -435,7 +430,9 @@ export class AssertionBuilder {
         status: allPassed ? 'passed' : 'failed',
         expected: 'All conditions to pass',
         actual: `${results.assertions.filter((a) => a.status === 'passed').length}/${results.assertions.length} passed`,
-        message: allPassed ? undefined : `${results.assertions.filter((a) => a.status === 'failed').length} condition(s) failed`,
+        message: allPassed
+          ? undefined
+          : `${results.assertions.filter((a) => a.status === 'failed').length} condition(s) failed`,
       }
     })
     return this

@@ -21,7 +21,7 @@ export interface RuleEvalResult {
  */
 export function evaluateRule(
   config: RuleEvaluatorConfig,
-  context: RuleEvalContext,
+  context: RuleEvalContext
 ): RuleEvalResult {
   switch (config.type) {
     case 'exact_match':
@@ -67,7 +67,7 @@ export function evaluateRule(
  */
 export function evaluateRules(
   configs: RuleEvaluatorConfig[],
-  context: RuleEvalContext,
+  context: RuleEvalContext
 ): { results: RuleEvalResult[]; totalScore: number; maxScore: number; allPassed: boolean } {
   const results = configs.map((c) => evaluateRule(c, context))
   const totalScore = results.reduce((sum, r) => sum + r.score, 0)
@@ -108,10 +108,7 @@ export interface RuleEvalContext {
 // Evaluator implementations
 // ============================================================
 
-function evalExactMatch(
-  params: Record<string, unknown>,
-  ctx: RuleEvalContext,
-): RuleEvalResult {
+function evalExactMatch(params: Record<string, unknown>, ctx: RuleEvalContext): RuleEvalResult {
   const expected = String(params.expected ?? '')
   const normalize = params.normalize === true
   const caseSensitive = params.caseSensitive !== false
@@ -133,15 +130,14 @@ function evalExactMatch(
     passed,
     score: passed ? 1 : 0,
     maxScore: 1,
-    reason: passed ? 'Output matches expected exactly' : `Expected "${truncate(expectedNorm, 80)}" but got "${truncate(actual, 80)}"`,
+    reason: passed
+      ? 'Output matches expected exactly'
+      : `Expected "${truncate(expectedNorm, 80)}" but got "${truncate(actual, 80)}"`,
     details: { expected, actual: ctx.output },
   }
 }
 
-function evalContains(
-  params: Record<string, unknown>,
-  ctx: RuleEvalContext,
-): RuleEvalResult {
+function evalContains(params: Record<string, unknown>, ctx: RuleEvalContext): RuleEvalResult {
   const substring = String(params.substring ?? params.value ?? '')
   const caseSensitive = params.caseSensitive !== false
   const minOccurrences = Number(params.minOccurrences ?? 1)
@@ -166,10 +162,7 @@ function evalContains(
   }
 }
 
-function evalRegexMatch(
-  params: Record<string, unknown>,
-  ctx: RuleEvalContext,
-): RuleEvalResult {
+function evalRegexMatch(params: Record<string, unknown>, ctx: RuleEvalContext): RuleEvalResult {
   const pattern = String(params.pattern ?? '')
   const flags = String(params.flags ?? '')
   if (!pattern) {
@@ -199,10 +192,7 @@ function evalRegexMatch(
   }
 }
 
-function evalJsonSchema(
-  params: Record<string, unknown>,
-  ctx: RuleEvalContext,
-): RuleEvalResult {
+function evalJsonSchema(params: Record<string, unknown>, ctx: RuleEvalContext): RuleEvalResult {
   const schema = params.schema as Record<string, unknown> | undefined
   if (!schema) {
     return { passed: false, score: 0, maxScore: 1, reason: 'No JSON schema provided' }
@@ -231,10 +221,7 @@ function evalJsonSchema(
   }
 }
 
-function evalToolCalled(
-  params: Record<string, unknown>,
-  ctx: RuleEvalContext,
-): RuleEvalResult {
+function evalToolCalled(params: Record<string, unknown>, ctx: RuleEvalContext): RuleEvalResult {
   const toolName = String(params.tool ?? params.name ?? '')
   const tools = ctx.toolCalls ?? []
   const called = tools.some((t) => t.name === toolName)
@@ -249,10 +236,7 @@ function evalToolCalled(
   }
 }
 
-function evalToolNotCalled(
-  params: Record<string, unknown>,
-  ctx: RuleEvalContext,
-): RuleEvalResult {
+function evalToolNotCalled(params: Record<string, unknown>, ctx: RuleEvalContext): RuleEvalResult {
   const toolName = String(params.tool ?? params.name ?? '')
   const tools = ctx.toolCalls ?? []
   const notCalled = !tools.some((t) => t.name === toolName)
@@ -267,10 +251,7 @@ function evalToolNotCalled(
   }
 }
 
-function evalToolCalledWith(
-  params: Record<string, unknown>,
-  ctx: RuleEvalContext,
-): RuleEvalResult {
+function evalToolCalledWith(params: Record<string, unknown>, ctx: RuleEvalContext): RuleEvalResult {
   const toolName = String(params.tool ?? params.name ?? '')
   const expectedArgs = (params.arguments ?? params.args ?? {}) as Record<string, unknown>
   const tools = ctx.toolCalls ?? []
@@ -290,7 +271,9 @@ function evalToolCalledWith(
   for (const [key, expectedValue] of Object.entries(expectedArgs)) {
     const actualValue = toolCall.arguments[key]
     if (!deepEqual(actualValue, expectedValue)) {
-      mismatches.push(`${key}: expected ${JSON.stringify(expectedValue)}, got ${JSON.stringify(actualValue)}`)
+      mismatches.push(
+        `${key}: expected ${JSON.stringify(expectedValue)}, got ${JSON.stringify(actualValue)}`
+      )
     }
   }
 
@@ -308,7 +291,7 @@ function evalToolCalledWith(
 
 function evalToolCalledTimes(
   params: Record<string, unknown>,
-  ctx: RuleEvalContext,
+  ctx: RuleEvalContext
 ): RuleEvalResult {
   const toolName = String(params.tool ?? params.name ?? '')
   const expected = Number(params.times ?? params.count ?? 1)
@@ -349,10 +332,7 @@ function evalToolCalledTimes(
   }
 }
 
-function evalStatusCode(
-  params: Record<string, unknown>,
-  ctx: RuleEvalContext,
-): RuleEvalResult {
+function evalStatusCode(params: Record<string, unknown>, ctx: RuleEvalContext): RuleEvalResult {
   const expected = Number(params.code ?? params.status ?? 200)
   const actual = ctx.statusCode ?? 200
   const passed = actual === expected
@@ -360,15 +340,14 @@ function evalStatusCode(
     passed,
     score: passed ? 1 : 0,
     maxScore: 1,
-    reason: passed ? `Status code ${actual} matches expected` : `Expected status ${expected}, got ${actual}`,
+    reason: passed
+      ? `Status code ${actual} matches expected`
+      : `Expected status ${expected}, got ${actual}`,
     details: { expected, actual },
   }
 }
 
-function evalLatencyLt(
-  params: Record<string, unknown>,
-  ctx: RuleEvalContext,
-): RuleEvalResult {
+function evalLatencyLt(params: Record<string, unknown>, ctx: RuleEvalContext): RuleEvalResult {
   const threshold = Number(params.threshold ?? params.ms ?? 10000)
   const latency = ctx.metrics?.totalLatency ?? 0
   const passed = latency < threshold
@@ -383,10 +362,7 @@ function evalLatencyLt(
   }
 }
 
-function evalTokensLt(
-  params: Record<string, unknown>,
-  ctx: RuleEvalContext,
-): RuleEvalResult {
+function evalTokensLt(params: Record<string, unknown>, ctx: RuleEvalContext): RuleEvalResult {
   const threshold = Number(params.threshold ?? params.count ?? 4096)
   const tokens = ctx.metrics?.totalTokens ?? 0
   const passed = tokens < threshold
@@ -401,10 +377,7 @@ function evalTokensLt(
   }
 }
 
-function evalTokensGt(
-  params: Record<string, unknown>,
-  ctx: RuleEvalContext,
-): RuleEvalResult {
+function evalTokensGt(params: Record<string, unknown>, ctx: RuleEvalContext): RuleEvalResult {
   const threshold = Number(params.threshold ?? params.count ?? 0)
   const tokens = ctx.metrics?.totalTokens ?? 0
   const passed = tokens > threshold
@@ -419,10 +392,7 @@ function evalTokensGt(
   }
 }
 
-function evalCostLt(
-  params: Record<string, unknown>,
-  ctx: RuleEvalContext,
-): RuleEvalResult {
+function evalCostLt(params: Record<string, unknown>, ctx: RuleEvalContext): RuleEvalResult {
   const threshold = Number(params.threshold ?? params.dollars ?? 0.1)
   const cost = ctx.metrics?.totalCost ?? 0
   const passed = cost < threshold
@@ -437,10 +407,7 @@ function evalCostLt(
   }
 }
 
-function evalCostGt(
-  params: Record<string, unknown>,
-  ctx: RuleEvalContext,
-): RuleEvalResult {
+function evalCostGt(params: Record<string, unknown>, ctx: RuleEvalContext): RuleEvalResult {
   const threshold = Number(params.threshold ?? params.dollars ?? 0)
   const cost = ctx.metrics?.totalCost ?? 0
   const passed = cost > threshold

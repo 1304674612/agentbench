@@ -22,8 +22,8 @@ export interface ProjectSettings {
 }
 
 export interface RegressionThresholds {
-  scoreDrop: number       // e.g. 0.5 (score cannot drop by more than 0.5)
-  tokenIncreasePercent: number  // e.g. 20 (tokens cannot increase by more than 20%)
+  scoreDrop: number // e.g. 0.5 (score cannot drop by more than 0.5)
+  tokenIncreasePercent: number // e.g. 20 (tokens cannot increase by more than 20%)
   latencyIncreasePercent: number
   costIncreasePercent: number
 }

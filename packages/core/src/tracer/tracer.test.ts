@@ -12,7 +12,9 @@ describe('Tracer', () => {
   describe('traceLLMCall', () => {
     it('creates execution trace with LLM call step', async () => {
       const tracer = createTracer()
-      const execute = vi.fn().mockResolvedValue({ choices: [{ message: { content: 'Hello back!' } }] })
+      const execute = vi
+        .fn()
+        .mockResolvedValue({ choices: [{ message: { content: 'Hello back!' } }] })
 
       const result = await tracer.traceLLMCall(
         'openai',
@@ -24,7 +26,7 @@ describe('Tracer', () => {
           finishReason: 'stop',
           usage: { prompt_tokens: 10, completion_tokens: 6, total_tokens: 16 },
           model: 'gpt-4o',
-        }),
+        })
       )
 
       expect(result).toBeDefined()
@@ -41,14 +43,15 @@ describe('Tracer', () => {
       const beforeTime = Date.now()
 
       await tracer.traceLLMCall(
-        'openai', 'gpt-4o',
+        'openai',
+        'gpt-4o',
         { messages: [{ role: 'user', content: 'Hi' }] },
         async () => ({ choices: [{ message: { content: 'Hey' } }] }),
         (res) => ({
           content: 'Hey',
           finishReason: 'stop',
           usage: { prompt_tokens: 3, completion_tokens: 1, total_tokens: 4 },
-        }),
+        })
       )
 
       const afterTime = Date.now()
@@ -66,7 +69,8 @@ describe('Tracer', () => {
       const tracer = createTracer()
 
       await tracer.traceLLMCall(
-        'anthropic', 'claude-sonnet-4-20250514',
+        'anthropic',
+        'claude-sonnet-4-20250514',
         { messages: [{ role: 'user', content: 'Count to 3' }], temperature: 0.5, max_tokens: 1000 },
         async () => ({ content: [{ text: '1, 2, 3' }] }),
         (res) => ({
@@ -74,7 +78,7 @@ describe('Tracer', () => {
           finishReason: 'end_turn',
           usage: { prompt_tokens: 12, completion_tokens: 8, total_tokens: 20 },
           model: 'claude-sonnet-4-20250514',
-        }),
+        })
       )
 
       const step = tracer.steps[0]
@@ -107,25 +111,27 @@ describe('Tracer', () => {
       const tracer = createTracer()
 
       await tracer.traceLLMCall(
-        'openai', 'gpt-4o',
+        'openai',
+        'gpt-4o',
         { messages: [{ role: 'user', content: 'Step 1' }] },
         async () => ({ choices: [{ message: { content: 'A' } }] }),
         (res) => ({
           content: 'A',
           finishReason: 'stop',
           usage: { prompt_tokens: 5, completion_tokens: 1, total_tokens: 6 },
-        }),
+        })
       )
 
       await tracer.traceLLMCall(
-        'openai', 'gpt-4o',
+        'openai',
+        'gpt-4o',
         { messages: [{ role: 'user', content: 'Step 2' }] },
         async () => ({ choices: [{ message: { content: 'B' } }] }),
         (res) => ({
           content: 'B',
           finishReason: 'stop',
           usage: { prompt_tokens: 5, completion_tokens: 1, total_tokens: 6 },
-        }),
+        })
       )
 
       expect(tracer.steps).toHaveLength(2)
@@ -139,15 +145,16 @@ describe('Tracer', () => {
 
       await expect(
         tracer.traceLLMCall(
-          'openai', 'gpt-4o',
+          'openai',
+          'gpt-4o',
           { messages: [{ role: 'user', content: 'Boom' }] },
           failingExec,
           (res) => ({
             content: null,
             finishReason: 'stop',
             usage: {},
-          }),
-        ),
+          })
+        )
       ).rejects.toThrow('Rate limit exceeded')
 
       expect(tracer.steps).toHaveLength(1)
@@ -162,12 +169,14 @@ describe('Tracer', () => {
   describe('traceToolCall', () => {
     it('captures tool call details', async () => {
       const tracer = createTracer()
-      const execute = vi.fn().mockResolvedValue({ results: [{ title: 'Found', url: 'https://example.com' }] })
+      const execute = vi
+        .fn()
+        .mockResolvedValue({ results: [{ title: 'Found', url: 'https://example.com' }] })
 
       const result = await tracer.traceToolCall(
         'web_search',
         { query: 'AgentBench', limit: 5 },
-        execute,
+        execute
       )
 
       expect(result).toBeDefined()
@@ -182,11 +191,9 @@ describe('Tracer', () => {
     it('captures tool call timing', async () => {
       const tracer = createTracer()
 
-      await tracer.traceToolCall(
-        'slow_tool',
-        { timeout: 100 },
-        async () => { /* instant */ },
-      )
+      await tracer.traceToolCall('slow_tool', { timeout: 100 }, async () => {
+        /* instant */
+      })
 
       const step = tracer.steps[0]
       expect(step.startedAt).toBeInstanceOf(Date)
@@ -197,11 +204,7 @@ describe('Tracer', () => {
     it('captures tool request and response data', async () => {
       const tracer = createTracer()
 
-      await tracer.traceToolCall(
-        'calculator',
-        { expression: '2 + 2' },
-        async () => 4,
-      )
+      await tracer.traceToolCall('calculator', { expression: '2 + 2' }, async () => 4)
 
       const step = tracer.steps[0]
       expect(step.toolRequest).toBeDefined()
@@ -215,11 +218,9 @@ describe('Tracer', () => {
       const tracer = createTracer()
 
       await expect(
-        tracer.traceToolCall(
-          'failing_tool',
-          { input: 'bad' },
-          async () => { throw new Error('Tool execution failed') },
-        ),
+        tracer.traceToolCall('failing_tool', { input: 'bad' }, async () => {
+          throw new Error('Tool execution failed')
+        })
       ).rejects.toThrow('Tool execution failed')
 
       const step = tracer.steps[0]
@@ -286,14 +287,15 @@ describe('Tracer', () => {
       const tracer = createTracer()
 
       await tracer.traceLLMCall(
-        'openai', 'gpt-4o',
+        'openai',
+        'gpt-4o',
         { messages: [{ role: 'user', content: 'Q' }] },
         async () => ({ choices: [{ message: { content: 'A' } }] }),
         (res) => ({
           content: 'A',
           finishReason: 'stop',
           usage: { prompt_tokens: 4, completion_tokens: 1, total_tokens: 5 },
-        }),
+        })
       )
 
       tracer.recordResponse('A')
@@ -317,21 +319,18 @@ describe('Tracer', () => {
       const tracer = createTracer()
 
       await tracer.traceLLMCall(
-        'openai', 'gpt-4o',
+        'openai',
+        'gpt-4o',
         { messages: [{ role: 'user', content: 'Hi' }] },
         async () => ({ choices: [{ message: { content: 'Hello' } }] }),
         (res) => ({
           content: 'Hello',
           finishReason: 'stop',
           usage: { prompt_tokens: 5, completion_tokens: 2, total_tokens: 7 },
-        }),
+        })
       )
 
-      await tracer.traceToolCall(
-        'search',
-        { q: 'test' },
-        async () => ({ results: [] }),
-      )
+      await tracer.traceToolCall('search', { q: 'test' }, async () => ({ results: [] }))
 
       const stats = tracer.getStats()
 
@@ -359,14 +358,15 @@ describe('Tracer', () => {
       const tracer = createTracer({ captureRequestData: false })
 
       await tracer.traceLLMCall(
-        'openai', 'gpt-4o',
+        'openai',
+        'gpt-4o',
         { messages: [{ role: 'user', content: 'Private' }] },
         async () => ({ choices: [{ message: { content: 'OK' } }] }),
         (res) => ({
           content: 'OK',
           finishReason: 'stop',
           usage: { prompt_tokens: 3, completion_tokens: 1, total_tokens: 4 },
-        }),
+        })
       )
 
       const step = tracer.steps[0]

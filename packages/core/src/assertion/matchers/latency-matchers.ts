@@ -12,10 +12,7 @@ export interface LatencyMetrics {
 /**
  * Assert total latency is less than a threshold (in ms).
  */
-export function latencyToBeLessThan(
-  metrics: LatencyMetrics,
-  threshold: number,
-): AssertionResult {
+export function latencyToBeLessThan(metrics: LatencyMetrics, threshold: number): AssertionResult {
   const actual = metrics.totalLatency
   const passed = actual < threshold
   return {
@@ -32,7 +29,7 @@ export function latencyToBeLessThan(
  */
 export function latencyToBeGreaterThan(
   metrics: LatencyMetrics,
-  threshold: number,
+  threshold: number
 ): AssertionResult {
   const actual = metrics.totalLatency
   const passed = actual > threshold
@@ -50,7 +47,7 @@ export function latencyToBeGreaterThan(
  */
 export function firstTokenToBeLessThan(
   metrics: LatencyMetrics,
-  threshold: number,
+  threshold: number
 ): AssertionResult {
   const actual = metrics.firstTokenLatency
   const passed = actual !== undefined && actual < threshold

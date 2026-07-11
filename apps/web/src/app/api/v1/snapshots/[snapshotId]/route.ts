@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ snapshotId: string }> },
+  { params }: { params: Promise<{ snapshotId: string }> }
 ) {
   try {
     const { snapshotId } = await params
@@ -42,14 +42,17 @@ const restoreSchema = z.object({
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ snapshotId: string }> },
+  { params }: { params: Promise<{ snapshotId: string }> }
 ) {
   try {
     const { snapshotId } = await params
     const body = await req.json()
     const parsed = restoreSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsed.error.flatten() },
+        { status: 400 }
+      )
     }
 
     const snapshot = await db.snapshot.findUnique({ where: { id: snapshotId } })
@@ -75,7 +78,8 @@ export async function POST(
               ...agentConfig,
               provider: ov.provider ?? (model.provider as string) ?? agentConfig.provider,
               model: ov.model ?? (model.name as string) ?? agentConfig.model,
-              temperature: ov.temperature ?? (model.temperature as number) ?? agentConfig.temperature,
+              temperature:
+                ov.temperature ?? (model.temperature as number) ?? agentConfig.temperature,
               maxTokens: ov.maxTokens ?? (model.maxTokens as number) ?? agentConfig.maxTokens,
             },
             input,
@@ -88,7 +92,11 @@ export async function POST(
       return NextResponse.json({ restored: true, runId: run.id, snapshotId })
     }
 
-    return NextResponse.json({ restored: false, snapshotId, message: 'Snapshot data ready (no run created)' })
+    return NextResponse.json({
+      restored: false,
+      snapshotId,
+      message: 'Snapshot data ready (no run created)',
+    })
   } catch (error) {
     console.error('Failed to restore snapshot:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -97,7 +105,7 @@ export async function POST(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: Promise<{ snapshotId: string }> },
+  { params }: { params: Promise<{ snapshotId: string }> }
 ) {
   try {
     const { snapshotId } = await params

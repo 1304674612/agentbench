@@ -211,8 +211,8 @@ export abstract class OpenAICompatibleProvider implements AgentBenchProvider {
     const message = choices[0]?.message as Record<string, unknown> | undefined
 
     return {
-      id: r.id as string ?? `${this.id}-${Date.now()}`,
-      model: r.model as string ?? '',
+      id: (r.id as string) ?? `${this.id}-${Date.now()}`,
+      model: (r.model as string) ?? '',
       choices: choices.map((c, i) => ({
         index: i,
         message: {
@@ -220,14 +220,15 @@ export abstract class OpenAICompatibleProvider implements AgentBenchProvider {
           content: (message?.content as string) ?? null,
           ...(message?.tool_calls ? { tool_calls: message.tool_calls as ToolCall[] } : {}),
         },
-        finishReason: (c.finish_reason as ChatCompletionResult['choices'][0]['finishReason']) ?? null,
+        finishReason:
+          (c.finish_reason as ChatCompletionResult['choices'][0]['finishReason']) ?? null,
       })),
       usage: {
         promptTokens: usage?.prompt_tokens ?? 0,
         completionTokens: usage?.completion_tokens ?? 0,
         totalTokens: usage?.total_tokens ?? 0,
       },
-      created: r.created as number ?? Math.floor(Date.now() / 1000),
+      created: (r.created as number) ?? Math.floor(Date.now() / 1000),
       provider: this.id,
     }
   }
@@ -292,8 +293,6 @@ export abstract class OpenAICompatibleProvider implements AgentBenchProvider {
       console.error('[OPENAI-COMPATIBLE] Failed to parse error response body:', error)
       detail = await response.text().catch(() => '')
     }
-    throw new Error(
-      `${this.name} API error (${response.status}): ${detail || response.statusText}`
-    )
+    throw new Error(`${this.name} API error (${response.status}): ${detail || response.statusText}`)
   }
 }

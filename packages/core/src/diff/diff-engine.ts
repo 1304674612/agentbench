@@ -179,11 +179,7 @@ function computeTextDiffs(runA: RunResult, runB: RunResult): TextDiff[] {
   return diffs
 }
 
-function buildTextDiff(
-  type: TextDiff['type'],
-  contentA: string,
-  contentB: string,
-): TextDiff {
+function buildTextDiff(type: TextDiff['type'], contentA: string, contentB: string): TextDiff {
   const hunks = computeHunks(contentA, contentB)
   const identical = contentA === contentB
   const similarity = computeSimilarity(contentA, contentB)
@@ -271,13 +267,33 @@ function computeSimilarity(a: string, b: string): number {
 function computeMetricDiffs(metricsA: RunMetrics, metricsB: RunMetrics): MetricDiff[] {
   return [
     buildMetricDiffItem('totalTokens', 'Total Tokens', metricsA.totalTokens, metricsB.totalTokens),
-    buildMetricDiffItem('promptTokens', 'Prompt Tokens', metricsA.promptTokens, metricsB.promptTokens),
-    buildMetricDiffItem('completionTokens', 'Completion Tokens', metricsA.completionTokens, metricsB.completionTokens),
+    buildMetricDiffItem(
+      'promptTokens',
+      'Prompt Tokens',
+      metricsA.promptTokens,
+      metricsB.promptTokens
+    ),
+    buildMetricDiffItem(
+      'completionTokens',
+      'Completion Tokens',
+      metricsA.completionTokens,
+      metricsB.completionTokens
+    ),
     buildMetricDiffItem('totalCost', 'Total Cost', metricsA.totalCost, metricsB.totalCost),
-    buildMetricDiffItem('totalLatency', 'Total Latency (ms)', metricsA.totalLatency, metricsB.totalLatency),
+    buildMetricDiffItem(
+      'totalLatency',
+      'Total Latency (ms)',
+      metricsA.totalLatency,
+      metricsB.totalLatency
+    ),
     buildMetricDiffItem('stepCount', 'Steps', metricsA.stepCount, metricsB.stepCount),
     buildMetricDiffItem('llmCallCount', 'LLM Calls', metricsA.llmCallCount, metricsB.llmCallCount),
-    buildMetricDiffItem('toolCallCount', 'Tool Calls', metricsA.toolCallCount, metricsB.toolCallCount),
+    buildMetricDiffItem(
+      'toolCallCount',
+      'Tool Calls',
+      metricsA.toolCallCount,
+      metricsB.toolCallCount
+    ),
   ]
 }
 
@@ -285,13 +301,11 @@ function buildMetricDiffItem(
   metric: string,
   label: string,
   valueA: number,
-  valueB: number,
+  valueB: number
 ): MetricDiff {
   const change = valueB - valueA
   const changePercent =
-    valueA === 0
-      ? valueB === 0 ? 0 : 100
-      : Math.round((change / valueA) * 10000) / 100
+    valueA === 0 ? (valueB === 0 ? 0 : 100) : Math.round((change / valueA) * 10000) / 100
 
   return {
     metric,
@@ -336,12 +350,17 @@ function computeTraceDiff(traceA: ExecutionTrace, traceB: ExecutionTrace): Trace
       const diffs: string[] = []
 
       if (stepA.type === 'llm_call') {
-        if (stepA.llmModel !== stepB.llmModel) diffs.push(`model: ${stepA.llmModel} → ${stepB.llmModel}`)
-        if (stepA.promptTokens !== stepB.promptTokens) diffs.push(`prompt tokens: ${stepA.promptTokens} → ${stepB.promptTokens}`)
-        if (stepA.completionTokens !== stepB.completionTokens) diffs.push(`completion tokens: ${stepA.completionTokens} → ${stepB.completionTokens}`)
+        if (stepA.llmModel !== stepB.llmModel)
+          diffs.push(`model: ${stepA.llmModel} → ${stepB.llmModel}`)
+        if (stepA.promptTokens !== stepB.promptTokens)
+          diffs.push(`prompt tokens: ${stepA.promptTokens} → ${stepB.promptTokens}`)
+        if (stepA.completionTokens !== stepB.completionTokens)
+          diffs.push(`completion tokens: ${stepA.completionTokens} → ${stepB.completionTokens}`)
       } else if (stepA.type === 'tool_call') {
-        if (stepA.toolName !== stepB.toolName) diffs.push(`tool: ${stepA.toolName} → ${stepB.toolName}`)
-        if (stepA.duration !== stepB.duration) diffs.push(`duration: ${stepA.duration}ms → ${stepB.duration}ms`)
+        if (stepA.toolName !== stepB.toolName)
+          diffs.push(`tool: ${stepA.toolName} → ${stepB.toolName}`)
+        if (stepA.duration !== stepB.duration)
+          diffs.push(`duration: ${stepA.duration}ms → ${stepB.duration}ms`)
       }
 
       if (stepA.status !== stepB.status) diffs.push(`status: ${stepA.status} → ${stepB.status}`)
@@ -368,7 +387,8 @@ function computeTraceDiff(traceA: ExecutionTrace, traceB: ExecutionTrace): Trace
 
   const totalChanges = onlyInA.length + onlyInB.length + modified.length
   const totalSteps = Math.max(stepsA.length, stepsB.length)
-  const pathSimilarity = totalSteps === 0 ? 1 : Math.round((1 - totalChanges / totalSteps) * 100) / 100
+  const pathSimilarity =
+    totalSteps === 0 ? 1 : Math.round((1 - totalChanges / totalSteps) * 100) / 100
 
   return {
     stepCountDiff: {

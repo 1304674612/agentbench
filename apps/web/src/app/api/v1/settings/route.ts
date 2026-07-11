@@ -71,7 +71,7 @@ export const PATCH = withApiAuth(async (req: NextRequest, ctx: ApiContext) => {
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Validation failed', details: parsed.error.flatten() },
-        { status: 400 },
+        { status: 400 }
       )
     }
 

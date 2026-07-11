@@ -25,10 +25,7 @@ function watchFiles(
         const fullPath = nodePath.join(dir, entry.name)
         if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
           scanDirectory(fullPath)
-        } else if (
-          entry.isFile() &&
-          /\.(ts|tsx|js|jsx|json|yml|yaml|toml)$/.test(entry.name)
-        ) {
+        } else if (entry.isFile() && /\.(ts|tsx|js|jsx|json|yml|yaml|toml)$/.test(entry.name)) {
           watchedFiles.add(fullPath)
         }
       }
@@ -109,9 +106,7 @@ export function registerDevCommand(program: Command): void {
       console.log('')
 
       const cwd = process.cwd()
-      const watchDirs = options.watch
-        ? [...options.watch]
-        : [cwd]
+      const watchDirs = options.watch ? [...options.watch] : [cwd]
 
       // Always include agentbench.config.ts if it exists
       const configPath = nodePath.join(cwd, 'agentbench.config.ts')

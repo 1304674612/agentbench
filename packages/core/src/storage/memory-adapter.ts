@@ -53,7 +53,9 @@ export class MemoryStorageAdapter implements StorageAdapter {
 
   async connect(): Promise<void> {}
   async disconnect(): Promise<void> {}
-  async healthCheck(): Promise<boolean> { return true }
+  async healthCheck(): Promise<boolean> {
+    return true
+  }
 
   // Projects
   async createProject(data: CreateProjectInput): Promise<Project> {
@@ -77,10 +79,10 @@ export class MemoryStorageAdapter implements StorageAdapter {
   }
   async listProjects(query?: ProjectQuery): Promise<Project[]> {
     let results = [...this.projects.values()]
-    if (query?.ownerId) results = results.filter(p => p.ownerId === query.ownerId)
+    if (query?.ownerId) results = results.filter((p) => p.ownerId === query.ownerId)
     if (query?.search) {
       const s = query.search.toLowerCase()
-      results = results.filter(p => p.name.toLowerCase().includes(s))
+      results = results.filter((p) => p.name.toLowerCase().includes(s))
     }
     return results.slice(query?.offset ?? 0, (query?.offset ?? 0) + (query?.limit ?? 100))
   }
@@ -112,7 +114,7 @@ export class MemoryStorageAdapter implements StorageAdapter {
     return this.testSuites.get(id) ?? null
   }
   async listTestSuites(projectId: string): Promise<TestSuite[]> {
-    return [...this.testSuites.values()].filter(s => s.projectId === projectId)
+    return [...this.testSuites.values()].filter((s) => s.projectId === projectId)
   }
 
   // Test Cases
@@ -138,7 +140,7 @@ export class MemoryStorageAdapter implements StorageAdapter {
     return this.testCases.get(id) ?? null
   }
   async listTestCases(suiteId: string): Promise<TestCase[]> {
-    return [...this.testCases.values()].filter(tc => tc.suiteId === suiteId)
+    return [...this.testCases.values()].filter((tc) => tc.suiteId === suiteId)
   }
   async updateTestCase(id: string, data: Partial<CreateTestCaseInput>): Promise<TestCase> {
     const tc = this.testCases.get(id)
@@ -178,23 +180,23 @@ export class MemoryStorageAdapter implements StorageAdapter {
   }
   async listRuns(query?: RunQuery): Promise<RunSummary[]> {
     let results = [...this.runs.values()]
-    if (query?.projectId) results = results.filter(r => r.projectId === query.projectId)
-    if (query?.status) results = results.filter(r => r.status === query.status)
+    if (query?.projectId) results = results.filter((r) => r.projectId === query.projectId)
+    if (query?.status) results = results.filter((r) => r.status === query.status)
     if (query?.tags?.length) {
-      results = results.filter(r => query.tags!.some(t => r.tags?.includes(t)))
+      results = results.filter((r) => query.tags!.some((t) => r.tags?.includes(t)))
     }
     if (query?.search) {
       const s = query.search.toLowerCase()
-      results = results.filter(r => r.name.toLowerCase().includes(s))
+      results = results.filter((r) => r.name.toLowerCase().includes(s))
     }
     results.sort((a, b) => {
       const aVal = query?.orderBy ? (a as any)[query.orderBy] : a.createdAt
       const bVal = query?.orderBy ? (b as any)[query.orderBy] : b.createdAt
-      return query?.orderDir === 'asc' ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1)
+      return query?.orderDir === 'asc' ? (aVal > bVal ? 1 : -1) : aVal < bVal ? 1 : -1
     })
     const offset = query?.offset ?? 0
     const limit = query?.limit ?? 50
-    return results.slice(offset, offset + limit).map(r => ({
+    return results.slice(offset, offset + limit).map((r) => ({
       id: r.id,
       name: r.name,
       status: r.status,
@@ -247,7 +249,9 @@ export class MemoryStorageAdapter implements StorageAdapter {
       totalTokens: data.totalTokens,
       cost: data.cost ?? 0,
       status: (data.status ?? 'success') as TraceStep['status'],
-      error: data.error ? { message: data.error, type: 'unknown' as const, retryable: false } : undefined,
+      error: data.error
+        ? { message: data.error, type: 'unknown' as const, retryable: false }
+        : undefined,
       metadata: data.metadata ?? {},
     }
     const steps = this.traceSteps.get(data.runId) ?? []
@@ -308,7 +312,9 @@ export class MemoryStorageAdapter implements StorageAdapter {
     this.assertionResults.set(data.runId, results)
     return ar
   }
-  async batchCreateAssertionResults(data: CreateAssertionResultInput[]): Promise<AssertionResult[]> {
+  async batchCreateAssertionResults(
+    data: CreateAssertionResultInput[]
+  ): Promise<AssertionResult[]> {
     const results: AssertionResult[] = []
     for (const d of data) {
       results.push(await this.createAssertionResult(d))
@@ -339,7 +345,7 @@ export class MemoryStorageAdapter implements StorageAdapter {
     return this.snapshots.get(id) ?? null
   }
   async listSnapshots(projectId: string): Promise<Snapshot[]> {
-    return [...this.snapshots.values()].filter(s => s.projectId === projectId)
+    return [...this.snapshots.values()].filter((s) => s.projectId === projectId)
   }
   async deleteSnapshot(id: string): Promise<void> {
     this.snapshots.delete(id)
@@ -370,7 +376,7 @@ export class MemoryStorageAdapter implements StorageAdapter {
     return this.experiments.get(id) ?? null
   }
   async listExperiments(projectId: string): Promise<Experiment[]> {
-    return [...this.experiments.values()].filter(e => e.projectId === projectId)
+    return [...this.experiments.values()].filter((e) => e.projectId === projectId)
   }
   async updateExperiment(id: string, data: Partial<CreateExperimentInput>): Promise<Experiment> {
     const exp = this.experiments.get(id)
@@ -398,7 +404,7 @@ export class MemoryStorageAdapter implements StorageAdapter {
     return this.datasets.get(id) ?? null
   }
   async listDatasets(projectId: string): Promise<Dataset[]> {
-    return [...this.datasets.values()].filter(d => d.projectId === projectId)
+    return [...this.datasets.values()].filter((d) => d.projectId === projectId)
   }
   async createDatasetItem(data: CreateDatasetItemInput): Promise<DatasetItem> {
     const item: DatasetItem = {

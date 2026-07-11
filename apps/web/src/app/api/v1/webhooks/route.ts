@@ -26,13 +26,16 @@ export async function POST(req: NextRequest) {
     const webhookSecret = process.env.WEBHOOK_SECRET
     if (!webhookSecret) {
       console.error('WEBHOOK_SECRET is not configured')
-      return NextResponse.json({ error: 'Webhook secret not configured on server' }, { status: 500 })
+      return NextResponse.json(
+        { error: 'Webhook secret not configured on server' },
+        { status: 500 }
+      )
     }
     if (!secret || secret !== webhookSecret) {
       return NextResponse.json({ error: 'Invalid or missing webhook secret' }, { status: 401 })
     }
 
-    const body = await req.json() as Record<string, unknown>
+    const body = (await req.json()) as Record<string, unknown>
 
     switch (source) {
       case 'github': {
@@ -54,7 +57,9 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function handleGitHubWebhook(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+async function handleGitHubWebhook(
+  body: Record<string, unknown>
+): Promise<Record<string, unknown>> {
   const action = body.action as string
   const pullRequest = body.pull_request as Record<string, unknown> | undefined
 
@@ -76,7 +81,11 @@ async function handleGitHubWebhook(body: Record<string, unknown>): Promise<Recor
           },
         })
 
-        return { triggered: true, runId: run.id, message: `CI run created for PR #${pullRequest.number ?? '?'}` }
+        return {
+          triggered: true,
+          runId: run.id,
+          message: `CI run created for PR #${pullRequest.number ?? '?'}`,
+        }
       }
 
       return { triggered: false, message: `No project found for repo: ${repoName}` }
@@ -86,7 +95,9 @@ async function handleGitHubWebhook(body: Record<string, unknown>): Promise<Recor
   return { received: true, action }
 }
 
-async function handleGitLabWebhook(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+async function handleGitLabWebhook(
+  body: Record<string, unknown>
+): Promise<Record<string, unknown>> {
   const objectKind = body.object_kind as string
   const projectInfo = body.project as Record<string, unknown> | undefined
   const projectName = projectInfo?.name as string
@@ -113,7 +124,9 @@ async function handleGitLabWebhook(body: Record<string, unknown>): Promise<Recor
   return { received: true, object_kind: objectKind }
 }
 
-async function handleGenericWebhook(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+async function handleGenericWebhook(
+  body: Record<string, unknown>
+): Promise<Record<string, unknown>> {
   const projectId = body.projectId as string
   const trigger = (body.trigger ?? 'manual') as string
 

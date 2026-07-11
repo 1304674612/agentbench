@@ -15,7 +15,12 @@ export interface RunMetricsProps {
   formatCurrency: (amount: number) => string
 }
 
-export function RunMetrics({ metrics, formatDuration, formatNumber, formatCurrency }: RunMetricsProps) {
+export function RunMetrics({
+  metrics,
+  formatDuration,
+  formatNumber,
+  formatCurrency,
+}: RunMetricsProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <MetricCard
@@ -33,11 +38,7 @@ export function RunMetrics({ metrics, formatDuration, formatNumber, formatCurren
         label="Cost"
         value={metrics.totalCost !== undefined ? formatCurrency(metrics.totalCost) : '—'}
       />
-      <MetricCard
-        icon={BarChart3}
-        label="Steps"
-        value={String(metrics.stepCount ?? '—')}
-      />
+      <MetricCard icon={BarChart3} label="Steps" value={String(metrics.stepCount ?? '—')} />
     </div>
   )
 }

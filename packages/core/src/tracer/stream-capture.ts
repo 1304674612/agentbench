@@ -309,8 +309,7 @@ export class StreamCapture {
   }
 
   private _processOpenAIToolCallDelta(tc: Record<string, unknown>): void {
-    const idx =
-      typeof tc.index === 'number' ? tc.index : 0
+    const idx = typeof tc.index === 'number' ? tc.index : 0
 
     // Get or create the accumulator
     let mappingId = this.toolCallsByIndex.get(idx)
@@ -396,8 +395,7 @@ export class StreamCapture {
         if (!block) break
 
         if (block.type === 'tool_use') {
-          this.anthropicActiveBlockIndex =
-            typeof parsed.index === 'number' ? parsed.index : -1
+          this.anthropicActiveBlockIndex = typeof parsed.index === 'number' ? parsed.index : -1
           const blockId = typeof block.id === 'string' ? block.id : `toolu_${Date.now()}`
           const blockName = typeof block.name === 'string' ? block.name : 'unknown'
 
@@ -524,7 +522,8 @@ export class StreamCapture {
       const u = parsed.usage as Record<string, number>
       this.usage = {
         promptTokens: u.prompt_tokens ?? u.input_tokens ?? this.usage?.promptTokens ?? 0,
-        completionTokens: u.completion_tokens ?? u.output_tokens ?? this.usage?.completionTokens ?? 0,
+        completionTokens:
+          u.completion_tokens ?? u.output_tokens ?? this.usage?.completionTokens ?? 0,
         totalTokens: u.total_tokens ?? 0,
       }
     }

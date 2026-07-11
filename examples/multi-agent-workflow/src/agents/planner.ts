@@ -1,9 +1,15 @@
 /**
  * Planner Agent — Creates execution plans and strategies.
  */
-export interface Plan { steps: Array<{ id: number; action: string; agent: string; duration: string }>; estimatedTotal: string }
+export interface Plan {
+  steps: Array<{ id: number; action: string; agent: string; duration: string }>
+  estimatedTotal: string
+}
 
-export async function runPlanner(task: string, analysisResult?: string): Promise<{ agent: string; task: string; plan: Plan }> {
+export async function runPlanner(
+  task: string,
+  analysisResult?: string
+): Promise<{ agent: string; task: string; plan: Plan }> {
   return {
     agent: 'planner',
     task,

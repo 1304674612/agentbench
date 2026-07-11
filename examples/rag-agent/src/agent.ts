@@ -27,7 +27,7 @@ import type { ExecutionTrace } from '@agentbench/core'
 
 export async function executeTool(
   name: string,
-  args: Record<string, unknown>,
+  args: Record<string, unknown>
 ): Promise<Record<string, unknown>> {
   switch (name) {
     case 'retrieve': {
@@ -76,13 +76,7 @@ export interface RagAgentResult {
 }
 
 export async function runRagAgent(params: RunRagAgentParams): Promise<RagAgentResult> {
-  const {
-    query,
-    apiKey,
-    model = 'gpt-4o',
-    topK = 5,
-    maxSteps = 5,
-  } = params
+  const { query, apiKey, model = 'gpt-4o', topK = 5, maxSteps = 5 } = params
 
   const client = createOpenAIClient({
     apiKey,
@@ -127,7 +121,11 @@ Rules:
 - Keep answers concise and directly relevant to the question
 - When multiple documents provide information, synthesize the findings`,
       tools: [
-        { name: 'retrieve', description: 'Search document knowledge base', parameters: { query: 'string', topK: 'number' } },
+        {
+          name: 'retrieve',
+          description: 'Search document knowledge base',
+          parameters: { query: 'string', topK: 'number' },
+        },
       ],
     },
     messages: [

@@ -95,11 +95,7 @@ export function registerSnapshotCommand(program: Command): void {
 
           for (const s of snapshots) {
             const typeColor =
-              s.type === 'AUTO'
-                ? chalk.blue
-                : s.type === 'CI'
-                  ? chalk.magenta
-                  : chalk.white
+              s.type === 'AUTO' ? chalk.blue : s.type === 'CI' ? chalk.magenta : chalk.white
             console.log(`  ${typeColor(`[${s.type.toLowerCase()}]`)} ${s.name}`)
             console.log(
               chalk.gray(

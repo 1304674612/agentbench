@@ -40,10 +40,16 @@ export async function runOrchestrator(topic: string): Promise<OrchestratorResult
   const critique = await runCritic(execution.output)
   agentTraces.push('critic')
 
-  const consensus = await getConsensus(`Is the output for "${topic}" satisfactory?`, ['analyst', 'planner', 'executor', 'critic'])
+  const consensus = await getConsensus(`Is the output for "${topic}" satisfactory?`, [
+    'analyst',
+    'planner',
+    'executor',
+    'critic',
+  ])
   agentTraces.push('coordinator')
 
-  const synthesis = (await synthesizeResults([analysis, plan, execution, critique, consensus])).synthesis
+  const synthesis = (await synthesizeResults([analysis, plan, execution, critique, consensus]))
+    .synthesis
 
   return {
     success: true,

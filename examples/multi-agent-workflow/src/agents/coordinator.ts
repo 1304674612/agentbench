@@ -1,7 +1,12 @@
 /**
  * Coordinator Agent — Manages handoffs, consensus, and final synthesis.
  */
-export interface ConsensusResult { question: string; votes: Record<string, string>; consensus: string; agreement: number }
+export interface ConsensusResult {
+  question: string
+  votes: Record<string, string>
+  consensus: string
+  agreement: number
+}
 
 export async function getConsensus(question: string, agents: string[]): Promise<ConsensusResult> {
   const votes: Record<string, string> = {}
@@ -16,7 +21,9 @@ export async function getConsensus(question: string, agents: string[]): Promise<
   }
 }
 
-export async function synthesizeResults(results: Record<string, unknown>[]): Promise<{ synthesis: string; sourceCount: number }> {
+export async function synthesizeResults(
+  results: Record<string, unknown>[]
+): Promise<{ synthesis: string; sourceCount: number }> {
   return {
     synthesis: `Synthesized findings from ${results.length} agents. The multi-agent analysis reveals consistent patterns across independent evaluations.`,
     sourceCount: results.length,

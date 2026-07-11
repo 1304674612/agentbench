@@ -4,7 +4,13 @@
   "commit": false,
   "fixed": [],
   "linked": [
-    ["@agentbench/core", "@agentbench/openai", "@agentbench/anthropic", "@agentbench/mcp", "@agentbench/adapter"]
+    [
+      "@agentbench/core",
+      "@agentbench/openai",
+      "@agentbench/anthropic",
+      "@agentbench/mcp",
+      "@agentbench/adapter"
+    ]
   ],
   "access": "public",
   "baseBranch": "main",

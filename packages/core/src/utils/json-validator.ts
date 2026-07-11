@@ -12,7 +12,7 @@
 export function validateJsonNode(
   value: unknown,
   schema: Record<string, unknown>,
-  path: string,
+  path: string
 ): string[] {
   const errors: string[] = []
 
@@ -101,13 +101,21 @@ export function validateJsonNode(
 
 function checkJsonType(value: unknown, type: string): boolean {
   switch (type) {
-    case 'string': return typeof value === 'string'
-    case 'number': case 'integer': return typeof value === 'number'
-    case 'boolean': return typeof value === 'boolean'
-    case 'null': return value === null
-    case 'array': return Array.isArray(value)
-    case 'object': return value !== null && typeof value === 'object' && !Array.isArray(value)
-    default: return true
+    case 'string':
+      return typeof value === 'string'
+    case 'number':
+    case 'integer':
+      return typeof value === 'number'
+    case 'boolean':
+      return typeof value === 'boolean'
+    case 'null':
+      return value === null
+    case 'array':
+      return Array.isArray(value)
+    case 'object':
+      return value !== null && typeof value === 'object' && !Array.isArray(value)
+    default:
+      return true
   }
 }
 

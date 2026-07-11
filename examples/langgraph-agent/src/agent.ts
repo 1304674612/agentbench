@@ -42,13 +42,10 @@ export interface LangGraphAgentResult {
   cost: number
 }
 
-export async function runLangGraphAgent(params: RunLangGraphAgentParams): Promise<LangGraphAgentResult> {
-  const {
-    request,
-    apiKey,
-    model = 'gpt-4o',
-    humanApproved = true,
-  } = params
+export async function runLangGraphAgent(
+  params: RunLangGraphAgentParams
+): Promise<LangGraphAgentResult> {
+  const { request, apiKey, model = 'gpt-4o', humanApproved = true } = params
 
   // Step 1: Execute the state graph
   const initialState = createInitialState(request)

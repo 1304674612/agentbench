@@ -5,6 +5,49 @@ import * as nodeUrl from 'node:url'
 import chalk from 'chalk'
 import { formatDuration } from '../lib/format'
 
+// ── Resolve @agentbench/core from CLI's node_modules ──────────────────────────────
+
+/**
+ * When the user's project doesn't have @agentbench/core installed yet
+ * (e.g. fresh `agentbench init` without `npm install`), Node can't resolve
+ * imports from test files. We resolve the package from the CLI's own
+ * node_modules and create a symlink so imports work.
+ */
+function _findPackageRootFromCli(): string | null {
+  // Walk up from the CLI's location (this file) to find the nearest
+  // node_modules/@agentbench/core. Works in both monorepo and global installs.
+  let dir = nodePath.dirname(nodeUrl.fileURLToPath(import.meta.url))
+
+  while (dir !== nodePath.parse(dir).root) {
+    const candidate = nodePath.join(dir, 'node_modules', '@agentbench', 'core')
+    if (nodeFs.existsSync(candidate)) {
+      // Resolve symlinks to get the real path
+      try {
+        return nodeFs.realpathSync(candidate)
+      } catch {
+        return candidate
+      }
+    }
+    dir = nodePath.dirname(dir)
+  }
+  return null
+}
+
+function _ensureCoreInProject(cwd: string): void {
+  const targetLink = nodePath.join(cwd, 'node_modules', '@agentbench', 'core')
+  if (nodeFs.existsSync(targetLink)) return
+
+  const coreRoot = _findPackageRootFromCli()
+  if (!coreRoot) return
+
+  try {
+    nodeFs.mkdirSync(nodePath.dirname(targetLink), { recursive: true })
+    nodeFs.symlinkSync(coreRoot, targetLink)
+  } catch {
+    // If we can't create the symlink, the import will fail naturally below
+  }
+}
+
 // ── Types ───────────────────────────────────────────────────────────────────────
 
 interface AssertionDetail {
@@ -84,7 +127,10 @@ function discoverTestFiles(dir: string): string[] {
  * Uses ESM dynamic import with a cache-busting query parameter so
  * --watch mode picks up file changes.
  */
-async function loadTestSuite(filePath: string): Promise<{
+async function loadTestSuite(
+  filePath: string,
+  cwd: string
+): Promise<{
   default?: {
     name?: string
     description?: string
@@ -96,6 +142,10 @@ async function loadTestSuite(filePath: string): Promise<{
     }>
   }
 } | null> {
+  // If the project doesn't have @agentbench/core installed, resolve it
+  // from the CLI's own node_modules so test files can import it.
+  _ensureCoreInProject(cwd)
+
   try {
     const fileUrl = nodeUrl.pathToFileURL(filePath).href
     const mod = await import(`${fileUrl}?t=${Date.now()}`)
@@ -103,8 +153,8 @@ async function loadTestSuite(filePath: string): Promise<{
   } catch (err) {
     console.error(
       chalk.red(
-        `  Failed to load ${nodePath.relative(process.cwd(), filePath)}: ${err instanceof Error ? err.message : String(err)}`,
-      ),
+        `  Failed to load ${nodePath.relative(process.cwd(), filePath)}: ${err instanceof Error ? err.message : String(err)}`
+      )
     )
     return null
   }
@@ -125,7 +175,7 @@ async function loadTestSuite(filePath: string): Promise<{
  */
 function evaluateAssertions(
   output: string,
-  assertions: Array<{ type: string; params: Record<string, unknown> }>,
+  assertions: Array<{ type: string; params: Record<string, unknown> }>
 ): {
   passed: number
   failed: number
@@ -165,7 +215,11 @@ function evaluateAssertions(
           const found = output.toLowerCase().includes(substring.toLowerCase())
           if (!found) {
             passed++
-            details.push({ type: 'not-contains', status: 'PASSED', message: `"${substring}" not found` })
+            details.push({
+              type: 'not-contains',
+              status: 'PASSED',
+              message: `"${substring}" not found`,
+            })
           } else {
             failed++
             details.push({
@@ -183,7 +237,11 @@ function evaluateAssertions(
           const trimmed = output.trim()
           if (trimmed.length > 0) {
             passed++
-            details.push({ type: 'not-empty', status: 'PASSED', message: `Output has ${trimmed.length} chars` })
+            details.push({
+              type: 'not-empty',
+              status: 'PASSED',
+              message: `Output has ${trimmed.length} chars`,
+            })
           } else {
             failed++
             details.push({
@@ -199,15 +257,15 @@ function evaluateAssertions(
 
         case 'contains-any': {
           const substrings = (assertion.params?.substrings as string[]) ?? []
-          const foundAny = substrings.some((s) =>
-            output.toLowerCase().includes(s.toLowerCase()),
-          )
+          const foundAny = substrings.some((s) => output.toLowerCase().includes(s.toLowerCase()))
           if (foundAny) {
-            const found = substrings.filter((s) =>
-              output.toLowerCase().includes(s.toLowerCase()),
-            )
+            const found = substrings.filter((s) => output.toLowerCase().includes(s.toLowerCase()))
             passed++
-            details.push({ type: 'contains-any', status: 'PASSED', message: `Found: ${found.join(', ')}` })
+            details.push({
+              type: 'contains-any',
+              status: 'PASSED',
+              message: `Found: ${found.join(', ')}`,
+            })
           } else {
             failed++
             details.push({
@@ -262,7 +320,7 @@ function evaluateAssertions(
  */
 async function runTestsLocally(
   testDir: string,
-  opts: { grep?: string; suite?: string; verbose: boolean; isCI: boolean },
+  opts: { grep?: string; suite?: string; verbose: boolean; isCI: boolean }
 ): Promise<{ suites: TestSuiteResult[]; summary: TestSummary }> {
   const summary: TestSummary = {
     total: 0,
@@ -287,7 +345,7 @@ async function runTestsLocally(
   const suitePattern = opts.suite ? new RegExp(opts.suite, 'i') : null
 
   for (const filePath of testFiles) {
-    const mod = await loadTestSuite(filePath)
+    const mod = await loadTestSuite(filePath, process.cwd())
     if (!mod?.default?.tests) continue
 
     const suiteDef = mod.default
@@ -312,7 +370,7 @@ async function runTestsLocally(
       }
     }
 
-    for (const testDef of suiteDef.tests) {
+    for (const testDef of suiteDef.tests!) {
       const testName = testDef.name ?? '(unnamed)'
 
       // Apply grep filter
@@ -339,8 +397,7 @@ async function runTestsLocally(
 
         // Run the test function
         const output = await testDef.run()
-        const outputStr =
-          typeof output === 'string' ? output : JSON.stringify(output)
+        const outputStr = typeof output === 'string' ? output : JSON.stringify(output)
         const duration = Date.now() - startTime
 
         // Evaluate assertions locally
@@ -348,11 +405,7 @@ async function runTestsLocally(
         const evalResult = evaluateAssertions(outputStr, assertions)
 
         const status: TestCaseResult['status'] =
-          evalResult.failed > 0
-            ? 'FAILED'
-            : evalResult.errored > 0
-              ? 'ERROR'
-              : 'PASSED'
+          evalResult.failed > 0 ? 'FAILED' : evalResult.errored > 0 ? 'ERROR' : 'PASSED'
 
         const result: TestCaseResult = {
           name: testName,
@@ -480,13 +533,11 @@ function renderSummary(summary: TestSummary): void {
   parts.push(chalk.gray(`${summary.total} total`))
 
   console.log(`${chalk.bold('Tests:')}  ${parts.join(', ')}`)
-  console.log(
-    `${chalk.bold('Time:')}   ${chalk.gray(formatDuration(summary.totalDuration))}`,
-  )
+  console.log(`${chalk.bold('Time:')}   ${chalk.gray(formatDuration(summary.totalDuration))}`)
 
   if (summary.totalTokens > 0) {
     console.log(
-      `${chalk.bold('Tokens:')} ${chalk.gray(formatTokens(summary.totalTokens))}   ${chalk.bold('Cost:')} ${chalk.gray(formatCost(summary.totalCost))}`,
+      `${chalk.bold('Tokens:')} ${chalk.gray(formatTokens(summary.totalTokens))}   ${chalk.bold('Cost:')} ${chalk.gray(formatCost(summary.totalCost))}`
     )
   }
   console.log(chalk.bold.gray('─'.repeat(60)))
@@ -495,34 +546,26 @@ function renderSummary(summary: TestSummary): void {
 
 function renderCoverage(suites: TestSuiteResult[]): void {
   const allResults = suites.flatMap((s) => s.results)
-  const totalAssertions = allResults.reduce(
-    (sum, r) => sum + r.assertions.total,
-    0,
-  )
+  const totalAssertions = allResults.reduce((sum, r) => sum + r.assertions.total, 0)
   const coveredAssertions = allResults.reduce(
     (sum, r) => sum + r.assertions.passed + r.assertions.failed,
-    0,
+    0
   )
   const coveragePercent =
-    totalAssertions > 0
-      ? ((coveredAssertions / totalAssertions) * 100).toFixed(1)
-      : '0.0'
+    totalAssertions > 0 ? ((coveredAssertions / totalAssertions) * 100).toFixed(1) : '0.0'
 
   console.log('')
   console.log(chalk.bold.gray('─'.repeat(60)))
   console.log(chalk.bold('Coverage'))
   console.log(
     chalk.gray(
-      `  Assertions: ${coveredAssertions}/${totalAssertions} (${coveragePercent}%) evaluated`,
-    ),
+      `  Assertions: ${coveredAssertions}/${totalAssertions} (${coveragePercent}%) evaluated`
+    )
   )
   console.log(chalk.gray(`  Test cases: ${allResults.length} total`))
 
   // Assertion type breakdown
-  const typeCounts: Record<
-    string,
-    { total: number; passed: number; failed: number }
-  > = {}
+  const typeCounts: Record<string, { total: number; passed: number; failed: number }> = {}
   for (const r of allResults) {
     for (const d of r.assertionDetails) {
       if (!typeCounts[d.type]) {
@@ -537,10 +580,9 @@ function renderCoverage(suites: TestSuiteResult[]): void {
   if (Object.keys(typeCounts).length > 0) {
     console.log(chalk.gray('  By assertion type:'))
     for (const [type, counts] of Object.entries(typeCounts).sort()) {
-      const icon =
-        counts.failed === 0 ? chalk.green('    ✓') : chalk.red('    ✗')
+      const icon = counts.failed === 0 ? chalk.green('    ✓') : chalk.red('    ✗')
       console.log(
-        `${icon} ${chalk.bold(type.padEnd(24))} ${chalk.gray(`${counts.passed}/${counts.total} passed`)}`,
+        `${icon} ${chalk.bold(type.padEnd(24))} ${chalk.gray(`${counts.passed}/${counts.total} passed`)}`
       )
     }
   }
@@ -601,7 +643,7 @@ function escapeXml(str: string): string {
 function outputJunit(suites: TestSuiteResult[], summary: TestSummary): void {
   const lines: string[] = ['<?xml version="1.0" encoding="UTF-8"?>']
   lines.push(
-    `<testsuites name="AgentBench" tests="${summary.total}" failures="${summary.failed}" errors="${summary.errored}" skipped="${summary.skipped}" time="${(summary.totalDuration / 1000).toFixed(3)}">`,
+    `<testsuites name="AgentBench" tests="${summary.total}" failures="${summary.failed}" errors="${summary.errored}" skipped="${summary.skipped}" time="${(summary.totalDuration / 1000).toFixed(3)}">`
   )
 
   for (const suite of suites) {
@@ -609,9 +651,7 @@ function outputJunit(suites: TestSuiteResult[], summary: TestSummary): void {
     const failures = allResults.filter((r) => r.status === 'FAILED').length
     const errors = allResults.filter((r) => r.status === 'ERROR').length
     const skipped = allResults.filter((r) => r.status === 'SKIPPED').length
-    const suiteTime = (
-      allResults.reduce((sum, r) => sum + r.duration, 0) / 1000
-    ).toFixed(3)
+    const suiteTime = (allResults.reduce((sum, r) => sum + r.duration, 0) / 1000).toFixed(3)
 
     lines.push(
       `  <testsuite name="${escapeXml(suite.suiteName)}" ` +
@@ -619,7 +659,7 @@ function outputJunit(suites: TestSuiteResult[], summary: TestSummary): void {
         `failures="${failures}" ` +
         `errors="${errors}" ` +
         `skipped="${skipped}" ` +
-        `time="${suiteTime}">`,
+        `time="${suiteTime}">`
     )
 
     for (const result of allResults) {
@@ -629,28 +669,24 @@ function outputJunit(suites: TestSuiteResult[], summary: TestSummary): void {
 
       if (result.status === 'SKIPPED') {
         lines.push(
-          `    <testcase name="${name}" classname="${classname}" time="${time}"><skipped/></testcase>`,
+          `    <testcase name="${name}" classname="${classname}" time="${time}"><skipped/></testcase>`
         )
       } else if (result.status === 'ERROR') {
         const errorMsg = escapeXml(result.errorMessage ?? 'Unknown error')
         lines.push(
-          `    <testcase name="${name}" classname="${classname}" time="${time}"><error message="${errorMsg}">${errorMsg}</error></testcase>`,
+          `    <testcase name="${name}" classname="${classname}" time="${time}"><error message="${errorMsg}">${errorMsg}</error></testcase>`
         )
       } else if (result.status === 'FAILED') {
         const failureDetails = result.assertionDetails
           .filter((d) => d.status === 'FAILED')
           .map((d) => d.message)
           .join('; ')
-        const failureMsg = escapeXml(
-          failureDetails || 'Assertion failed',
-        )
+        const failureMsg = escapeXml(failureDetails || 'Assertion failed')
         lines.push(
-          `    <testcase name="${name}" classname="${classname}" time="${time}"><failure message="${failureMsg}">${failureMsg}</failure></testcase>`,
+          `    <testcase name="${name}" classname="${classname}" time="${time}"><failure message="${failureMsg}">${failureMsg}</failure></testcase>`
         )
       } else {
-        lines.push(
-          `    <testcase name="${name}" classname="${classname}" time="${time}"/>`,
-        )
+        lines.push(`    <testcase name="${name}" classname="${classname}" time="${time}"/>`)
       }
     }
 
@@ -666,11 +702,9 @@ function outputJunit(suites: TestSuiteResult[], summary: TestSummary): void {
 function startFileWatcher(
   cwd: string,
   dirs: string[],
-  onChange: () => Promise<void>,
+  onChange: () => Promise<void>
 ): { close: () => void } {
-  const watchDirs = dirs.filter((d) =>
-    nodeFs.existsSync(nodePath.join(cwd, d)),
-  )
+  const watchDirs = dirs.filter((d) => nodeFs.existsSync(nodePath.join(cwd, d)))
   const configPath = nodePath.join(cwd, 'agentbench.config.ts')
 
   const watchers: nodeFs.FSWatcher[] = []
@@ -692,19 +726,11 @@ function startFileWatcher(
   for (const dir of watchDirs) {
     const fullPath = nodePath.join(cwd, dir)
     try {
-      const watcher = nodeFs.watch(
-        fullPath,
-        { recursive: true },
-        (_event, filename) => {
-          if (
-            filename &&
-            !filename.startsWith('.') &&
-            !filename.endsWith('~')
-          ) {
-            scheduleRerun()
-          }
-        },
-      )
+      const watcher = nodeFs.watch(fullPath, { recursive: true }, (_event, filename) => {
+        if (filename && !filename.startsWith('.') && !filename.endsWith('~')) {
+          scheduleRerun()
+        }
+      })
       watchers.push(watcher)
     } catch (error) {
       // skip unwatchable directories
@@ -734,9 +760,7 @@ function startFileWatcher(
 export function registerTestCommand(program: Command): void {
   program
     .command('test')
-    .description(
-      'Run AgentBench tests locally — no API server required',
-    )
+    .description('Run AgentBench tests locally — no API server required')
     .option('-s, --suite <pattern>', 'Filter by test suite name pattern')
     .option('-g, --grep <pattern>', 'Filter test cases by name pattern')
     .option('-v, --verbose', 'Show detailed assertion results for each test')
@@ -744,24 +768,16 @@ export function registerTestCommand(program: Command): void {
     .option('--junit', 'Output results as JUnit XML (for CI integrations)')
     .option('-w, --watch', 'Watch files and re-run tests on changes')
     .option('--coverage', 'Show assertion coverage report')
-    .option(
-      '--replay',
-      'Use snapshots for zero-cost testing (no LLM calls)',
-    )
+    .option('--replay', 'Use snapshots for zero-cost testing (no LLM calls)')
     .option('--update-snapshots', 'Update snapshots during replay mode')
-    .option(
-      '--ci',
-      'CI mode — concise, non-interactive output, exit 1 on failure',
-    )
+    .option('--ci', 'CI mode — concise, non-interactive output, exit 1 on failure')
     .action(async (options) => {
       const cwd = process.cwd()
       const isWatchMode = options.watch === true
       const isJsonOutput = options.json === true
       const isJunitOutput = options.junit === true
       const isCI = options.ci === true
-      const verbose =
-        options.verbose === true ||
-        (!isCI && !isJsonOutput && !isJunitOutput)
+      const verbose = options.verbose === true || (!isCI && !isJsonOutput && !isJunitOutput)
 
       // Determine test directory
       const testDir = nodePath.join(cwd, 'tests')
@@ -778,8 +794,8 @@ export function registerTestCommand(program: Command): void {
             console.log(chalk.yellow('  No tests/ directory found.'))
             console.log(
               chalk.gray(
-                '  Run `agentbench init` to scaffold a project, or create test files in tests/.',
-              ),
+                '  Run `agentbench init` to scaffold a project, or create test files in tests/.'
+              )
             )
           }
           return {
@@ -817,11 +833,7 @@ export function registerTestCommand(program: Command): void {
       // ── Replay mode banner ───────────────────────────────────────────────
       if (options.replay) {
         if (!isJsonOutput && !isJunitOutput) {
-          console.log(
-            chalk.gray(
-              '  Replay mode: using cached snapshots (zero API cost)',
-            ),
-          )
+          console.log(chalk.gray('  Replay mode: using cached snapshots (zero API cost)'))
           console.log('')
         }
       }
@@ -863,39 +875,33 @@ export function registerTestCommand(program: Command): void {
         console.log('')
 
         let runCount = 0
-        const watcher = startFileWatcher(
-          cwd,
-          ['tests', 'src', 'dataset'],
-          async () => {
-            runCount++
-            console.log(
-              chalk.hex('#7C3AED')(
-                `\n  ⚡ Change detected — re-running tests (run #${runCount + 1})`,
-              ),
-            )
-            console.log('')
+        const watcher = startFileWatcher(cwd, ['tests', 'src', 'dataset'], async () => {
+          runCount++
+          console.log(
+            chalk.hex('#7C3AED')(`\n  ⚡ Change detected — re-running tests (run #${runCount + 1})`)
+          )
+          console.log('')
 
-            const result = await executeTests()
-            finalSummary = result.summary
+          const result = await executeTests()
+          finalSummary = result.summary
 
-            if (isJsonOutput) {
-              outputJson(result.suites, result.summary)
-            } else if (isJunitOutput) {
-              outputJunit(result.suites, result.summary)
-            } else {
-              for (const suite of result.suites) {
-                for (let i = 0; i < suite.results.length; i++) {
-                  renderTestLine(suite.results[i], verbose)
-                }
+          if (isJsonOutput) {
+            outputJson(result.suites, result.summary)
+          } else if (isJunitOutput) {
+            outputJunit(result.suites, result.summary)
+          } else {
+            for (const suite of result.suites) {
+              for (let i = 0; i < suite.results.length; i++) {
+                renderTestLine(suite.results[i], verbose)
               }
-              renderSummary(result.summary)
-              if (options.coverage) renderCoverage(result.suites)
             }
+            renderSummary(result.summary)
+            if (options.coverage) renderCoverage(result.suites)
+          }
 
-            console.log(chalk.gray('  Watching for file changes...'))
-            console.log('')
-          },
-        )
+          console.log(chalk.gray('  Watching for file changes...'))
+          console.log('')
+        })
 
         // Keep process alive
         process.on('SIGINT', () => {
@@ -915,10 +921,7 @@ export function registerTestCommand(program: Command): void {
       }
 
       // ── Exit Code ───────────────────────────────────────────────────────
-      if (
-        finalSummary &&
-        (finalSummary.failed > 0 || finalSummary.errored > 0)
-      ) {
+      if (finalSummary && (finalSummary.failed > 0 || finalSummary.errored > 0)) {
         process.exit(1)
       }
       process.exit(0)

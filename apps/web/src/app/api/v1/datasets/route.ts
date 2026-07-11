@@ -30,50 +30,55 @@ const createDatasetSchema = z.object({
   tags: z.array(z.string()).optional().default([]),
 })
 
-export const POST = withRateLimit(withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
-  try {
-    const body = await req.json()
-    const parsed = createDatasetSchema.parse(body)
+export const POST = withRateLimit(
+  withApiAuth(
+    async (req: NextRequest, _ctx: ApiContext) => {
+      try {
+        const body = await req.json()
+        const parsed = createDatasetSchema.parse(body)
 
-    const { items, ...datasetData } = parsed
+        const { items, ...datasetData } = parsed
 
-    const dataset = await db.dataset.create({
-      data: {
-        projectId: datasetData.projectId,
-        name: datasetData.name,
-        description: datasetData.description,
-        format: datasetData.format,
-        tags: datasetData.tags,
-        ...(items && items.length > 0
-          ? {
-              itemCount: items.length,
-              items: {
-                create: items.map((item, i) => ({
-                  input: item.input as any,
-                  expected: (item.expected ?? null) as any,
-                  metadata: (item.metadata ?? {}) as any,
-                  sortOrder: i,
-                })),
-              },
-            }
-          : {}),
-      },
-      include: {
-        _count: { select: { items: true } },
-      },
-    })
+        const dataset = await db.dataset.create({
+          data: {
+            projectId: datasetData.projectId,
+            name: datasetData.name,
+            description: datasetData.description,
+            format: datasetData.format,
+            tags: datasetData.tags,
+            ...(items && items.length > 0
+              ? {
+                  itemCount: items.length,
+                  items: {
+                    create: items.map((item, i) => ({
+                      input: item.input as any,
+                      expected: (item.expected ?? null) as any,
+                      metadata: (item.metadata ?? {}) as any,
+                      sortOrder: i,
+                    })),
+                  },
+                }
+              : {}),
+          },
+          include: {
+            _count: { select: { items: true } },
+          },
+        })
 
-    const result = {
-      ...dataset,
-      itemCount: dataset._count.items,
-      _count: undefined,
-    }
+        const result = {
+          ...dataset,
+          itemCount: dataset._count.items,
+          _count: undefined,
+        }
 
-    return NextResponse.json(result, { status: 201 })
-  } catch (error) {
-    return handleApiError(error)
-  }
-}, { requireWrite: true }))
+        return NextResponse.json(result, { status: 201 })
+      } catch (error) {
+        return handleApiError(error)
+      }
+    },
+    { requireWrite: true }
+  )
+)
 
 export const GET = withApiAuth(async (req: NextRequest, _ctx: ApiContext) => {
   try {

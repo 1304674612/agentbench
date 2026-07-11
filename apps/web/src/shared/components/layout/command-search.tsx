@@ -2,7 +2,19 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, Play, FlaskConical, LayoutDashboard, GitCompare, Database, Zap, Camera, ShieldCheck, Settings, Key } from 'lucide-react'
+import {
+  Search,
+  Play,
+  FlaskConical,
+  LayoutDashboard,
+  GitCompare,
+  Database,
+  Zap,
+  Camera,
+  ShieldCheck,
+  Settings,
+  Key,
+} from 'lucide-react'
 
 interface SearchResult {
   title: string
@@ -12,16 +24,41 @@ interface SearchResult {
 }
 
 const staticResults: SearchResult[] = [
-  { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, description: 'Project overview and statistics' },
+  {
+    title: 'Dashboard',
+    href: '/dashboard',
+    icon: LayoutDashboard,
+    description: 'Project overview and statistics',
+  },
   { title: 'Runs', href: '/runs', icon: Play, description: 'Agent execution history' },
-  { title: 'Tests', href: '/tests', icon: FlaskConical, description: 'Manage test suites and cases' },
-  { title: 'Compare', href: '/compare', icon: GitCompare, description: 'Compare two runs side by side' },
+  {
+    title: 'Tests',
+    href: '/tests',
+    icon: FlaskConical,
+    description: 'Manage test suites and cases',
+  },
+  {
+    title: 'Compare',
+    href: '/compare',
+    icon: GitCompare,
+    description: 'Compare two runs side by side',
+  },
   { title: 'Datasets', href: '/datasets', icon: Database, description: 'Manage test datasets' },
-  { title: 'Experiments', href: '/experiments', icon: Zap, description: 'A/B test prompts and models' },
+  {
+    title: 'Experiments',
+    href: '/experiments',
+    icon: Zap,
+    description: 'A/B test prompts and models',
+  },
   { title: 'Snapshots', href: '/snapshots', icon: Camera, description: 'Manage replay snapshots' },
   { title: 'Coverage', href: '/coverage', icon: ShieldCheck, description: '4D coverage analysis' },
   { title: 'API Keys', href: '/settings/api-keys', icon: Key, description: 'Manage API keys' },
-  { title: 'Settings', href: '/settings', icon: Settings, description: 'Account and project settings' },
+  {
+    title: 'Settings',
+    href: '/settings',
+    icon: Settings,
+    description: 'Account and project settings',
+  },
 ]
 
 export function CommandSearch({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -33,7 +70,7 @@ export function CommandSearch({ open, onClose }: { open: boolean; onClose: () =>
     ? staticResults.filter(
         (r) =>
           r.title.toLowerCase().includes(query.toLowerCase()) ||
-          r.description.toLowerCase().includes(query.toLowerCase()),
+          r.description.toLowerCase().includes(query.toLowerCase())
       )
     : staticResults
 
@@ -47,7 +84,7 @@ export function CommandSearch({ open, onClose }: { open: boolean; onClose: () =>
       onClose()
       router.push(href)
     },
-    [router, onClose],
+    [router, onClose]
   )
 
   useEffect(() => {
@@ -97,7 +134,9 @@ export function CommandSearch({ open, onClose }: { open: boolean; onClose: () =>
               type="button"
               onClick={() => navigate(item.href)}
               className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
-                i === selectedIndex ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-accent'
+                i === selectedIndex
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-foreground hover:bg-accent'
               }`}
             >
               <item.icon className="h-4 w-4 shrink-0" />

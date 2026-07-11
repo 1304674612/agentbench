@@ -12,10 +12,7 @@ const updateDatasetSchema = z.object({
 
 type ParamsCtx = { params: Promise<{ datasetId: string }> }
 
-export const GET = withApiAuth(async (
-  _req: NextRequest,
-  ctx: ParamsCtx,
-) => {
+export const GET = withApiAuth(async (_req: NextRequest, ctx: ParamsCtx) => {
   const { datasetId } = await ctx.params
   try {
     const dataset = await db.dataset.findUnique({
@@ -46,43 +43,43 @@ export const GET = withApiAuth(async (
   }
 })
 
-export const PUT = withApiAuth(async (
-  req: NextRequest,
-  ctx: ParamsCtx,
-) => {
-  const { datasetId } = await ctx.params
-  try {
-    const body = await req.json()
-    const parsed = updateDatasetSchema.safeParse(body)
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: parsed.error.flatten() },
-        { status: 400 }
-      )
+export const PUT = withApiAuth(
+  async (req: NextRequest, ctx: ParamsCtx) => {
+    const { datasetId } = await ctx.params
+    try {
+      const body = await req.json()
+      const parsed = updateDatasetSchema.safeParse(body)
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: 'Validation failed', details: parsed.error.flatten() },
+          { status: 400 }
+        )
+      }
+
+      const dataset = await db.dataset.update({
+        where: { id: datasetId },
+        data: parsed.data,
+      })
+
+      return NextResponse.json(dataset)
+    } catch (error) {
+      console.error('Failed to update dataset:', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
+  },
+  { requireWrite: true }
+)
 
-    const dataset = await db.dataset.update({
-      where: { id: datasetId },
-      data: parsed.data,
-    })
-
-    return NextResponse.json(dataset)
-  } catch (error) {
-    console.error('Failed to update dataset:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}, { requireWrite: true })
-
-export const DELETE = withApiAuth(async (
-  _req: NextRequest,
-  ctx: ParamsCtx,
-) => {
-  const { datasetId } = await ctx.params
-  try {
-    await db.dataset.delete({ where: { id: datasetId } })
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Failed to delete dataset:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}, { requireWrite: true })
+export const DELETE = withApiAuth(
+  async (_req: NextRequest, ctx: ParamsCtx) => {
+    const { datasetId } = await ctx.params
+    try {
+      await db.dataset.delete({ where: { id: datasetId } })
+      return NextResponse.json({ success: true })
+    } catch (error) {
+      console.error('Failed to delete dataset:', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
+  },
+  { requireWrite: true }
+)

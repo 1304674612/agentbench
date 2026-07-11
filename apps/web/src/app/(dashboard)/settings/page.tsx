@@ -99,20 +99,12 @@ function ProfileSection({ session }: { session: ReturnType<typeof useSession>['d
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Name
-          </label>
-          <p className="text-sm font-medium">
-            {session?.user?.name || 'Not set'}
-          </p>
+          <label className="block text-xs font-medium text-muted-foreground mb-1">Name</label>
+          <p className="text-sm font-medium">{session?.user?.name || 'Not set'}</p>
         </div>
         <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Email
-          </label>
-          <p className="text-sm font-medium">
-            {session?.user?.email || 'Not set'}
-          </p>
+          <label className="block text-xs font-medium text-muted-foreground mb-1">Email</label>
+          <p className="text-sm font-medium">{session?.user?.email || 'Not set'}</p>
         </div>
       </div>
 
@@ -255,9 +247,7 @@ function ApiKeysSection() {
       {/* New Key Display */}
       {newKey && (
         <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 space-y-2">
-          <p className="text-sm font-medium text-emerald-400">
-            New API key created: {newKey.name}
-          </p>
+          <p className="text-sm font-medium text-emerald-400">New API key created: {newKey.name}</p>
           <p className="text-xs text-emerald-400/80">
             Copy this key now. You will not be able to see it again.
           </p>
@@ -365,9 +355,7 @@ function ApiKeysSection() {
                       Last used: {new Date(key.lastUsedAt).toLocaleDateString()}
                     </span>
                   )}
-                  <span>
-                    Created: {new Date(key.createdAt).toLocaleDateString()}
-                  </span>
+                  <span>Created: {new Date(key.createdAt).toLocaleDateString()}</span>
                   <span className="flex items-center gap-1">
                     {key.scopes.map((s) => (
                       <span
@@ -519,9 +507,7 @@ function ProjectSettingsSection() {
 
       {/* Project Selector */}
       <div>
-        <label className="block text-sm font-medium mb-1.5">
-          Project
-        </label>
+        <label className="block text-sm font-medium mb-1.5">Project</label>
         <select
           value={selectedProjectId}
           onChange={(e) => setSelectedProjectId(e.target.value)}
@@ -537,9 +523,7 @@ function ProjectSettingsSection() {
 
       {/* Project Name */}
       <div>
-        <label className="block text-sm font-medium mb-1.5">
-          Project Name
-        </label>
+        <label className="block text-sm font-medium mb-1.5">Project Name</label>
         <input
           type="text"
           value={projectName}
@@ -550,9 +534,7 @@ function ProjectSettingsSection() {
 
       {/* Default Model */}
       <div>
-        <label className="block text-sm font-medium mb-1.5">
-          Default Model
-        </label>
+        <label className="block text-sm font-medium mb-1.5">Default Model</label>
         <select
           value={defaultModel}
           onChange={(e) => setDefaultModel(e.target.value)}
@@ -574,9 +556,7 @@ function ProjectSettingsSection() {
 
       {/* Timeout */}
       <div>
-        <label className="block text-sm font-medium mb-1.5">
-          Timeout (ms)
-        </label>
+        <label className="block text-sm font-medium mb-1.5">Timeout (ms)</label>
         <input
           type="number"
           value={timeout}
@@ -592,9 +572,7 @@ function ProjectSettingsSection() {
 
       {/* Max Retries */}
       <div>
-        <label className="block text-sm font-medium mb-1.5">
-          Max Retries
-        </label>
+        <label className="block text-sm font-medium mb-1.5">Max Retries</label>
         <input
           type="number"
           value={maxRetries}
@@ -612,11 +590,7 @@ function ProjectSettingsSection() {
           disabled={saving}
           className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-background hover:bg-foreground/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {saving ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Check className="h-4 w-4" />
-          )}
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
           {saving ? 'Saving...' : 'Save Settings'}
         </button>
       </div>

@@ -54,9 +54,7 @@ export function MetricComparison({
                   }`}
                 >
                   {m.valueA}
-                  {isAWinner && (
-                    <TrendingUp className="inline h-3 w-3 ml-1 text-emerald-400" />
-                  )}
+                  {isAWinner && <TrendingUp className="inline h-3 w-3 ml-1 text-emerald-400" />}
                 </td>
                 <td
                   className={`px-4 py-2.5 text-right text-sm font-mono ${
@@ -64,9 +62,7 @@ export function MetricComparison({
                   }`}
                 >
                   {m.valueB}
-                  {isBWinner && (
-                    <TrendingUp className="inline h-3 w-3 ml-1 text-emerald-400" />
-                  )}
+                  {isBWinner && <TrendingUp className="inline h-3 w-3 ml-1 text-emerald-400" />}
                 </td>
                 <td className="px-4 py-2.5 text-center">
                   {m.winner === 'tie' ? (

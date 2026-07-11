@@ -20,6 +20,13 @@
     "@agentbench/typescript-config": "workspace:*",
     "typescript": "^5.7.0"
   },
-  "keywords": ["agentbench", "langgraph", "agent", "testing", "tracing", "evaluation"],
+  "keywords": [
+    "agentbench",
+    "langgraph",
+    "agent",
+    "testing",
+    "tracing",
+    "evaluation"
+  ],
   "license": "Apache-2.0"
 }

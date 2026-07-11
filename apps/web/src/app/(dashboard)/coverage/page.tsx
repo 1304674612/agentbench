@@ -4,7 +4,8 @@ import { Shield, TrendingUp, AlertTriangle, CheckCircle2, Lightbulb } from 'luci
 
 export const metadata: Metadata = {
   title: 'Coverage',
-  description: 'Analyze test coverage across tools, evaluators, and assertion types — identify gaps in your agent testing.',
+  description:
+    'Analyze test coverage across tools, evaluators, and assertion types — identify gaps in your agent testing.',
 }
 
 export default async function CoveragePage() {
@@ -19,38 +20,54 @@ export default async function CoveragePage() {
     },
   })
 
-  const coverageByProject = projects.map((p: { id: string; name: string; runs: Array<{ traceSteps: Array<{ type: string; toolName?: string | null }> }> }) => {
-    const toolNames = new Set<string>()
-    const workerPaths = new Set<string>()
+  const coverageByProject = projects.map(
+    (p: {
+      id: string
+      name: string
+      runs: Array<{ traceSteps: Array<{ type: string; toolName?: string | null }> }>
+    }) => {
+      const toolNames = new Set<string>()
+      const workerPaths = new Set<string>()
 
-    for (const run of p.runs) {
-      for (const step of run.traceSteps as Array<{ type: string; toolName?: string | null }>) {
-        if (step.type === 'TOOL_CALL' && step.toolName) toolNames.add(step.toolName)
+      for (const run of p.runs) {
+        for (const step of run.traceSteps as Array<{ type: string; toolName?: string | null }>) {
+          if (step.type === 'TOOL_CALL' && step.toolName) toolNames.add(step.toolName)
+        }
+        const path = (run.traceSteps as Array<{ type: string }>)
+          .map((s: { type: string }) => s.type)
+          .join(' → ')
+        workerPaths.add(path)
       }
-      const path = (run.traceSteps as Array<{ type: string }>).map((s: { type: string }) => s.type).join(' → ')
-      workerPaths.add(path)
+
+      const toolCov = toolNames.size > 0 ? 100 : 0
+      const pathCov =
+        p.runs.length > 0 ? Math.min(100, Math.round((workerPaths.size / p.runs.length) * 100)) : 0
+      const overall = Math.round((toolCov + pathCov + 0) / 3)
+
+      return {
+        id: p.id,
+        name: p.name,
+        runCount: p.runs.length,
+        toolCount: toolNames.size,
+        pathCount: workerPaths.size,
+        toolCoverage: toolCov,
+        pathCoverage: pathCov,
+        overall,
+      }
     }
+  )
 
-    const toolCov = toolNames.size > 0 ? 100 : 0
-    const pathCov = p.runs.length > 0 ? Math.min(100, Math.round((workerPaths.size / p.runs.length) * 100)) : 0
-    const overall = Math.round((toolCov + pathCov + 0) / 3)
-
-    return {
-      id: p.id,
-      name: p.name,
-      runCount: p.runs.length,
-      toolCount: toolNames.size,
-      pathCount: workerPaths.size,
-      toolCoverage: toolCov,
-      pathCoverage: pathCov,
-      overall,
-    }
-  })
-
-  const totalRuns = projects.reduce((s: number, p: { runs: Array<unknown> }) => s + p.runs.length, 0)
-  const avgCoverage = coverageByProject.length > 0
-    ? Math.round(coverageByProject.reduce((s: number, p: { overall: number }) => s + p.overall, 0) / coverageByProject.length)
-    : 0
+  const totalRuns = projects.reduce(
+    (s: number, p: { runs: Array<unknown> }) => s + p.runs.length,
+    0
+  )
+  const avgCoverage =
+    coverageByProject.length > 0
+      ? Math.round(
+          coverageByProject.reduce((s: number, p: { overall: number }) => s + p.overall, 0) /
+            coverageByProject.length
+        )
+      : 0
 
   return (
     <div className="space-y-6">
@@ -70,7 +87,9 @@ export default async function CoveragePage() {
           </div>
           <div className="flex items-end gap-2">
             <span className="text-3xl font-bold">{avgCoverage}%</span>
-            <span className="text-xs text-muted-foreground mb-1">across {coverageByProject.length} projects</span>
+            <span className="text-xs text-muted-foreground mb-1">
+              across {coverageByProject.length} projects
+            </span>
           </div>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
@@ -85,7 +104,9 @@ export default async function CoveragePage() {
             <AlertTriangle className="h-4 w-4" />
             Uncovered Paths
           </div>
-          <div className="text-3xl font-bold">{coverageByProject.filter((p: { overall: number }) => p.overall < 50).length}</div>
+          <div className="text-3xl font-bold">
+            {coverageByProject.filter((p: { overall: number }) => p.overall < 50).length}
+          </div>
           <div className="text-xs text-muted-foreground">projects below 50%</div>
         </div>
       </div>
@@ -94,30 +115,51 @@ export default async function CoveragePage() {
       {coverageByProject.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border p-12 text-center">
           <Shield className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">No coverage data yet. Run some agents to start collecting coverage.</p>
+          <p className="text-sm text-muted-foreground">
+            No coverage data yet. Run some agents to start collecting coverage.
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
-          {coverageByProject.map((p: { id: string; name: string; runCount: number; toolCount: number; pathCount: number; toolCoverage: number; pathCoverage: number; overall: number }) => (
-            <div key={p.id} className="rounded-xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="font-semibold text-sm">{p.name}</h3>
-                  <p className="text-xs text-muted-foreground">{p.runCount} runs · {p.toolCount} tools · {p.pathCount} unique paths</p>
+          {coverageByProject.map(
+            (p: {
+              id: string
+              name: string
+              runCount: number
+              toolCount: number
+              pathCount: number
+              toolCoverage: number
+              pathCoverage: number
+              overall: number
+            }) => (
+              <div key={p.id} className="rounded-xl border border-border bg-card p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="font-semibold text-sm">{p.name}</h3>
+                    <p className="text-xs text-muted-foreground">
+                      {p.runCount} runs · {p.toolCount} tools · {p.pathCount} unique paths
+                    </p>
+                  </div>
+                  <span
+                    className={`text-lg font-bold ${p.overall >= 70 ? 'text-emerald-400' : p.overall >= 40 ? 'text-amber-400' : 'text-red-400'}`}
+                  >
+                    {p.overall}%
+                  </span>
                 </div>
-                <span className={`text-lg font-bold ${p.overall >= 70 ? 'text-emerald-400' : p.overall >= 40 ? 'text-amber-400' : 'text-red-400'}`}>
-                  {p.overall}%
-                </span>
-              </div>
 
-              {/* Dimension bars */}
-              <div className="space-y-3">
-                <DimensionBar label="Tool Coverage" pct={p.toolCoverage} color="bg-emerald-500" />
-                <DimensionBar label="Workflow Coverage" pct={p.pathCoverage} color="bg-blue-500" />
-                <DimensionBar label="Edge Case Coverage" pct={0} color="bg-amber-500" />
+                {/* Dimension bars */}
+                <div className="space-y-3">
+                  <DimensionBar label="Tool Coverage" pct={p.toolCoverage} color="bg-emerald-500" />
+                  <DimensionBar
+                    label="Workflow Coverage"
+                    pct={p.pathCoverage}
+                    color="bg-blue-500"
+                  />
+                  <DimensionBar label="Edge Case Coverage" pct={0} color="bg-amber-500" />
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          )}
         </div>
       )}
 
@@ -131,18 +173,25 @@ export default async function CoveragePage() {
           {totalRuns === 0 && (
             <div className="flex items-start gap-2 text-sm">
               <AlertTriangle className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
-              <span className="text-muted-foreground">Run at least one agent to begin collecting coverage data.</span>
+              <span className="text-muted-foreground">
+                Run at least one agent to begin collecting coverage data.
+              </span>
             </div>
           )}
           {coverageByProject.filter((p: { pathCount: number }) => p.pathCount <= 1).length > 0 && (
             <div className="flex items-start gap-2 text-sm">
               <AlertTriangle className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
-              <span className="text-muted-foreground">Some projects have only a single execution path. Add error-handling and alternative-tool test cases.</span>
+              <span className="text-muted-foreground">
+                Some projects have only a single execution path. Add error-handling and
+                alternative-tool test cases.
+              </span>
             </div>
           )}
           <div className="flex items-start gap-2 text-sm">
             <CheckCircle2 className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" />
-            <span className="text-muted-foreground">Define edge cases (empty input, timeout, unicode) to get edge coverage metrics.</span>
+            <span className="text-muted-foreground">
+              Define edge cases (empty input, timeout, unicode) to get edge coverage metrics.
+            </span>
           </div>
         </div>
       </div>

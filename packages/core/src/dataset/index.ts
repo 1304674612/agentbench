@@ -1,4 +1,4 @@
-export { Dataset } from './dataset'
+export { Dataset, loadCsvDataset } from './dataset'
 export type {
   DatasetItem,
   DatasetMeta,

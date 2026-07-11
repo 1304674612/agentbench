@@ -8,10 +8,7 @@ const updateSuiteSchema = z.object({
   sortOrder: z.number().int().optional(),
 })
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ suiteId: string }> },
-) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ suiteId: string }> }) {
   try {
     const { suiteId } = await params
     const suite = await db.testSuite.findUnique({
@@ -36,14 +33,17 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ suiteId: string }> },
+  { params }: { params: Promise<{ suiteId: string }> }
 ) {
   try {
     const { suiteId } = await params
     const body = await req.json()
     const parsed = updateSuiteSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsed.error.flatten() },
+        { status: 400 }
+      )
     }
 
     const suite = await db.testSuite.update({
@@ -60,7 +60,7 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: Promise<{ suiteId: string }> },
+  { params }: { params: Promise<{ suiteId: string }> }
 ) {
   try {
     const { suiteId } = await params

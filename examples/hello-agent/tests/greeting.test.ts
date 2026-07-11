@@ -18,14 +18,10 @@ export async function greetingTest() {
   })
 
   // Assertion 1: Agent completed without errors
-  const completed = await expect(result)
-    .status().toBeCompleted()
-    .run()
+  const completed = await expect(result).status().toBeCompleted().run()
 
   // Assertion 2: Agent output is a non-empty string
-  const hasOutput = await expect(result)
-    .output().toMatchRegex(/.{3,}/)
-    .run()
+  const hasOutput = await expect(result).output().toMatchRegex(/.{3,}/).run()
 
   // Assertion 3: Response is warm and appropriate
   const friendly = await expect(result)
@@ -39,14 +35,10 @@ export async function greetingTest() {
     .run()
 
   // Assertion 4: Token usage is minimal for a simple greeting
-  const tokensMinimal = await expect(result)
-    .tokens().toBeLessThan(500)
-    .run()
+  const tokensMinimal = await expect(result).tokens().toBeLessThan(500).run()
 
   // Assertion 5: Response time is reasonable
-  const latencyOk = await expect(result)
-    .latency().toBeLessThan(10000)
-    .run()
+  const latencyOk = await expect(result).latency().toBeLessThan(10000).run()
 
   return {
     completed: completed.allPassed,

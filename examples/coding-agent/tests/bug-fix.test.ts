@@ -29,7 +29,10 @@ This function produces NaN for some inputs. Find the bug and write the corrected
   const result = await runCodingAgent({ task, apiKey: API_KEY })
 
   const completed = await expect(result).status().toBeCompleted().run()
-  const mentionsFix = await expect(result).output().toMatchRegex(/off.by.one|i < arr|<= .*length/i).run()
+  const mentionsFix = await expect(result)
+    .output()
+    .toMatchRegex(/off.by.one|i < arr|<= .*length/i)
+    .run()
 
   return {
     completed: completed.allPassed,
@@ -53,7 +56,10 @@ Add proper types and handle cases where first or last name might be undefined. W
   const result = await runCodingAgent({ task, apiKey: API_KEY })
 
   const completed = await expect(result).status().toBeCompleted().run()
-  const mentionsTypes = await expect(result).output().toMatchRegex(/interface|type|undefined|null|optional/i).run()
+  const mentionsTypes = await expect(result)
+    .output()
+    .toMatchRegex(/interface|type|undefined|null|optional/i)
+    .run()
 
   return {
     completed: completed.allPassed,

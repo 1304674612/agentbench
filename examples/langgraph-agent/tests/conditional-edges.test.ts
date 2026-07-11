@@ -24,7 +24,8 @@ export async function validationPassTerminationTest() {
   const completed = result.workflowState.status === 'completed'
 
   const hasOutput = await expect(result)
-    .output().toMatchRegex(/.{50,}/)
+    .output()
+    .toMatchRegex(/.{50,}/)
     .run()
 
   return {
@@ -37,15 +38,12 @@ export async function validationPassTerminationTest() {
 /** Test Case 2: Edge routing for needs_revision returns to generate. */
 export async function needsRevisionRoutingTest() {
   // Test the routing directly with constructed state
-  const state = updateState(
-    createInitialState('test input'),
-    {
-      intent: 'question_answering',
-      currentNode: 'validate',
-      validation: 'needs_revision',
-      status: 'validating',
-    },
-  )
+  const state = updateState(createInitialState('test input'), {
+    intent: 'question_answering',
+    currentNode: 'validate',
+    validation: 'needs_revision',
+    status: 'validating',
+  })
 
   const nextNode = getNextNode(state)
 
@@ -60,16 +58,13 @@ export async function needsRevisionRoutingTest() {
 
 /** Test Case 3: Edge routing for needs_human should route to human_review. */
 export async function needsHumanRoutingTest() {
-  const state = updateState(
-    createInitialState('test input'),
-    {
-      intent: 'question_answering',
-      currentNode: 'validate',
-      validation: 'needs_human',
-      status: 'validating',
-      humanReviewRequired: true,
-    },
-  )
+  const state = updateState(createInitialState('test input'), {
+    intent: 'question_answering',
+    currentNode: 'validate',
+    validation: 'needs_human',
+    status: 'validating',
+    humanReviewRequired: true,
+  })
 
   const nextNode = getNextNode(state)
 

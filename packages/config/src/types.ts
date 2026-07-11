@@ -187,13 +187,7 @@ export interface EvaluationConfig {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Known coverage-analysis dimensions. */
-export type CoverageDimensionName =
-  | 'prompt'
-  | 'workflow'
-  | 'tool'
-  | 'state'
-  | 'edge'
-  | 'edge-case'
+export type CoverageDimensionName = 'prompt' | 'workflow' | 'tool' | 'state' | 'edge' | 'edge-case'
 
 /**
  * Coverage-analysis configuration.
@@ -319,9 +313,7 @@ export type AgentBenchUserConfig = DeepPartial<AgentBenchConfig>
  * Recursive `Partial` that also makes nested object properties
  * optional. Arrays are left intact.
  */
-export type DeepPartial<T> = T extends object
-  ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : T
+export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Zod Schemas (Runtime Validation)
@@ -349,24 +341,11 @@ const judgeDimensionSchema = z.enum([
   'tool_usage',
 ])
 
-const coverageDimensionSchema = z.enum([
-  'prompt',
-  'workflow',
-  'tool',
-  'state',
-  'edge',
-  'edge-case',
-])
+const coverageDimensionSchema = z.enum(['prompt', 'workflow', 'tool', 'state', 'edge', 'edge-case'])
 
 const reportFormatSchema = z.enum(['terminal', 'json', 'html', 'markdown', 'junit'])
 
-const ciProviderSchema = z.enum([
-  'github-actions',
-  'gitlab-ci',
-  'circleci',
-  'jenkins',
-  'none',
-])
+const ciProviderSchema = z.enum(['github-actions', 'gitlab-ci', 'circleci', 'jenkins', 'none'])
 
 /** Zod schema for a single tool definition. */
 export const ToolConfigSchema = z.object({

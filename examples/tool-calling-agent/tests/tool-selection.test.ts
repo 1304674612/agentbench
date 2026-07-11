@@ -17,12 +17,11 @@ export async function weatherToolSelectionTest() {
     apiKey: API_KEY,
   })
 
-  const usedWeather = await expect(result)
-    .tool('get_weather').toBeCalled()
-    .run()
+  const usedWeather = await expect(result).tool('get_weather').toBeCalled().run()
 
   const mentionsTokyo = await expect(result)
-    .output().toMatchRegex(/Tokyo|28|sunny/i)
+    .output()
+    .toMatchRegex(/Tokyo|28|sunny/i)
     .run()
 
   return {
@@ -39,12 +38,11 @@ export async function calculatorToolSelectionTest() {
     apiKey: API_KEY,
   })
 
-  const usedCalculator = await expect(result)
-    .tool('calculator').toBeCalled()
-    .run()
+  const usedCalculator = await expect(result).tool('calculator').toBeCalled().run()
 
   const producedAnswer = await expect(result)
-    .output().toMatchRegex(/.{20,}/)
+    .output()
+    .toMatchRegex(/.{20,}/)
     .run()
 
   return {
@@ -61,12 +59,11 @@ export async function translateToolSelectionTest() {
     apiKey: API_KEY,
   })
 
-  const usedTranslate = await expect(result)
-    .tool('translate_text').toBeCalled()
-    .run()
+  const usedTranslate = await expect(result).tool('translate_text').toBeCalled().run()
 
   const mentionsTranslation = await expect(result)
-    .output().toMatchRegex(/bonjour|tradui/i)
+    .output()
+    .toMatchRegex(/bonjour|tradui/i)
     .run()
 
   return {

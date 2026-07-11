@@ -37,7 +37,9 @@ export type PaginationInput = z.infer<typeof paginationSchema>
 
 export const createProjectSchema = z.object({
   name: z.string().min(2).max(100),
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase alphanumeric with hyphens'),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase alphanumeric with hyphens'),
   description: z.string().max(500).optional(),
 })
 
@@ -92,12 +94,15 @@ export const createExperimentSchema = z.object({
   name: z.string().min(1).max(256),
   description: z.string().max(1000).optional(),
   config: z.object({
-    variants: z.array(
-      z.object({
-        name: z.string().min(1),
-        config: z.record(z.unknown()).default({}),
-      })
-    ).min(2).max(10),
+    variants: z
+      .array(
+        z.object({
+          name: z.string().min(1),
+          config: z.record(z.unknown()).default({}),
+        })
+      )
+      .min(2)
+      .max(10),
   }),
 })
 

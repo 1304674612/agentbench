@@ -1,11 +1,7 @@
 import { Sidebar } from '@/shared/components/layout/sidebar'
 import { Header } from '@/shared/components/layout/header'
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />

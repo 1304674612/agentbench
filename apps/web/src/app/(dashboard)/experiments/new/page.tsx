@@ -88,18 +88,12 @@ export default function NewExperimentPage() {
     loadProjects()
   }, [])
 
-  function updateVariant(
-    variant: 'A' | 'B',
-    field: keyof VariantConfig,
-    value: string | number,
-  ) {
+  function updateVariant(variant: 'A' | 'B', field: keyof VariantConfig, value: string | number) {
     const setter = variant === 'A' ? setVariantA : setVariantB
     setter((prev) => ({ ...prev, [field]: value }))
   }
 
-  function validateVariant(
-    variant: VariantConfig,
-  ): Record<string, string> {
+  function validateVariant(variant: VariantConfig): Record<string, string> {
     const errors: Record<string, string> = {}
 
     // Variant name: required
@@ -207,10 +201,7 @@ export default function NewExperimentPage() {
     <div className="space-y-6 max-w-3xl">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        <Link
-          href="/experiments"
-          className="hover:text-foreground transition-colors"
-        >
+        <Link href="/experiments" className="hover:text-foreground transition-colors">
           Experiments
         </Link>
         <ChevronRight className="h-3.5 w-3.5" />
@@ -241,10 +232,7 @@ export default function NewExperimentPage() {
 
           {/* Experiment Name */}
           <div>
-            <label
-              htmlFor="expName"
-              className="block text-sm font-medium mb-1.5"
-            >
+            <label htmlFor="expName" className="block text-sm font-medium mb-1.5">
               Experiment Name <span className="text-red-400">*</span>
             </label>
             <input
@@ -255,17 +243,12 @@ export default function NewExperimentPage() {
               placeholder="e.g. GPT-4o vs Claude on Support Tickets"
               className={`w-full rounded-lg border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors ${fieldErrors.name ? 'border-red-400' : 'border-border'}`}
             />
-            {fieldErrors.name && (
-              <p className="text-red-400 text-xs mt-1">{fieldErrors.name}</p>
-            )}
+            {fieldErrors.name && <p className="text-red-400 text-xs mt-1">{fieldErrors.name}</p>}
           </div>
 
           {/* Description */}
           <div>
-            <label
-              htmlFor="expDesc"
-              className="block text-sm font-medium mb-1.5"
-            >
+            <label htmlFor="expDesc" className="block text-sm font-medium mb-1.5">
               Description
             </label>
             <textarea
@@ -280,10 +263,7 @@ export default function NewExperimentPage() {
 
           {/* Project */}
           <div>
-            <label
-              htmlFor="expProject"
-              className="block text-sm font-medium mb-1.5"
-            >
+            <label htmlFor="expProject" className="block text-sm font-medium mb-1.5">
               Project <span className="text-red-400">*</span>
             </label>
             {projectsLoading ? (
@@ -315,10 +295,7 @@ export default function NewExperimentPage() {
 
           {/* Runs per variant */}
           <div>
-            <label
-              htmlFor="runsPerVariant"
-              className="block text-sm font-medium mb-1.5"
-            >
+            <label htmlFor="runsPerVariant" className="block text-sm font-medium mb-1.5">
               Runs per Variant
             </label>
             <input
@@ -363,11 +340,7 @@ export default function NewExperimentPage() {
             disabled={loading}
             className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-background hover:bg-foreground/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             {loading ? 'Creating...' : 'Create Experiment'}
           </button>
           <Link
@@ -418,9 +391,7 @@ function VariantCard({
           placeholder="Variant name"
           className={`w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors ${errors.name ? 'border-red-400' : 'border-border'}`}
         />
-        {errors.name && (
-          <p className="text-red-400 text-xs mt-1">{errors.name}</p>
-        )}
+        {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
       </div>
 
       {/* Model */}
@@ -458,9 +429,7 @@ function VariantCard({
           <span>0 (deterministic)</span>
           <span>2 (creative)</span>
         </div>
-        {errors.temperature && (
-          <p className="text-red-400 text-xs mt-1">{errors.temperature}</p>
-        )}
+        {errors.temperature && <p className="text-red-400 text-xs mt-1">{errors.temperature}</p>}
       </div>
 
       {/* System Prompt */}
@@ -475,30 +444,22 @@ function VariantCard({
           rows={4}
           className={`w-full rounded-lg border bg-background px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors resize-none ${errors.systemPrompt ? 'border-red-400' : 'border-border'}`}
         />
-        {errors.systemPrompt && (
-          <p className="text-red-400 text-xs mt-1">{errors.systemPrompt}</p>
-        )}
+        {errors.systemPrompt && <p className="text-red-400 text-xs mt-1">{errors.systemPrompt}</p>}
       </div>
 
       {/* Max Tokens */}
       <div>
-        <label className="block text-sm font-medium mb-1.5">
-          Max Tokens
-        </label>
+        <label className="block text-sm font-medium mb-1.5">Max Tokens</label>
         <input
           type="number"
           value={variant.maxTokens}
-          onChange={(e) =>
-            onChange('maxTokens', Math.max(1, Number(e.target.value)))
-          }
+          onChange={(e) => onChange('maxTokens', Math.max(1, Number(e.target.value)))}
           min={1}
           max={128000}
           step={256}
           className={`w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors ${errors.maxTokens ? 'border-red-400' : 'border-border'}`}
         />
-        {errors.maxTokens && (
-          <p className="text-red-400 text-xs mt-1">{errors.maxTokens}</p>
-        )}
+        {errors.maxTokens && <p className="text-red-400 text-xs mt-1">{errors.maxTokens}</p>}
       </div>
     </div>
   )

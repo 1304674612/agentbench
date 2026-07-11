@@ -149,10 +149,7 @@ async function _traceStreamingCall(
 
   // Accumulators
   let fullContent = ''
-  const toolCallsByIndex = new Map<
-    number,
-    { id: string; name: string; arguments: string }
-  >()
+  const toolCallsByIndex = new Map<number, { id: string; name: string; arguments: string }>()
   let finishReason = 'stop'
   let usage: OpenAIChatResponse['usage']
   let streamId = ''

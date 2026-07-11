@@ -68,7 +68,7 @@ const orders: Record<string, { status: string; plan: string; date: string; amoun
 
 export async function executeTool(
   name: string,
-  args: Record<string, unknown>,
+  args: Record<string, unknown>
 ): Promise<Record<string, unknown>> {
   switch (name) {
     case 'search_knowledge_base': {
@@ -79,7 +79,7 @@ export async function executeTool(
         (entry) =>
           entry.keywords.some((kw) => query.includes(kw)) ||
           entry.content.toLowerCase().includes(query) ||
-          entry.topic.toLowerCase().includes(query),
+          entry.topic.toLowerCase().includes(query)
       )
 
       return {
@@ -94,7 +94,8 @@ export async function executeTool(
         escalated: true,
         ticketId: `TKT-${Date.now().toString(36).toUpperCase()}`,
         priority: (args.reason as string)?.includes('urgent') ? 'high' : 'normal',
-        message: 'Your request has been escalated. A human agent will respond within 2 hours during business hours.',
+        message:
+          'Your request has been escalated. A human agent will respond within 2 hours during business hours.',
       }
     }
 
@@ -137,7 +138,8 @@ export async function runCustomerSupportAgent(params: RunAgentParams) {
       type: 'function' as const,
       function: {
         name: 'search_knowledge_base',
-        description: 'Search the internal knowledge base for policy, product, and pricing information',
+        description:
+          'Search the internal knowledge base for policy, product, and pricing information',
         parameters: {
           type: 'object',
           properties: {
@@ -198,9 +200,21 @@ Key policies:
 - Subscription cancellations take effect at the end of the billing period
 - Enterprise customers have dedicated account managers`,
       tools: [
-        { name: 'search_knowledge_base', description: 'Search knowledge base', parameters: { query: 'string' } },
-        { name: 'escalate_to_human', description: 'Escalate to human', parameters: { reason: 'string' } },
-        { name: 'check_order_status', description: 'Check order status', parameters: { orderId: 'string' } },
+        {
+          name: 'search_knowledge_base',
+          description: 'Search knowledge base',
+          parameters: { query: 'string' },
+        },
+        {
+          name: 'escalate_to_human',
+          description: 'Escalate to human',
+          parameters: { reason: 'string' },
+        },
+        {
+          name: 'check_order_status',
+          description: 'Check order status',
+          parameters: { orderId: 'string' },
+        },
       ],
     },
     messages,

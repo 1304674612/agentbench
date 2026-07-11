@@ -239,9 +239,7 @@ function ImportModal({
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [name, setName] = useState('')
-  const [projectId, setProjectId] = useState(
-    projects.length > 0 ? projects[0].id : '',
-  )
+  const [projectId, setProjectId] = useState(projects.length > 0 ? projects[0].id : '')
   const [file, setFile] = useState<File | null>(null)
   const [fileContent, setFileContent] = useState<string>('')
   const [format, setFormat] = useState<'CSV' | 'JSON' | 'JSONL'>('JSON')
@@ -377,9 +375,7 @@ function ImportModal({
               placeholder="e.g. Customer Support Q&A"
               className={`w-full rounded-lg border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 transition-colors ${fieldErrors.name ? 'border-red-400' : 'border-border'}`}
             />
-            {fieldErrors.name && (
-              <p className="text-red-400 text-xs mt-1">{fieldErrors.name}</p>
-            )}
+            {fieldErrors.name && <p className="text-red-400 text-xs mt-1">{fieldErrors.name}</p>}
           </div>
 
           {/* Project */}
@@ -408,9 +404,7 @@ function ImportModal({
 
           {/* File Upload */}
           <div>
-            <label className="block text-sm font-medium mb-1.5">
-              File (CSV, JSON, JSONL)
-            </label>
+            <label className="block text-sm font-medium mb-1.5">File (CSV, JSON, JSONL)</label>
             <div
               onClick={() => fileInputRef.current?.click()}
               className={`cursor-pointer rounded-lg border border-dashed p-6 text-center hover:border-foreground/20 hover:bg-muted/20 transition-colors ${fieldErrors.file ? 'border-red-400' : 'border-border'}`}
@@ -427,9 +421,7 @@ function ImportModal({
               ) : (
                 <div className="space-y-2">
                   <Plus className="h-6 w-6 text-muted-foreground mx-auto" />
-                  <p className="text-sm text-muted-foreground">
-                    Click to select a file
-                  </p>
+                  <p className="text-sm text-muted-foreground">Click to select a file</p>
                   <p className="text-xs text-muted-foreground/70">
                     Supports CSV, JSON, and JSONL formats
                   </p>
@@ -443,9 +435,7 @@ function ImportModal({
               onChange={handleFileChange}
               className="hidden"
             />
-            {fieldErrors.file && (
-              <p className="text-red-400 text-xs mt-1">{fieldErrors.file}</p>
-            )}
+            {fieldErrors.file && <p className="text-red-400 text-xs mt-1">{fieldErrors.file}</p>}
           </div>
 
           {/* Format indicator */}

@@ -4,32 +4,48 @@ import { z } from 'zod'
 
 const evaluateSchema = z.object({
   /** Rule-based evaluators to run */
-  rules: z.array(z.object({
-    type: z.string(),
-    params: z.record(z.unknown()).optional().default({}),
-    weight: z.number().optional(),
-  })).optional().default([]),
+  rules: z
+    .array(
+      z.object({
+        type: z.string(),
+        params: z.record(z.unknown()).optional().default({}),
+        weight: z.number().optional(),
+      })
+    )
+    .optional()
+    .default([]),
   /** LLM judge dimensions to evaluate */
-  dimensions: z.array(z.enum([
-    'correctness', 'faithfulness', 'safety', 'relevance',
-    'completeness', 'reasoning', 'conciseness', 'tool_usage',
-  ])).optional().default(['correctness']),
+  dimensions: z
+    .array(
+      z.enum([
+        'correctness',
+        'faithfulness',
+        'safety',
+        'relevance',
+        'completeness',
+        'reasoning',
+        'conciseness',
+        'tool_usage',
+      ])
+    )
+    .optional()
+    .default(['correctness']),
   /** Expected answer for correctness/completeness evaluation */
   expected: z.string().optional(),
   /** Re-evaluate even if scores already exist */
   force: z.boolean().optional().default(false),
 })
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: runId } = await params
     const body = await req.json()
     const parsed = evaluateSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsed.error.flatten() },
+        { status: 400 }
+      )
     }
 
     // Fetch the run with traces
@@ -58,9 +74,12 @@ export async function POST(
     const { rules, dimensions, expected } = parsed.data
 
     // Extract output from trace steps
-    const rawTraceSteps = run.traceSteps as Array<{ type: string; llmResponse?: Record<string, unknown> | null }>
+    const rawTraceSteps = run.traceSteps as Array<{
+      type: string
+      llmResponse?: Record<string, unknown> | null
+    }>
     const responseSteps = rawTraceSteps.filter((s) => s.type?.toLowerCase() === 'response')
-    const output = responseSteps.map((s) => (s.llmResponse)?.content ?? '').join('\n')
+    const output = responseSteps.map((s) => s.llmResponse?.content ?? '').join('\n')
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     interface ToolCallItem {
@@ -164,7 +183,9 @@ export async function POST(
           const latency = metrics.totalLatency ?? run.duration ?? 0
           passed = latency < threshold
           score = passed ? 1 : 0
-          reason = passed ? `Latency ${latency}ms < ${threshold}ms` : `Latency ${latency}ms >= ${threshold}ms`
+          reason = passed
+            ? `Latency ${latency}ms < ${threshold}ms`
+            : `Latency ${latency}ms >= ${threshold}ms`
           break
         }
         case 'tokens_lt': {
@@ -180,7 +201,9 @@ export async function POST(
           const cost = metrics.totalCost ?? 0
           passed = cost < threshold
           score = passed ? 1 : 0
-          reason = passed ? `Cost $${cost.toFixed(4)} < $${threshold}` : `Cost $${cost.toFixed(4)} >= $${threshold}`
+          reason = passed
+            ? `Cost $${cost.toFixed(4)} < $${threshold}`
+            : `Cost $${cost.toFixed(4)} >= $${threshold}`
           break
         }
         default: {

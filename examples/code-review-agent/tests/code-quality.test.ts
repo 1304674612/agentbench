@@ -45,9 +45,7 @@ export async function codeQualityTest() {
   })
 
   // Assertion 1: Agent used the analysis tool
-  const usedAnalyzer = await expect(result)
-    .tool('analyze_code').toBeCalled()
-    .run()
+  const usedAnalyzer = await expect(result).tool('analyze_code').toBeCalled().run()
 
   // Assertion 2: Output mentions bugs, issues, or improvements
   const identifiesIssues = await expect(result)
@@ -83,9 +81,7 @@ export async function codeQualityTest() {
     .run()
 
   // Assertion 5: Completeness score > 6/10
-  const completeness = await expect(result)
-    .score('completeness').toBeGreaterThan(6)
-    .run()
+  const completeness = await expect(result).score('completeness').toBeGreaterThan(6).run()
 
   return {
     usedAnalyzer: usedAnalyzer.allPassed,

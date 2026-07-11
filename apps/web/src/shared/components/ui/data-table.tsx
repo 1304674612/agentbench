@@ -69,7 +69,9 @@ export function DataTable<T extends Record<string, unknown>>({
 
   if (data.length === 0) {
     return (
-      <div className={`rounded-xl border border-dashed border-border p-8 text-center text-muted-foreground text-sm ${className}`}>
+      <div
+        className={`rounded-xl border border-dashed border-border p-8 text-center text-muted-foreground text-sm ${className}`}
+      >
         {emptyMessage}
       </div>
     )
@@ -129,11 +131,10 @@ export function DataTable<T extends Record<string, unknown>>({
               role={rowHref ? 'link' : undefined}
             >
               {columns.map((col) => (
-                <td
-                  key={col.accessor}
-                  className={`px-4 py-3 ${col.className ?? ''}`}
-                >
-                  {col.cell ? col.cell(item) : String((item as Record<string, unknown>)[col.accessor] ?? '—')}
+                <td key={col.accessor} className={`px-4 py-3 ${col.className ?? ''}`}>
+                  {col.cell
+                    ? col.cell(item)
+                    : String((item as Record<string, unknown>)[col.accessor] ?? '—')}
                 </td>
               ))}
             </tr>

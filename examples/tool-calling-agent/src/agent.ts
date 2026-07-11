@@ -45,19 +45,23 @@ export type ToolName =
   | 'read_file'
 
 const toolExecutors: Record<string, (args: Record<string, unknown>) => Promise<unknown>> = {
-  get_weather: (args) => getWeather(String(args.city ?? ''), (args.units as 'celsius' | 'fahrenheit') ?? 'celsius'),
+  get_weather: (args) =>
+    getWeather(String(args.city ?? ''), (args.units as 'celsius' | 'fahrenheit') ?? 'celsius'),
   calculator: (args) => calculator(String(args.expression ?? '')),
   search_docs: (args) => searchDocs(String(args.query ?? ''), Number(args.maxResults ?? 3)),
   query_database: (args) => queryDatabase(String(args.sql ?? '')),
-  send_email: (args) => sendEmail(String(args.to ?? ''), String(args.subject ?? ''), String(args.body ?? '')),
-  check_calendar: (args) => checkCalendar(args.date ? String(args.date) : undefined, Number(args.days ?? 3)),
-  translate_text: (args) => translateText(String(args.text ?? ''), String(args.targetLanguage ?? 'spanish')),
+  send_email: (args) =>
+    sendEmail(String(args.to ?? ''), String(args.subject ?? ''), String(args.body ?? '')),
+  check_calendar: (args) =>
+    checkCalendar(args.date ? String(args.date) : undefined, Number(args.days ?? 3)),
+  translate_text: (args) =>
+    translateText(String(args.text ?? ''), String(args.targetLanguage ?? 'spanish')),
   read_file: (args) => readFile(String(args.path ?? '')),
 }
 
 export async function executeTool(
   name: string,
-  args: Record<string, unknown>,
+  args: Record<string, unknown>
 ): Promise<Record<string, unknown>> {
   const executor = toolExecutors[name]
   if (!executor) {
@@ -89,13 +93,10 @@ export interface ToolCallingAgentResult {
   cost: number
 }
 
-export async function runToolCallingAgent(params: RunToolCallingAgentParams): Promise<ToolCallingAgentResult> {
-  const {
-    request,
-    apiKey,
-    model = 'gpt-4o',
-    maxSteps = 10,
-  } = params
+export async function runToolCallingAgent(
+  params: RunToolCallingAgentParams
+): Promise<ToolCallingAgentResult> {
+  const { request, apiKey, model = 'gpt-4o', maxSteps = 10 } = params
 
   const client = createOpenAIClient({
     apiKey,
@@ -108,12 +109,17 @@ export async function runToolCallingAgent(params: RunToolCallingAgentParams): Pr
       type: 'function' as const,
       function: {
         name: 'get_weather',
-        description: 'Get the current weather conditions for a city. Use for weather-related questions.',
+        description:
+          'Get the current weather conditions for a city. Use for weather-related questions.',
         parameters: {
           type: 'object',
           properties: {
             city: { type: 'string', description: 'City name (e.g., "New York", "Tokyo")' },
-            units: { type: 'string', enum: ['celsius', 'fahrenheit'], description: 'Temperature units' },
+            units: {
+              type: 'string',
+              enum: ['celsius', 'fahrenheit'],
+              description: 'Temperature units',
+            },
           },
           required: ['city'],
         },
@@ -123,11 +129,15 @@ export async function runToolCallingAgent(params: RunToolCallingAgentParams): Pr
       type: 'function' as const,
       function: {
         name: 'calculator',
-        description: 'Evaluate a mathematical expression. Use for arithmetic, percentage, and math problems.',
+        description:
+          'Evaluate a mathematical expression. Use for arithmetic, percentage, and math problems.',
         parameters: {
           type: 'object',
           properties: {
-            expression: { type: 'string', description: 'Math expression (e.g., "2 + 2 * 3", "(100 - 20) / 4")' },
+            expression: {
+              type: 'string',
+              description: 'Math expression (e.g., "2 + 2 * 3", "(100 - 20) / 4")',
+            },
           },
           required: ['expression'],
         },
@@ -137,7 +147,8 @@ export async function runToolCallingAgent(params: RunToolCallingAgentParams): Pr
       type: 'function' as const,
       function: {
         name: 'search_docs',
-        description: 'Search the documentation knowledge base. Use for help, setup, and configuration questions.',
+        description:
+          'Search the documentation knowledge base. Use for help, setup, and configuration questions.',
         parameters: {
           type: 'object',
           properties: {
@@ -152,7 +163,8 @@ export async function runToolCallingAgent(params: RunToolCallingAgentParams): Pr
       type: 'function' as const,
       function: {
         name: 'query_database',
-        description: 'Run a read-only SQL query against the database. Only SELECT queries are allowed.',
+        description:
+          'Run a read-only SQL query against the database. Only SELECT queries are allowed.',
         parameters: {
           type: 'object',
           properties: {
@@ -182,11 +194,15 @@ export async function runToolCallingAgent(params: RunToolCallingAgentParams): Pr
       type: 'function' as const,
       function: {
         name: 'check_calendar',
-        description: 'Check calendar events for a date range. Use for scheduling and availability questions.',
+        description:
+          'Check calendar events for a date range. Use for scheduling and availability questions.',
         parameters: {
           type: 'object',
           properties: {
-            date: { type: 'string', description: 'Start date in YYYY-MM-DD format (default: today)' },
+            date: {
+              type: 'string',
+              description: 'Start date in YYYY-MM-DD format (default: today)',
+            },
             days: { type: 'number', description: 'Number of days to check (default: 3)' },
           },
           required: [],
@@ -202,7 +218,10 @@ export async function runToolCallingAgent(params: RunToolCallingAgentParams): Pr
           type: 'object',
           properties: {
             text: { type: 'string', description: 'Text to translate' },
-            targetLanguage: { type: 'string', description: 'Target language (e.g., spanish, french, japanese)' },
+            targetLanguage: {
+              type: 'string',
+              description: 'Target language (e.g., spanish, french, japanese)',
+            },
           },
           required: ['text', 'targetLanguage'],
         },
@@ -212,11 +231,15 @@ export async function runToolCallingAgent(params: RunToolCallingAgentParams): Pr
       type: 'function' as const,
       function: {
         name: 'read_file',
-        description: 'Read the contents of a file. Use for accessing configuration, logs, or data files.',
+        description:
+          'Read the contents of a file. Use for accessing configuration, logs, or data files.',
         parameters: {
           type: 'object',
           properties: {
-            path: { type: 'string', description: 'File path (e.g., "/data/config.json", "/logs/app.log")' },
+            path: {
+              type: 'string',
+              description: 'File path (e.g., "/data/config.json", "/logs/app.log")',
+            },
           },
           required: ['path'],
         },
@@ -250,13 +273,33 @@ Rules:
 - For calculations, use the calculator tool — do not compute manually
 - Verify tool results before presenting them to the user`,
       tools: [
-        { name: 'get_weather', description: 'Get weather', parameters: { city: 'string', units: 'string' } },
+        {
+          name: 'get_weather',
+          description: 'Get weather',
+          parameters: { city: 'string', units: 'string' },
+        },
         { name: 'calculator', description: 'Evaluate math', parameters: { expression: 'string' } },
-        { name: 'search_docs', description: 'Search documents', parameters: { query: 'string', maxResults: 'number' } },
+        {
+          name: 'search_docs',
+          description: 'Search documents',
+          parameters: { query: 'string', maxResults: 'number' },
+        },
         { name: 'query_database', description: 'Run SQL query', parameters: { sql: 'string' } },
-        { name: 'send_email', description: 'Send email', parameters: { to: 'string', subject: 'string', body: 'string' } },
-        { name: 'check_calendar', description: 'Check calendar', parameters: { date: 'string', days: 'number' } },
-        { name: 'translate_text', description: 'Translate text', parameters: { text: 'string', targetLanguage: 'string' } },
+        {
+          name: 'send_email',
+          description: 'Send email',
+          parameters: { to: 'string', subject: 'string', body: 'string' },
+        },
+        {
+          name: 'check_calendar',
+          description: 'Check calendar',
+          parameters: { date: 'string', days: 'number' },
+        },
+        {
+          name: 'translate_text',
+          description: 'Translate text',
+          parameters: { text: 'string', targetLanguage: 'string' },
+        },
         { name: 'read_file', description: 'Read file', parameters: { path: 'string' } },
       ],
     },

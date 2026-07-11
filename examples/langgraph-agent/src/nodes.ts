@@ -20,12 +20,36 @@ import { updateState } from './state'
 // classifyNode — classify user intent via keyword matching
 // ---------------------------------------------------------------------------
 
-const intentPatterns: Array<{ pattern: RegExp; intent: WorkflowState['intent']; confidence: number }> = [
-  { pattern: /\b(what|who|where|when|why|how|explain|define|describe)\b/i, intent: 'question_answering', confidence: 0.9 },
-  { pattern: /\b(summarize|summarise|summary|tldr|sum up|recap)\b/i, intent: 'summarization', confidence: 0.95 },
-  { pattern: /\b(code|function|implement|write|program|script|algorithm|bug|fix|debug)\b/i, intent: 'code_generation', confidence: 0.85 },
-  { pattern: /\b(analyze|analysis|chart|graph|statistics|trend|data|metrics|report)\b/i, intent: 'data_analysis', confidence: 0.85 },
-  { pattern: /\b(translate|translation|convert.*language|in .* language)\b/i, intent: 'translation', confidence: 0.95 },
+const intentPatterns: Array<{
+  pattern: RegExp
+  intent: WorkflowState['intent']
+  confidence: number
+}> = [
+  {
+    pattern: /\b(what|who|where|when|why|how|explain|define|describe)\b/i,
+    intent: 'question_answering',
+    confidence: 0.9,
+  },
+  {
+    pattern: /\b(summarize|summarise|summary|tldr|sum up|recap)\b/i,
+    intent: 'summarization',
+    confidence: 0.95,
+  },
+  {
+    pattern: /\b(code|function|implement|write|program|script|algorithm|bug|fix|debug)\b/i,
+    intent: 'code_generation',
+    confidence: 0.85,
+  },
+  {
+    pattern: /\b(analyze|analysis|chart|graph|statistics|trend|data|metrics|report)\b/i,
+    intent: 'data_analysis',
+    confidence: 0.85,
+  },
+  {
+    pattern: /\b(translate|translation|convert.*language|in .* language)\b/i,
+    intent: 'translation',
+    confidence: 0.95,
+  },
 ]
 
 export function classifyNode(state: WorkflowState): WorkflowState {
@@ -81,9 +105,7 @@ const knowledgeBase: Record<string, string[]> = {
     'Context-specific terminology glossaries',
     'Grammar rules for the target language',
   ],
-  unknown: [
-    'General knowledge base search results',
-  ],
+  unknown: ['General knowledge base search results'],
 }
 
 export function retrieveNode(state: WorkflowState): WorkflowState {
@@ -146,24 +168,34 @@ function generateResponse(state: WorkflowState): string {
 
   switch (intent) {
     case 'question_answering':
-      return `Based on the available knowledge base, here is the answer to "${userInput}":\n\n` +
+      return (
+        `Based on the available knowledge base, here is the answer to "${userInput}":\n\n` +
         `The information was retrieved from ${retrievedContext.length} context sources and synthesized into a comprehensive response.`
+      )
 
     case 'summarization':
-      return `Summary of the provided content:\n\n` +
+      return (
+        `Summary of the provided content:\n\n` +
         `Key points have been extracted and condensed. The summary covers the main topics while preserving essential details.`
+      )
 
     case 'code_generation':
-      return `Here is the code implementation for "${userInput}":\n\n` +
+      return (
+        `Here is the code implementation for "${userInput}":\n\n` +
         `The solution follows best practices, includes error handling, and is documented with inline comments.`
+      )
 
     case 'data_analysis':
-      return `Analysis results for "${userInput}":\n\n` +
+      return (
+        `Analysis results for "${userInput}":\n\n` +
         `Data has been processed, trends identified, and insights extracted. Key findings are presented with supporting metrics.`
+      )
 
     case 'translation':
-      return `Translation result:\n\n` +
+      return (
+        `Translation result:\n\n` +
         `The text has been translated accurately, preserving both meaning and tone. Context-specific terminology has been applied.`
+      )
 
     default:
       return `I processed your request "${userInput}" through the standard workflow pipeline. Here is the result based on available context.`
@@ -219,10 +251,7 @@ export function validateNode(state: WorkflowState): WorkflowState {
 // humanReviewNode — simulate human review (approval required)
 // ---------------------------------------------------------------------------
 
-export function humanReviewNode(
-  state: WorkflowState,
-  approved = true,
-): WorkflowState {
+export function humanReviewNode(state: WorkflowState, approved = true): WorkflowState {
   const updated = updateState(state, {
     currentNode: 'human_review',
     status: 'human_review',
@@ -253,13 +282,15 @@ export function fallbackNode(state: WorkflowState): WorkflowState {
   return updateState(state, {
     currentNode: 'fallback',
     status: 'failed',
-    generatedResponse: 'I was unable to process your request. Please try rephrasing or contact support for assistance.',
+    generatedResponse:
+      'I was unable to process your request. Please try rephrasing or contact support for assistance.',
     validation: 'fail',
     messages: [
       ...state.messages,
       {
         role: 'assistant',
-        content: 'I was unable to process your request. Please try rephrasing or contact support for assistance.',
+        content:
+          'I was unable to process your request. Please try rephrasing or contact support for assistance.',
       },
     ],
   })

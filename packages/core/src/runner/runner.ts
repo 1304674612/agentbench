@@ -3,14 +3,7 @@
  * Runs an AI agent, captures the full trace, calculates metrics.
  */
 import type { StorageAdapter } from '../storage/adapter'
-import type {
-  AgentConfig,
-  RunInput,
-  RunOptions,
-  RunResult,
-  RunMetrics,
-  RunStatus,
-} from '../types'
+import type { AgentConfig, RunInput, RunOptions, RunResult, RunMetrics, RunStatus } from '../types'
 import { Tracer } from '../tracer/tracer'
 
 export interface RunnerConfig {
@@ -99,10 +92,7 @@ export class Runner {
 
     try {
       // Run with timeout
-      await this.executeWithTimeout(
-        options.timeout,
-        async () => execute({ runId: run.id, tracer })
-      )
+      await this.executeWithTimeout(options.timeout, async () => execute({ runId: run.id, tracer }))
     } catch (err) {
       if (err instanceof TimeoutError) {
         status = 'timeout'
@@ -126,12 +116,10 @@ export class Runner {
       totalLatency: endedAt.getTime() - startedAt.getTime(),
       firstTokenLatency: undefined, // Set by streaming capture
       toolCallCount: stats.toolCalls,
-      toolSuccessCount: tracer.steps.filter(
-        s => s.type === 'tool_call' && s.status === 'success'
-      ).length,
-      toolFailureCount: tracer.steps.filter(
-        s => s.type === 'tool_call' && s.status === 'error'
-      ).length,
+      toolSuccessCount: tracer.steps.filter((s) => s.type === 'tool_call' && s.status === 'success')
+        .length,
+      toolFailureCount: tracer.steps.filter((s) => s.type === 'tool_call' && s.status === 'error')
+        .length,
       stepCount: stats.totalSteps,
       llmCallCount: stats.llmCalls,
     }
@@ -164,9 +152,10 @@ export class Runner {
     }
 
     // Update run with final status
-    const summary = status === 'passed'
-      ? `Completed in ${stats.totalSteps} steps, ${stats.totalTokens} tokens, $${stats.totalCost.toFixed(4)}`
-      : `Failed: ${error}`
+    const summary =
+      status === 'passed'
+        ? `Completed in ${stats.totalSteps} steps, ${stats.totalTokens} tokens, $${stats.totalCost.toFixed(4)}`
+        : `Failed: ${error}`
 
     await this.storage.updateRun(run.id, {
       status,
@@ -212,9 +201,7 @@ export class Runner {
     execute: (context: RunContext, config: RunnerConfig) => Promise<unknown>
   ): Promise<RunResult[]> {
     const results = await Promise.allSettled(
-      configs.map((config) =>
-        this.run(config, (ctx) => execute(ctx, config))
-      )
+      configs.map((config) => this.run(config, (ctx) => execute(ctx, config)))
     )
 
     return results.map((r, i) => {
@@ -240,10 +227,16 @@ export class Runner {
           createdAt: new Date(),
         },
         metrics: {
-          totalTokens: 0, promptTokens: 0, completionTokens: 0,
-          totalCost: 0, totalLatency: 0,
-          toolCallCount: 0, toolSuccessCount: 0, toolFailureCount: 0,
-          stepCount: 0, llmCallCount: 0,
+          totalTokens: 0,
+          promptTokens: 0,
+          completionTokens: 0,
+          totalCost: 0,
+          totalLatency: 0,
+          toolCallCount: 0,
+          toolSuccessCount: 0,
+          toolFailureCount: 0,
+          stepCount: 0,
+          llmCallCount: 0,
         },
         scores: [],
         assertionResults: [],
@@ -255,10 +248,7 @@ export class Runner {
     })
   }
 
-  private async executeWithTimeout<T>(
-    ms: number,
-    fn: () => Promise<T>
-  ): Promise<T> {
+  private async executeWithTimeout<T>(ms: number, fn: () => Promise<T>): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(new TimeoutError(`Timeout after ${ms}ms`))

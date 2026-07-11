@@ -23,19 +23,20 @@ const createExperimentSchema = z.object({
     systemPrompt: z.string().optional(),
   }),
   runsPerVariant: z.number().int().min(2).max(100).optional().default(10),
-  metrics: z.array(z.object({
-    name: z.string(),
-    type: z.enum(['score', 'latency', 'tokens', 'cost', 'tool_calls', 'custom']),
-    direction: z.enum(['higher_is_better', 'lower_is_better']),
-  })).optional(),
+  metrics: z
+    .array(
+      z.object({
+        name: z.string(),
+        type: z.enum(['score', 'latency', 'tokens', 'cost', 'tool_calls', 'custom']),
+        direction: z.enum(['higher_is_better', 'lower_is_better']),
+      })
+    )
+    .optional(),
 })
 
 type ParamsCtx = { params: Promise<{ projectId: string }> }
 
-export const GET = withApiAuth(async (
-  _req: NextRequest,
-  ctx: ParamsCtx,
-) => {
+export const GET = withApiAuth(async (_req: NextRequest, ctx: ParamsCtx) => {
   const { projectId } = await ctx.params
   try {
     const experiments = await db.experiment.findMany({
@@ -48,11 +49,23 @@ export const GET = withApiAuth(async (
     })
 
     return NextResponse.json({
-      experiments: experiments.map((e: { id: string; name: string; description?: string | null; status: string; config: unknown; conclusion?: string | null; createdAt: Date; variants: Array<unknown>; _count: { runs: number } }) => ({
-        ...e,
-        runCount: e._count.runs,
-        _count: undefined,
-      })),
+      experiments: experiments.map(
+        (e: {
+          id: string
+          name: string
+          description?: string | null
+          status: string
+          config: unknown
+          conclusion?: string | null
+          createdAt: Date
+          variants: Array<unknown>
+          _count: { runs: number }
+        }) => ({
+          ...e,
+          runCount: e._count.runs,
+          _count: undefined,
+        })
+      ),
     })
   } catch (error) {
     console.error('Failed to list experiments:', error)
@@ -60,57 +73,60 @@ export const GET = withApiAuth(async (
   }
 })
 
-export const POST = withApiAuth(async (
-  req: NextRequest,
-  ctx: ParamsCtx,
-) => {
-  const { projectId } = await ctx.params
-  try {
-    const body = await req.json()
-    const parsed = createExperimentSchema.safeParse(body)
-    if (!parsed.success) {
-      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
-    }
+export const POST = withApiAuth(
+  async (req: NextRequest, ctx: ParamsCtx) => {
+    const { projectId } = await ctx.params
+    try {
+      const body = await req.json()
+      const parsed = createExperimentSchema.safeParse(body)
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: 'Validation failed', details: parsed.error.flatten() },
+          { status: 400 }
+        )
+      }
 
-    const defaultMetrics = [
-      { name: 'score', type: 'score' as const, direction: 'higher_is_better' as const },
-      { name: 'latency', type: 'latency' as const, direction: 'lower_is_better' as const },
-      { name: 'tokens', type: 'tokens' as const, direction: 'lower_is_better' as const },
-      { name: 'cost', type: 'cost' as const, direction: 'lower_is_better' as const },
-    ]
+      const defaultMetrics = [
+        { name: 'score', type: 'score' as const, direction: 'higher_is_better' as const },
+        { name: 'latency', type: 'latency' as const, direction: 'lower_is_better' as const },
+        { name: 'tokens', type: 'tokens' as const, direction: 'lower_is_better' as const },
+        { name: 'cost', type: 'cost' as const, direction: 'lower_is_better' as const },
+      ]
 
-    const experiment = await db.experiment.create({
-      data: {
-        projectId,
-        name: parsed.data.name,
-        description: parsed.data.description,
-        config: {
-          name: parsed.data.name,
+      const experiment = await db.experiment.create({
+        data: {
           projectId,
-          variants: [
-            { name: 'A', config: parsed.data.variantA },
-            { name: 'B', config: parsed.data.variantB },
-          ],
-          metrics: parsed.data.metrics ?? defaultMetrics,
-          options: {
-            runsPerVariant: parsed.data.runsPerVariant,
-            concurrency: 2,
-            timeout: 60000,
+          name: parsed.data.name,
+          description: parsed.data.description,
+          config: {
+            name: parsed.data.name,
+            projectId,
+            variants: [
+              { name: 'A', config: parsed.data.variantA },
+              { name: 'B', config: parsed.data.variantB },
+            ],
+            metrics: parsed.data.metrics ?? defaultMetrics,
+            options: {
+              runsPerVariant: parsed.data.runsPerVariant,
+              concurrency: 2,
+              timeout: 60000,
+            },
+          },
+          variants: {
+            create: [
+              { name: 'A', config: parsed.data.variantA },
+              { name: 'B', config: parsed.data.variantB },
+            ],
           },
         },
-        variants: {
-          create: [
-            { name: 'A', config: parsed.data.variantA },
-            { name: 'B', config: parsed.data.variantB },
-          ],
-        },
-      },
-      include: { variants: true },
-    })
+        include: { variants: true },
+      })
 
-    return NextResponse.json(experiment, { status: 201 })
-  } catch (error) {
-    console.error('Failed to create experiment:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}, { requireWrite: true })
+      return NextResponse.json(experiment, { status: 201 })
+    } catch (error) {
+      console.error('Failed to create experiment:', error)
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
+  },
+  { requireWrite: true }
+)
