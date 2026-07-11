@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow
+# ---------------------------------------------------------------------------
+# Example workflow — AgentBench GitHub Action
+# ---------------------------------------------------------------------------
+# Copy this file into your own repository under .github/workflows/ and adjust
+# the inputs below.  The action runs on every push and pull_request to your
+# default branch.
+#
+# Pre-requisites:
+# 1. Store your API key as a repository secret (Settings → Secrets and
+#    variables → Actions).  Name it e.g. AGENTBENCH_API_KEY.
+# 2. Place your test files in the `tests/` directory (or point `test-dir`
+#    elsewhere).
+# 3. (Optional) Create a `.agentbench/config.json` file to configure your
+#    agent under test.
+# ---------------------------------------------------------------------------
+
+name: AgentBench — AI Agent Regression Testing
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel in-progress runs on the same ref so you don't queue up stale checks.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  agent-bench:
+    name: 'Agent Regression Tests'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # ---------- Checkout your code ----------
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ---------- Run AgentBench ----------
+      # When you publish the action to the Marketplace, replace the `./`
+      # path below with the Marketplace slug, e.g.:
+      #   uses: your-org/agentbench@v1
+      - name: Run AgentBench
+        id: agentbench
+        uses: ./
+        with:
+          # REQUIRED — your LLM provider API key.
+          # Best practice: store this as a secret, NEVER hard-code it.
+          api-key: ${{ secrets.AGENTBENCH_API_KEY }}
+
+          # Optional overrides (defaults shown as comments):
+          # provider: openai
+          # test-dir: tests
+          # reporter: github-annotation
+          # fail-on-regression: true
+          # timeout: 30000
+
+      # ---------- Use outputs in downstream steps ----------
+      - name: Print score
+        if: always()
+        run: |
+          echo "Score       : ${{ steps.agentbench.outputs.score }}"
+          echo "Pass rate   : ${{ steps.agentbench.outputs.pass-rate }}"
+          echo "Total       : ${{ steps.agentbench.outputs.total }}"
+          echo "Passed      : ${{ steps.agentbench.outputs.passed }}"
+          echo "Failed      : ${{ steps.agentbench.outputs.failed }}"
+          echo "Regressions : ${{ steps.agentbench.outputs.has-regression }}"
+          echo "Artifact    : ${{ steps.agentbench.outputs.artifact-url }}"

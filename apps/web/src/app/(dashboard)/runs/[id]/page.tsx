@@ -1,27 +1,28 @@
+import {
+  AlertCircle,
+  AlertTriangle,
+  ArrowLeft,
+  BarChart3,
+  CheckCircle2,
+  Clock,
+  DollarSign,
+  RotateCcw,
+  SkipForward,
+  XCircle,
+  Zap,
+} from 'lucide-react'
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import type { FailedAssertion } from '@/features/runner/failure-guidance'
+import { FailureGuidance } from '@/features/runner/failure-guidance'
 import { db } from '@/shared/lib/db'
 import {
-  formatNumber,
   formatCurrency,
   formatDuration,
+  formatNumber,
   formatRelativeTime,
 } from '@/shared/lib/utils'
-import {
-  ArrowLeft,
-  Clock,
-  Zap,
-  DollarSign,
-  BarChart3,
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  SkipForward,
-  AlertCircle,
-  ThumbsUp,
-  RotateCcw,
-} from 'lucide-react'
 
 const statusStyles: Record<string, string> = {
   passed: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
@@ -69,6 +70,20 @@ export default async function RunDetailPage({ params }: PageProps) {
   const agentConfig = (config?.agent ?? {}) as Record<string, unknown>
   const metrics = (run.metrics ?? {}) as Record<string, number>
   const model = agentConfig?.model as string
+
+  // Extract failed/error assertions for triage display
+  const failedAssertions: FailedAssertion[] = run.assertionResults
+    .filter((r) => r.status === 'FAILED' || r.status === 'ERROR')
+    .map((r) => ({
+      id: r.id,
+      type: r.type,
+      status: r.status,
+      expected: r.expected,
+      actual: r.actual,
+      message: r.message,
+    }))
+
+  const hasFailures = failedAssertions.length > 0
 
   return (
     <div className="space-y-6">
@@ -157,6 +172,9 @@ export default async function RunDetailPage({ params }: PageProps) {
           </div>
         </div>
       )}
+
+      {/* Failure Triage — guided diagnosis for failed/error assertions */}
+      {hasFailures && <FailureGuidance failedAssertions={failedAssertions} />}
 
       {/* Timeline */}
       <div>
@@ -317,8 +335,8 @@ export default async function RunDetailPage({ params }: PageProps) {
         </div>
       )}
 
-      {/* Assertion Results */}
-      {run.assertionResults.length > 0 && (
+      {/* Assertion Results — shown as a clean table when all pass; failures use FailureGuidance above */}
+      {run.assertionResults.length > 0 && !hasFailures && (
         <div>
           <h2 className="text-lg font-semibold mb-4">Assertion Results</h2>
           <div className="rounded-xl border border-border overflow-hidden">

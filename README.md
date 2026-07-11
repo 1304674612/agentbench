@@ -103,6 +103,12 @@ Time:   3.5s
 
 ---
 
+## 🧪 Testing Methodology
+
+Testing AI agents is fundamentally different from testing deterministic software. AgentBench is built on a layered strategy: **deterministic assertions** (tools, tokens, latency) run on every PR; **LLM-assisted quality scores** (correctness, safety, faithfulness) gate pre-release. Read the [Agent Testing Pyramid](docs/agent-testing-pyramid.md) for the full strategy, and the [Anti-Patterns](docs/agent-testing-anti-patterns.md) to avoid the most common testing mistakes.
+
+---
+
 ## 📖 Why AgentBench?
 
 > *"I tracked my time. Coding was 10%. Testing was 90%. Not because I'm slow — because there was no tool."*
@@ -444,6 +450,10 @@ agentbench/
 | [Deployment](docs/DEPLOYMENT.md) | Docker, Vercel, self-hosted |
 | [FAQ](docs/FAQ.md) | 20+ common questions |
 | [Glossary](docs/GLOSSARY.md) | 50+ terminology definitions |
+| [Testing Pyramid](docs/agent-testing-pyramid.md) | Layered testing strategy for AI agents |
+| [Anti-Patterns](docs/agent-testing-anti-patterns.md) | 8 common testing mistakes and how to avoid them |
+| [Ecosystem Integrations](docs/ecosystem/) | Claude Code, LangChain/CrewAI, Vercel AI SDK |
+| [GitHub Action](action.yml) | One-step CI integration for agent regression testing |
 
 ---
 

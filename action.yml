@@ -1,0 +1,288 @@
+name: 'AgentBench — AI Agent Regression Testing'
+description: 'Run AgentBench tests against your AI agents. Catch prompt regressions before they ship.'
+author: 'AgentBench'
+
+branding:
+  icon: 'shield'
+  color: 'purple'
+
+inputs:
+  api-key:
+    description: >
+      Your LLM provider API key. This single key is mapped to the provider you
+      select below. For OpenAI, set this to your OpenAI API key; for Anthropic,
+      set it to your Anthropic API key; and so on.
+    required: true
+
+  provider:
+    description: 'LLM provider to use when running tests'
+    required: false
+    default: 'openai'
+
+  test-dir:
+    description: 'Directory containing test files (relative to repository root)'
+    required: false
+    default: 'tests'
+
+  reporter:
+    description: >
+      Output format for test results. "github-annotation" emits inline PR
+      annotations (::error / ::warning workflow commands) so failures appear
+      directly on the diff. "json" writes the raw result file only.
+    required: false
+    default: 'github-annotation'
+
+  fail-on-regression:
+    description: >
+      Whether to fail the workflow when a score regression is detected (a
+      previously-passing test now fails). Set to "false" to allow the workflow
+      to pass even with regressions.
+    required: false
+    default: 'true'
+
+  working-directory:
+    description: 'Working directory relative to the repository root'
+    required: false
+    default: '.'
+
+  timeout:
+    description: 'Maximum duration per test in milliseconds'
+    required: false
+    default: '30000'
+
+  artifact-retention-days:
+    description: 'How many days to retain the uploaded test report artifact'
+    required: false
+    default: '30'
+
+outputs:
+  score:
+    description: 'Overall agent score from the test run'
+    value: ${{ steps.parse-results.outputs.score }}
+
+  pass-rate:
+    description: 'Percentage of tests that passed'
+    value: ${{ steps.parse-results.outputs.pass_rate }}
+
+  total:
+    description: 'Total number of tests executed'
+    value: ${{ steps.parse-results.outputs.total }}
+
+  passed:
+    description: 'Number of tests that passed'
+    value: ${{ steps.parse-results.outputs.passed }}
+
+  failed:
+    description: 'Number of tests that failed'
+    value: ${{ steps.parse-results.outputs.failed }}
+
+  has-regression:
+    description: 'Whether any regressions were detected (0 or >0)'
+    value: ${{ steps.parse-results.outputs.has_regression }}
+
+  artifact-url:
+    description: 'URL to the uploaded test report artifact'
+    value: ${{ steps.upload-report.outputs.artifact-url }}
+
+runs:
+  using: 'composite'
+  steps:
+    # ----------------------------------------------------------------
+    # 1. Setup Node.js 20
+    # ----------------------------------------------------------------
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    # ----------------------------------------------------------------
+    # 2. Install @agentbench/cli
+    # ----------------------------------------------------------------
+    - name: Install AgentBench CLI
+      shell: bash
+      run: npm install -g @agentbench/cli
+
+    # ----------------------------------------------------------------
+    # 3. Run AgentBench tests
+    # ----------------------------------------------------------------
+    - name: Run AgentBench tests
+      id: run-tests
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        AGENTBENCH_PROVIDER: ${{ inputs.provider }}
+        OPENAI_API_KEY: ${{ inputs.provider == 'openai' && inputs.api-key || '' }}
+        ANTHROPIC_API_KEY: ${{ inputs.provider == 'anthropic' && inputs.api-key || '' }}
+        GOOGLE_API_KEY: ${{ inputs.provider == 'google' && inputs.api-key || '' }}
+        COHERE_API_KEY: ${{ inputs.provider == 'cohere' && inputs.api-key || '' }}
+        GROQ_API_KEY: ${{ inputs.provider == 'groq' && inputs.api-key || '' }}
+        DEEPSEEK_API_KEY: ${{ inputs.provider == 'deepseek' && inputs.api-key || '' }}
+        MISTRAL_API_KEY: ${{ inputs.provider == 'mistral' && inputs.api-key || '' }}
+      run: |
+        set -o pipefail
+
+        FAIL_FLAG=""
+        if [ "${{ inputs.fail-on-regression }}" = "true" ]; then
+          FAIL_FLAG="--fail-on-regression"
+        fi
+
+        agentbench test \
+          --ci \
+          --json \
+          --provider "${{ inputs.provider }}" \
+          --test-dir "${{ inputs.test-dir }}" \
+          --timeout "${{ inputs.timeout }}" \
+          ${FAIL_FLAG} \
+          > agentbench-results.json 2>&1
+
+        EXIT_CODE=$?
+        echo "exit_code=${EXIT_CODE}" >> $GITHUB_OUTPUT
+
+        if [ ${EXIT_CODE} -eq 0 ]; then
+          echo "result=pass" >> $GITHUB_OUTPUT
+        elif [ ${EXIT_CODE} -eq 1 ]; then
+          echo "result=fail" >> $GITHUB_OUTPUT
+        else
+          echo "result=error" >> $GITHUB_OUTPUT
+        fi
+
+    # ----------------------------------------------------------------
+    # 4. Parse test results
+    # ----------------------------------------------------------------
+    - name: Parse test results
+      id: parse-results
+      if: always()
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [ -f agentbench-results.json ]; then
+          SCORE=$(jq -r '.summary.score // "N/A"' agentbench-results.json)
+          PASS_RATE=$(jq -r '.summary.passRate // "N/A"' agentbench-results.json)
+          TOTAL=$(jq -r '.summary.total // 0' agentbench-results.json)
+          PASSED=$(jq -r '.summary.passed // 0' agentbench-results.json)
+          FAILED=$(jq -r '.summary.failed // 0' agentbench-results.json)
+          SKIPPED=$(jq -r '.summary.skipped // 0' agentbench-results.json)
+          REGRESSIONS=$(jq -r '.summary.regressions // 0' agentbench-results.json)
+
+          echo "score=${SCORE}" >> $GITHUB_OUTPUT
+          echo "pass_rate=${PASS_RATE}" >> $GITHUB_OUTPUT
+          echo "total=${TOTAL}" >> $GITHUB_OUTPUT
+          echo "passed=${PASSED}" >> $GITHUB_OUTPUT
+          echo "failed=${FAILED}" >> $GITHUB_OUTPUT
+          echo "skipped=${SKIPPED}" >> $GITHUB_OUTPUT
+          echo "has_regression=${REGRESSIONS}" >> $GITHUB_OUTPUT
+        else
+          echo "score=N/A" >> $GITHUB_OUTPUT
+          echo "pass_rate=N/A" >> $GITHUB_OUTPUT
+          echo "total=0" >> $GITHUB_OUTPUT
+          echo "passed=0" >> $GITHUB_OUTPUT
+          echo "failed=0" >> $GITHUB_OUTPUT
+          echo "skipped=0" >> $GITHUB_OUTPUT
+          echo "has_regression=0" >> $GITHUB_OUTPUT
+        fi
+
+    # ----------------------------------------------------------------
+    # 5. Generate inline PR annotations (github-annotation reporter)
+    # ----------------------------------------------------------------
+    - name: Generate inline PR annotations
+      if: |
+        always() &&
+        inputs.reporter == 'github-annotation' &&
+        steps.run-tests.outputs.result != 'pass'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [ ! -f agentbench-results.json ]; then
+          echo "::warning title=AgentBench::No test results file found. Skipping annotations."
+          exit 0
+        fi
+
+        # Emit annotations for each failing test so they appear inline on the PR diff.
+        # We walk the JSON structure: .suites[] -> .tests[] -> { name, status, error, file?, line? }
+        jq -r '
+          .suites[]? as $suite |
+          ($suite.name // "Unknown Suite") as $suiteName |
+          ($suite.file  // "") as $suiteFile |
+          ($suite.tests[]?) |
+          select(.status == "fail" or .status == "error") |
+          {
+            suite: $suiteName,
+            name:  (.name // "Unnamed Test"),
+            error: (.error // "No error message"),
+            file:  (.file // $suiteFile // ""),
+            line:  (.line // 0),
+            regression: (.regression // false)
+          } |
+          [
+            "::error",
+            (if .file != "" then " file=\(.file)" else "" end),
+            (if .line > 0  then ",line=\(.line)" else "" end),
+            ",title=AgentBench: \(.suite) / \(.name)",
+            "::\(.error)\n  Suite: \(.suite)\n  Test: \(.name)",
+            (if .regression then " [REGRESSION]" else "" end)
+          ] |
+          join("")
+        ' agentbench-results.json | while IFS= read -r annotation; do
+          echo "${annotation}"
+        done
+
+        # Emit a summary warning when regressions are detected
+        HAS_REG=$(jq -r '.summary.regressions // 0' agentbench-results.json)
+        if [ "${HAS_REG}" != "0" ]; then
+          echo "::warning title=AgentBench Regression::${HAS_REG} previously-passing test(s) are now failing — this is a regression."
+        fi
+
+    # ----------------------------------------------------------------
+    # 6. Generate step summary
+    # ----------------------------------------------------------------
+    - name: Generate run summary
+      if: always()
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        SCORE="${{ steps.parse-results.outputs.score }}"
+        PASS_RATE="${{ steps.parse-results.outputs.pass_rate }}"
+        TOTAL="${{ steps.parse-results.outputs.total }}"
+        PASSED="${{ steps.parse-results.outputs.passed }}"
+        FAILED="${{ steps.parse-results.outputs.failed }}"
+        SKIPPED="${{ steps.parse-results.outputs.skipped }}"
+        HAS_REG="${{ steps.parse-results.outputs.has_regression }}"
+
+        {
+          echo '## :test_tube: AgentBench Test Results'
+          echo ''
+          echo '| Metric | Value |'
+          echo '|--------|-------|'
+          echo "| :star: Score | \`${SCORE}\` |"
+          echo "| :bar_chart: Pass Rate | \`${PASS_RATE}\` |"
+          echo "| :package: Total | ${TOTAL} |"
+          echo "| :white_check_mark: Passed | ${PASSED} |"
+          echo "| :x: Failed | ${FAILED} |"
+          echo "| :fast_forward: Skipped | ${SKIPPED} |"
+          echo ''
+
+          if [ "${HAS_REG}" != "0" ]; then
+            echo '> [!CAUTION]'
+            echo '> :rotating_light: **REGRESSION DETECTED** — Previously-passing tests are now failing.'
+          elif [ "${{ steps.run-tests.outputs.result }}" = "fail" ]; then
+            echo '> [!WARNING]'
+            echo '> Some tests failed. Review the inline annotations for details.'
+          elif [ "${TOTAL}" != "0" ] && [ "${FAILED}" = "0" ]; then
+            echo '> [!NOTE]'
+            echo '> :tada: All tests passed! No regressions detected.'
+          fi
+        } >> $GITHUB_STEP_SUMMARY
+
+    # ----------------------------------------------------------------
+    # 7. Upload test report as artifact
+    # ----------------------------------------------------------------
+    - name: Upload test report
+      id: upload-report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: agentbench-report-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          ${{ inputs.working-directory }}/agentbench-results.json
+          ${{ inputs.working-directory }}/.agentbench/
+        retention-days: ${{ inputs.artifact-retention-days }}

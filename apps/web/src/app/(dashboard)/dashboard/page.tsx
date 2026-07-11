@@ -22,6 +22,8 @@ import {
   formatDuration,
   formatRelativeTime,
 } from '@/shared/lib/utils'
+import { QualityTrends } from '@/features/trends/quality-trends'
+import type { QualityDimension, QualityDataPoint } from '@/features/trends/quality-trends'
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -63,6 +65,63 @@ export default async function DashboardPage() {
     db.testSuite.count(),
     db.testCase.count(),
   ])
+
+  // Quality trend data: scores from the last 30 days
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+  const recentScores = await db.score.findMany({
+    where: { createdAt: { gte: thirtyDaysAgo } },
+    orderBy: { createdAt: 'asc' },
+    select: { evaluator: true, score: true, createdAt: true },
+  })
+
+  // Group scores by date and evaluator, then average
+  const scoresByDate = new Map<string, Map<string, { total: number; count: number }>>()
+  for (const s of recentScores) {
+    const dateKey = s.createdAt.toISOString().slice(0, 10) // YYYY-MM-DD
+    if (!scoresByDate.has(dateKey)) {
+      scoresByDate.set(dateKey, new Map())
+    }
+    const dateMap = scoresByDate.get(dateKey)!
+    const existing = dateMap.get(s.evaluator)
+    if (existing) {
+      existing.total += s.score
+      existing.count += 1
+    } else {
+      dateMap.set(s.evaluator, { total: s.score, count: 1 })
+    }
+  }
+
+  // Convert to QualityDataPoint[]
+  const sortedDates = Array.from(scoresByDate.keys()).sort()
+  const qualityData: QualityDataPoint[] = sortedDates.map((date) => {
+    const dateMap = scoresByDate.get(date)!
+    const point: QualityDataPoint = { date }
+    for (const [evaluator, agg] of dateMap) {
+      point[evaluator] = Math.round((agg.total / agg.count) * 10) / 10
+    }
+    return point
+  })
+
+  // Derive available dimensions from the data
+  const allEvaluators = new Set(recentScores.map((s) => s.evaluator))
+  const dimensionColors: Record<string, string> = {
+    correctness: '#818cf8',
+    faithfulness: '#34d399',
+    safety: '#fbbf24',
+    relevance: '#c084fc',
+    robustness: '#60a5fa',
+    conciseness: '#fb7185',
+    completeness: '#38bdf8',
+  }
+  const qualityDimensions: QualityDimension[] = Array.from(allEvaluators)
+    .slice(0, 7)
+    .map((key) => ({
+      key,
+      label: key.charAt(0).toUpperCase() + key.slice(1),
+      color: dimensionColors[key] ?? '#a3a3a3',
+    }))
 
   const completedRuns = passedRuns + failedRuns
   const passRate = completedRuns > 0 ? Math.round((passedRuns / completedRuns) * 1000) / 10 : null
@@ -234,6 +293,9 @@ export default async function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Quality Trends Chart */}
+      <QualityTrends dimensions={qualityDimensions} data={qualityData} />
 
       {/* Quick Actions */}
       <div className="rounded-xl border border-border bg-card p-5">
