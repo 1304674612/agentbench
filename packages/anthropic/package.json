@@ -1,6 +1,6 @@
 {
   "name": "@agentbench/anthropic",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "description": "AgentBench SDK wrapper for Anthropic Claude — automatic tracing, token counting, and cost tracking",
   "type": "module",
   "main": "./dist/index.js",

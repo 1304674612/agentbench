@@ -1,6 +1,6 @@
 {
   "name": "@agentbench/gemini",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "description": "AgentBench provider for Google Gemini — streaming, embeddings, vision, tool-calling",
   "type": "module",
   "main": "./dist/index.js",

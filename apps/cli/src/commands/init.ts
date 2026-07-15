@@ -516,7 +516,7 @@ export function registerInitCommand(program: Command): void {
                   private: true,
                   type: 'module',
                   dependencies: {
-                    '@agentbench/core': '^0.3.0',
+                    '@agentbench/core': '^0.5.0',
                   },
                 },
                 null,

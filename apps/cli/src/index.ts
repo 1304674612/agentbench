@@ -21,7 +21,7 @@ program
   .description(
     'AgentBench — The AI Agent Regression Testing Framework. Write tests, run evals, compare models, and catch prompt regressions before they ship.'
   )
-  .version('0.3.0')
+  .version('0.5.0')
   .option('--debug', 'Enable debug output with full error stacks')
 
 // Register all commands

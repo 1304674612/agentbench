@@ -1,6 +1,6 @@
 {
   "name": "@agentbench/langgraph",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "description": "AgentBench adapter for LangGraph — trace and evaluate LangGraph agents",
   "type": "module",
   "main": "./src/index.ts",

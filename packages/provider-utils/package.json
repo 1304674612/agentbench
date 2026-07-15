@@ -1,6 +1,6 @@
 {
   "name": "@agentbench/provider-utils",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "description": "AgentBench Provider Plugin SDK — shared interfaces, base classes, token counting, cost calculation, and SSE streaming for building LLM providers",
   "type": "module",
   "main": "./dist/index.js",
