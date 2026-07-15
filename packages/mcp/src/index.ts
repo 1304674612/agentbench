@@ -61,7 +61,7 @@ export class AgentBenchMCP {
       const response = await this._sendMCPRequest('initialize', {
         protocolVersion: '2024-11-05',
         capabilities: { tools: {} },
-        clientInfo: { name: 'agentbench-mcp', version: '0.1.0' },
+        clientInfo: { name: 'agentbench-mcp', version: '0.5.0' },
       })
 
       this._connected = true

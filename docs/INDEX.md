@@ -46,7 +46,7 @@ Practical step-by-step instructions for accomplishing specific tasks.
 | Custom Providers | Build and publish your own LLM provider plugin |
 | Custom Judges | Create custom LLM judges for domain-specific quality dimensions |
 | Dataset Management | Import, export, split, version, and diff test datasets |
-| Migration | Migrate from v0.2.0 to v0.5.0, or from other testing tools |
+| Migration | Migrate from earlier versions, or from other testing tools |
 
 ## Reference
 
@@ -125,7 +125,7 @@ See the [full Examples Index](examples/index.md) for details on each example.
 | Metric | Value |
 |--------|-------|
 | Version | v0.5.0 |
-| Packages | 15 (up from 8 in v0.2.0) |
+| Packages | 17 (up from 8 in v0.2.0) |
 | Provider Support | 12+ (OpenAI, Anthropic, Gemini, DeepSeek, Azure, OpenRouter, Groq, Ollama, + more) |
 | Official Examples | 14 production-quality reference implementations |
 | API Endpoints | 40+ |

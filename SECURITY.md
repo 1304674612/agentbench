@@ -28,7 +28,7 @@ We will respond within 48 hours with:
 
 ### Authentication
 
-- v0.1.0 alpha does not enforce authentication on API routes
+- Authentication is enforced on all API routes via NextAuth.js
 - v1.0.0 will include full NextAuth.js integration
 - For production deployments, place AgentBench behind a reverse proxy with authentication
 

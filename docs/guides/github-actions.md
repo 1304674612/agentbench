@@ -11,7 +11,7 @@ prerequisites:
 
 ## Overview
 
-AgentBench v0.3.0 ships with first-class GitHub Actions integration. Running `agentbench init --ci` auto-generates a complete `.github/workflows/agentbench.yml` file. There is also a composite action at `.github/actions/agentbench/` and a PR comment template at `.github/actions/agentbench/comment-template.md`.
+AgentBench v0.5.0 ships with first-class GitHub Actions integration. Running `agentbench init --ci` auto-generates a complete `.github/workflows/agentbench.yml` file. There is also a composite action at `.github/actions/agentbench/` and a PR comment template at `.github/actions/agentbench/comment-template.md`.
 
 This guide covers every aspect of the GitHub Actions integration — from the auto-generated workflow to advanced features like matrix testing, PR comments, check runs, and common troubleshooting.
 
@@ -642,7 +642,7 @@ Fork PRs cannot access repository secrets (GitHub security). For internal teams,
 - [CI/CD Integration](./ci-cd-integration.md) — Broader CI/CD setup including GitLab CI and CircleCI
 - [Testing OpenAI Agents](./testing-openai-agents.md) — Provider-specific patterns
 - [Dataset Management Guide](./dataset-management.md) — Managing test data in CI
-- [Migration Guide](./migration-guide.md) — Upgrading from v0.2.0
+- [Migration Guide](./migration-guide.md) — Upgrading from v0.5.0
 
 ---
 

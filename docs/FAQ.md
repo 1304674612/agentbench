@@ -48,7 +48,7 @@ A: AgentBench tracks cost for every run and displays it in the terminal. Replay 
 ### Q: Can I use AgentBench in CI/CD?
 A: Yes. AgentBench has first-class CI support. `agentbench init` generates a GitHub Actions workflow automatically. Use `agentbench test --ci --json --junit` for machine-readable output. JUnit XML is compatible with GitLab CI, CircleCI, Jenkins, and any tool that consumes JUnit format. The GitHub integration posts rich PR comments with regression detection, metric comparisons, and cost impact analysis.
 
-### Q: How do I migrate from v0.2.0 to v0.3.0?
+### Q: How do I migrate from v0.2.0 to v0.5.0?
 A: See the [Migration Guide](guides/migration.md) for a step-by-step walkthrough. Key changes: (1) replace manual project setup with `agentbench init`, (2) wrap your config in `defineConfig`, (3) update test files to use the new `expect().status().tool().score().run()` assertion chain, (4) use `--replay` instead of manual snapshot management. The v0.2.0 REST API is fully backward-compatible.
 
 ---
@@ -59,13 +59,13 @@ A: See the [Migration Guide](guides/migration.md) for a step-by-step walkthrough
 A: Docker 用于运行 PostgreSQL 和 Redis。如果你已有这两个服务，可以直接配置 `.env` 中的连接字符串，无需 Docker。
 
 ### Q: 能用 SQLite 代替 PostgreSQL 吗？
-A: 目前不支持。v0.1.0 仅支持 PostgreSQL。SQLite 适配器在路线图中。
+A: 目前不支持。SQLite 适配器在路线图中。
 
 ### Q: 如何部署到生产环境？
 A: 参考 [部署指南](DEPLOYMENT.md)。推荐 Docker Compose 一键部署，或部署到 Vercel + 外部 PostgreSQL。
 
 ### Q: API 有认证吗？
-A: v0.1.0 Alpha 版本中 API 认证是可选的（支持 `ab-` 前缀的 API Key）。v1.0 将完整集成 NextAuth.js。
+A: API 认证通过 NextAuth.js 支持，可使用 Google、GitHub OAuth 或 API Key（`ab-` 前缀）认证。
 
 ---
 
