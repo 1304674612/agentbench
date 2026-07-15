@@ -99,7 +99,7 @@ jobs:
       - name: Run AgentBench tests
         id: agent-test
         run: |
-          pnpm --filter agentbench exec agentbench test \
+          pnpm --filter @agentbench/cli exec agentbench test \
             --ci \
             --json \
             ${{ inputs.project && format('--project {0}', inputs.project) || '' }} \
