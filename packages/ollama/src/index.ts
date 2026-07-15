@@ -37,7 +37,7 @@ const OLLAMA_DEFAULT_MODELS = [
 export class OllamaProvider extends OpenAICompatibleProvider {
   readonly id = 'ollama'
   readonly name = 'Ollama'
-  readonly version = '0.3.0'
+  readonly version = '0.5.0'
   readonly capabilities: ProviderCapabilities = {
     streaming: true,
     reasoning: true,

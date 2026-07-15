@@ -82,7 +82,7 @@ export class AgentBenchOpenAI {
   // ── AgentBenchProvider identity ──────────────────────────────────────────
   readonly id = 'openai'
   readonly name = 'OpenAI'
-  readonly version = '0.3.0'
+  readonly version = '0.5.0'
   readonly capabilities: ProviderCapabilities = {
     streaming: true,
     reasoning: true,

@@ -274,7 +274,7 @@ function mapGeminiFinishReason(reason: string): ChatCompletionResult['choices'][
 export class GeminiProvider {
   readonly id = 'gemini'
   readonly name = 'Google Gemini'
-  readonly version = '0.3.0'
+  readonly version = '0.5.0'
   readonly capabilities: ProviderCapabilities = {
     streaming: true,
     reasoning: true,

@@ -37,7 +37,7 @@ const AZURE_OPENAI_MODELS = [
 export class AzureOpenAIProvider extends OpenAICompatibleProvider {
   readonly id = 'azure-openai'
   readonly name = 'Azure OpenAI'
-  readonly version = '0.3.0'
+  readonly version = '0.5.0'
   readonly capabilities: ProviderCapabilities = {
     streaming: true,
     reasoning: true,

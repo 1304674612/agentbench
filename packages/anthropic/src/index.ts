@@ -56,7 +56,7 @@ export class AgentBenchAnthropic {
   // ── AgentBenchProvider identity ──────────────────────────────────────────
   readonly id = 'anthropic'
   readonly name = 'Anthropic'
-  readonly version = '0.3.0'
+  readonly version = '0.5.0'
   readonly capabilities: ProviderCapabilities = {
     streaming: true,
     reasoning: true,

@@ -29,7 +29,7 @@ const GROQ_MODELS = [
 export class GroqProvider extends OpenAICompatibleProvider {
   readonly id = 'groq'
   readonly name = 'Groq'
-  readonly version = '0.3.0'
+  readonly version = '0.5.0'
   readonly capabilities: ProviderCapabilities = {
     streaming: true,
     reasoning: false,

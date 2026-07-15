@@ -21,7 +21,7 @@ const DEEPSEEK_MODELS = ['deepseek-chat', 'deepseek-reasoner']
 export class DeepSeekProvider extends OpenAICompatibleProvider {
   readonly id = 'deepseek'
   readonly name = 'DeepSeek'
-  readonly version = '0.3.0'
+  readonly version = '0.5.0'
   readonly capabilities: ProviderCapabilities = {
     streaming: true,
     reasoning: true,

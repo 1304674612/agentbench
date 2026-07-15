@@ -426,7 +426,7 @@ export interface FileResult {
 
 const fileSystem: Record<string, string> = {
   '/data/config.json': JSON.stringify(
-    { app: 'AgentBench', version: '0.3.0', debug: false, port: 3000 },
+    { app: 'AgentBench', version: '0.5.0', debug: false, port: 3000 },
     null,
     2
   ),

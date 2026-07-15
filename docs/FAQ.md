@@ -31,7 +31,7 @@ A: LangSmith is an observability platform -- it helps you monitor and debug LLM 
 A: LangSmith 和 Braintrust 侧重于 LLM 调用的监控和调试。AgentBench 侧重于**测试和回归**——它提供快照、回放、A/B 实验、覆盖率分析、断言 DSL 等测试框架特有的能力。LangSmith 帮你观察，AgentBench 帮你断言和把关。
 
 ### Q: 支持哪些 LLM 提供商？
-A: v0.3.0 支持 12+ 提供商：OpenAI、Anthropic、Gemini、DeepSeek、Azure OpenAI、OpenRouter、Groq、Mistral、Cohere、Ollama（本地模型）、vLLM、LM Studio。通过 MCP 协议支持任意兼容的工具服务器。第三方可通过 `@agentbench/provider-utils` SDK 添加自定义提供商。
+A: 支持 12+ 提供商：OpenAI、Anthropic、Gemini、DeepSeek、Azure OpenAI、OpenRouter、Groq、Mistral、Cohere、Ollama（本地模型）、vLLM、LM Studio。通过 MCP 协议支持任意兼容的工具服务器。第三方可通过 `@agentbench/provider-utils` SDK 添加自定义提供商。
 
 ### Q: Can I test agents without an API key?
 A: Yes. Two options: (1) **Ollama** -- use `@agentbench/ollama` to run tests against models on your own machine with zero API cost. (2) **Replay mode** -- record a run once with an API key, then replay it deterministically without any LLM calls: `agentbench test --replay`.

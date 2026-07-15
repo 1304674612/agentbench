@@ -42,7 +42,7 @@ const OPENROUTER_MODELS = [
 export class OpenRouterProvider extends OpenAICompatibleProvider {
   readonly id = 'openrouter'
   readonly name = 'OpenRouter'
-  readonly version = '0.3.0'
+  readonly version = '0.5.0'
   readonly capabilities: ProviderCapabilities = {
     streaming: true,
     reasoning: true,

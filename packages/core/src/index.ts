@@ -35,4 +35,4 @@ export { createAgent, defineSuite, defineTest } from './agent'
 export type { CreateAgentConfig, Agent, AssertionDef, TestDef, SuiteDef } from './agent'
 
 // Version
-export const VERSION = '0.3.0'
+export const VERSION = '0.5.0'

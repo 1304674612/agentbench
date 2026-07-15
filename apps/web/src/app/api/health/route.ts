@@ -13,7 +13,7 @@ export async function GET() {
     }
   } = {
     status: 'ok',
-    version: '0.3.0',
+    version: '0.5.0',
     timestamp: new Date().toISOString(),
     checks: {
       database: 'unknown',
