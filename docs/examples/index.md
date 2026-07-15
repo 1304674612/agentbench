@@ -1,4 +1,4 @@
-# AgentBench Official Examples (v0.3.0)
+# AgentBench Official Examples (v0.5.0)
 
 14 production-quality reference implementations. Each example is a complete, runnable project with an agent implementation, a test suite, a dataset, and a CI workflow. Use them to learn AgentBench patterns or as templates for your own projects.
 
