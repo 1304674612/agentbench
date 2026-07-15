@@ -1,6 +1,72 @@
 # Changelog
 
-## v0.3.0 (Unreleased) — Developer Experience & Ecosystem
+## v0.5.0 — The Testing Methodology Release 🧪
+
+Release date: 2026-07-11
+
+### 🎯 Mission
+**Teach developers how to test AI agents well.** Not just a tool — a mental model.
+
+### ✨ Highlights
+- **Agent Testing Pyramid** — 3-layer testing strategy (Single-Step → Flow → Quality). The definitive framework for AI agent testing.
+- **8 Agent Testing Anti-Patterns** — "Happy Path Only", "Output-Only Testing", "Prompt-and-Pray", and 5 more. Each with concrete fixes.
+- **GitHub Marketplace Action** — One YAML block, zero config. Inline PR annotations for failed assertions. Outputs `score`, `pass-rate`, `has-regression`.
+- **Dashboard Failure Guidance** — Guided triage: What failed → Why → How to fix → Impact. 26 assertion type-specific suggestions.
+- **Dashboard Quality Trends** — SVG-based line chart for correctness/faithfulness/safety scores over 7/14/30 days.
+- **Ecosystem Integration Guides** — Vercel AI SDK, Claude Code custom agents, LangChain/CrewAI.
+- **Testing Methodology** section added to README.
+
+### 📦 New Files
+- `docs/agent-testing-pyramid.md` (635 lines)
+- `docs/agent-testing-anti-patterns.md` (812 lines)
+- `docs/ecosystem/` with 3 integration guides
+- `action.yml` — GitHub Marketplace composite action
+- `.github/workflows/example-agentbench-action.yml`
+- `apps/web/src/features/runner/failure-guidance.tsx`
+- `apps/web/src/features/trends/quality-trends.tsx`
+
+### 📊 Stats
+| Metric | v0.4.0 | v0.5.0 |
+|--------|--------|--------|
+| Tests | 462 | 462 |
+| TypeScript Errors | 0 | 0 |
+| New Docs | — | 6 files, 3000+ lines |
+| Dashboard Components | — | 2 new |
+
+---
+
+## v0.4.0 — Zero-to-Green in 30 Seconds ⚡
+
+Release date: 2026-07-11
+
+### 🎯 Mission
+Eliminate the #1 friction: **going from install to first green test.**
+
+### ✨ Highlights
+- **`agentbench init --quick`** — Zero-prompt scaffolding, auto-detects API keys, runs tests immediately. **30 seconds to green PASS.**
+- **Core Convenience API** — `createAgent()`, `defineSuite()`, `defineTest()` — declarative, type-safe. Mock responses when no API key is configured.
+- **Test Runner Symlink Fallback** — When `@agentbench/core` is not installed in the user's project, resolves from CLI's `node_modules` automatically.
+- **`loadCsvDataset()`** — One-line CSV dataset loading for parametrized tests.
+- **README Quick Start Rewrite** — From long-form essay to 2-line command + 5-line first test.
+
+### 🔧 Fixes
+- All TypeScript errors eliminated across 17 packages (updated tsconfig to exclude test files from main typecheck)
+- Extensionless ESM imports fixed (`.js` suffix added to template imports)
+- CLI `benchmark.ts` unused import removed
+- CLI `test.ts` null safety fix
+- Biome auto-formatting applied to 278 files
+
+### 📊 Stats
+| Metric | v0.3.0 | v0.4.0 |
+|--------|--------|--------|
+| Tests | 391 | 462 |
+| TypeScript Errors | 46+ | 0 |
+| Packages | 15 | 17 |
+| `agentbench init --quick` | — | New |
+
+---
+
+## v0.3.0 — Developer Experience & Ecosystem
 
 ### 🎯 Mission
 Make AgentBench the obvious first choice for AI agent testing. **Five minutes from install to first test.**

@@ -34,7 +34,7 @@
   <img src="https://img.shields.io/badge/License-Apache_2.0-3b82f6?logo=apache&logoColor=white&style=flat-square" alt="License" />
   <img src="https://img.shields.io/github/stars/1304674612/agentbench?style=flat-square&color=fbbf24" alt="Stars" />
   <br/>
-  <img src="https://img.shields.io/badge/Python_SDK-0.2.0-3776AB?logo=python&logoColor=white&style=flat-square" alt="Python SDK" />
+  <img src="https://img.shields.io/badge/Python_SDK-0.5.0-3776AB?logo=python&logoColor=white&style=flat-square" alt="Python SDK" />
   <img src="https://img.shields.io/badge/npm-v0.5.0-CB3837?logo=npm&logoColor=white&style=flat-square" alt="npm" />
   <img src="https://img.shields.io/badge/VS_Code-Extension-007ACC?logo=visualstudiocode&logoColor=white&style=flat-square" alt="VS Code" />
   <br/>
