@@ -577,7 +577,7 @@ export function registerInitCommand(program: Command): void {
 
           console.log(
             chalk.green(
-              '\n✓ AgentBench is ready. Edit tests/hello-agent.test.ts to test your own agent.\n'
+              '\n✓ AgentBench is ready. Edit tests/hello-agent.test.js to test your own agent.\n'
             )
           )
 
