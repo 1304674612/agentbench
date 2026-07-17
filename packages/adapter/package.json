@@ -1,6 +1,6 @@
 {
   "name": "@agentbench/adapter",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "AgentBench generic adapter \u2014 wrap any agent framework for automatic tracing",
   "type": "module",
   "main": "./dist/index.js",

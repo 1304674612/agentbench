@@ -2,7 +2,7 @@
   "name": "agentbench-vscode",
   "displayName": "AgentBench",
   "description": "The Regression Testing Framework for AI Agents — VS Code Extension",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "publisher": "agentbench",
   "license": "Apache-2.0",
   "icon": "icon.png",

@@ -1,5 +1,56 @@
 # Changelog
 
+## v0.5.1 — Code Quality & Reliability Release 🏗️
+
+Release date: 2026-07-17
+
+### 🎯 Mission
+**Production-grade code quality and comprehensive testing infrastructure.** Every provider now has test coverage, the experiment engine has proper statistical rigor, and the codebase follows SOLID principles.
+
+### ✨ Highlights
+
+#### Statistical Significance in Experiments
+- **Mann-Whitney U Test** — Non-parametric alternative to t-test; doesn't assume normal distribution
+- **Power Analysis** — Estimates required sample size per variant for 80% power
+- **Bonferroni Correction** — Controls family-wise error rate when testing multiple metrics
+- **Full Statistics Pipeline** — t-test + Mann-Whitney + Bootstrap + Effect Size in one call
+- **Accurate p-value Calculation** — Regularized incomplete beta function + Lanczos gamma approximation
+
+#### Code Quality & Architecture
+- **Interface Segregation Principle** — Split monolithic `StorageAdapter` (30+ methods) into domain interfaces: `RunStorage`, `ProjectStorage`, `SnapshotStorage`, `ExperimentStorage`, `DatasetStorage`
+- **N+1 Query Fix** — Runner now uses `batchCreateTraceSteps()` instead of per-step insert
+- **Magic Number Elimination** — All scoring thresholds, blend ratios, and confidence levels extracted to named constants
+- **Type Safety** — Reduced unsafe type casts by 23%; remaining casts isolated in documented serialization helpers
+
+#### Provider Improvements
+- **Provider Tests** — New tests for DeepSeek, Groq, OpenAI, Anthropic, Gemini
+- **Provider Consistency Suite** — Shared contract tests for validating all provider implementations
+- **Groq Enhancement** — Added explicit `adaptResponse`, model-specific `countTokens` with token estimation
+- **Scoring Bug Fix** — Fixed overlapping score ranges in TOOL_USAGE_PROMPT (7-8 vs 8-9)
+
+#### CI & Developer Experience
+- **Node.js Version Matrix** — CI tests Node 20 and 22
+- **Vitest Coverage** — Configured v8 coverage for all 15 packages + workspace
+- **Test Scripts** — Added `test`, `test:coverage` to root, `lint` + `test` to all provider packages
+- **Prisma Migration** — Initial migration generated (0001_init, 776 lines SQL)
+- **DB Index Optimization** — Composite indexes on `runs(projectId, createdAt)`, `scores(runId, evaluator)`
+
+#### New Features
+- **BullMQ Worker** — Async task processor for runs, experiments, notifications, reports, snapshots
+- **LangGraph State Tracing** — `runWithStateTracing()` with node-level timing, state snapshots, conditional edge routing
+
+### 📊 Stats
+| Metric | v0.5.0 | v0.5.1 |
+|--------|--------|--------|
+| Provider packages with tests | 1 | 6 |
+| Vitest coverage configured | 3 packages | 15 packages + workspace |
+| Statistical tests | 2 (t-test, bootstrap) | 5 (+Mann-Whitney, Power, Bonferroni) |
+| DB composite indexes | 0 | 3 |
+| Unsafe type casts | 22 | 17 (isolated) |
+| Storage interface methods per consumer | 37 | 15 (ISP split) |
+
+---
+
 ## v0.5.0 — The Testing Methodology Release 🧪
 
 Release date: 2026-07-11

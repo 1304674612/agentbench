@@ -1,4 +1,4 @@
-# AgentBench Documentation (v0.5.0)
+# AgentBench Documentation (v0.5.1)
 
 Welcome to the AgentBench documentation. AgentBench is the regression testing framework for AI agents -- replay, evaluate, assert, and catch regressions in CI.
 
@@ -124,7 +124,7 @@ See the [full Examples Index](examples/index.md) for details on each example.
 
 | Metric | Value |
 |--------|-------|
-| Version | v0.5.0 |
+| Version | v0.5.1 |
 | Packages | 17 (up from 8 in v0.2.0) |
 | Provider Support | 12+ (OpenAI, Anthropic, Gemini, DeepSeek, Azure, OpenRouter, Groq, Ollama, + more) |
 | Official Examples | 14 production-quality reference implementations |

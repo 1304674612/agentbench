@@ -57,7 +57,7 @@ export default function LandingPage() {
             </div>
             <span className="font-bold text-base">AgentBench</span>
             <span className="hidden sm:inline-flex text-[10px] font-medium bg-indigo-500/10 text-indigo-400 rounded-full px-2 py-0.5 border border-indigo-500/20">
-              v0.5.0
+              v0.5.1
             </span>
           </Link>
 
@@ -112,7 +112,7 @@ export default function LandingPage() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
             <span className="text-muted-foreground">
-              Current release — <span className="text-emerald-400 font-medium">v0.5.0</span>
+              Current release — <span className="text-emerald-400 font-medium">v0.5.1</span>
               {' · '}
               <span className="text-emerald-400 font-medium">391+ tests</span>
               {' · '}

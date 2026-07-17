@@ -1,6 +1,6 @@
 {
   "name": "@agentbench/ollama",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "AgentBench provider for Ollama \u2014 local models with auto-detection",
   "type": "module",
   "main": "./dist/index.js",

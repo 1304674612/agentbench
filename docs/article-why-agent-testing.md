@@ -130,7 +130,7 @@ Agent 工程师能用什么？Jest 测不了 LLM 输出。Postman 管不了 Tool
 
 你定义好测试 case，写好断言，跑一条命令，得到一份报告。哪些过了，哪些挂了，哪些变差了，token 花了多少，延迟变了没有。全部自动化。
 
-目前 v0.5.0，17 个 Package，14 个官方示例，支持 12+ 模型 Provider。VS Code 扩展 + GitHub Actions 集成。Replay、Regression、Benchmark，全部内置。
+目前 v0.5.1，17 个 Package，14 个官方示例，支持 12+ 模型 Provider。VS Code 扩展 + GitHub Actions 集成。Replay、Regression、Benchmark，全部内置。
 
 我把它开源了。因为这个问题不是一个人或一个公司能解决的。Agent 测试的方法论和标准，需要整个社区一起摸索。
 

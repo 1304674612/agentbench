@@ -2,7 +2,7 @@
   <h1>AgentBench</h1>
   <h3>The Regression Testing Framework for AI Agents</h3>
   <p><strong>Replay · Evaluate · Compare · Assert · Catch Regressions — in CI</strong></p>
-  <img src="https://img.shields.io/badge/AgentBench-v0.5.0-6366f1?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgMjJzOC00IDgtMTBWNWwtOC0zLTggM3Y3YzAgNiA4IDEwIDggMTB6Ii8+PHBhdGggZD0iTTkgMTJsMiAyIDQtNCIvPjwvc3ZnPg==" alt="AgentBench" />
+  <img src="https://img.shields.io/badge/AgentBench-v0.5.1-6366f1?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgMjJzOC00IDgtMTBWNWwtOC0zLTggM3Y3YzAgNiA4IDEwIDggMTB6Ii8+PHBhdGggZD0iTTkgMTJsMiAyIDQtNCIvPjwvc3ZnPg==" alt="AgentBench" />
 </div>
 
 <p align="center">
@@ -34,8 +34,8 @@
   <img src="https://img.shields.io/badge/License-Apache_2.0-3b82f6?logo=apache&logoColor=white&style=flat-square" alt="License" />
   <img src="https://img.shields.io/github/stars/1304674612/agentbench?style=flat-square&color=fbbf24" alt="Stars" />
   <br/>
-  <img src="https://img.shields.io/badge/Python_SDK-0.5.0-3776AB?logo=python&logoColor=white&style=flat-square" alt="Python SDK" />
-  <img src="https://img.shields.io/badge/npm-v0.5.0-CB3837?logo=npm&logoColor=white&style=flat-square" alt="npm" />
+  <img src="https://img.shields.io/badge/Python_SDK-0.5.1-3776AB?logo=python&logoColor=white&style=flat-square" alt="Python SDK" />
+  <img src="https://img.shields.io/badge/npm-v0.5.1-CB3837?logo=npm&logoColor=white&style=flat-square" alt="npm" />
   <img src="https://img.shields.io/badge/VS_Code-Extension-007ACC?logo=visualstudiocode&logoColor=white&style=flat-square" alt="VS Code" />
   <br/>
   <a href="https://github.com/1304674612/agentbench/actions/workflows/agentbench-ci.yml"><img src="https://github.com/1304674612/agentbench/actions/workflows/agentbench-ci.yml/badge.svg?branch=main" alt="CI" style="max-width:100%;" /></a>
@@ -379,7 +379,7 @@ DeepEval evaluates the _output text_. AgentBench tests the _agent behavior_ -- w
 | M4-M7 | Experiments & Coverage, SDK Ecosystem, Platform, Polish | GA |
 | v0.3.0 | Brand refresh, 14 examples, 12+ providers, dataset system, GitHub integration, VS Code extension, benchmark marketplace, documentation site | GA |
 | v0.4.0 | `agentbench init --quick` — zero-to-green in 30s, `createAgent`/`defineSuite`/`defineTest` API, test runner symlink fallback | GA |
-| v0.5.0 | **Agent Testing Pyramid + 8 Anti-Patterns, ecosystem guides (Vercel AI SDK / Claude Code / LangChain), Dashboard failure guidance + quality trends, GitHub Marketplace Action** | Current |
+| v0.5.1 | **Code Quality & Reliability + 8 Anti-Patterns, ecosystem guides (Vercel AI SDK / Claude Code / LangChain), Dashboard failure guidance + quality trends, GitHub Marketplace Action** | Current |
 | v0.6.0 | Team workspaces, AgentBench Cloud, SSO, audit logs | Q4 2026 |
 | v1.0.0 | Plugin marketplace, stable v1 API, Python SDK v1.0, certification program | Q3 2027 |
 

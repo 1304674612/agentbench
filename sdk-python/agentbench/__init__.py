@@ -4,7 +4,7 @@ AgentBench — The Regression Testing Framework for AI Agents.
 Python SDK providing HTTP client, local runner, tracer, and assertion builder.
 """
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 
 from agentbench.assertions import AssertionBuilder, expect
 from agentbench.client import AgentBench

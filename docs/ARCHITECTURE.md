@@ -1,10 +1,10 @@
-# AgentBench -- System Architecture (v0.3.0)
+# AgentBench -- System Architecture (v0.5.1)
 
 ## 1. Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                        AgentBench v0.3.0 System                          │
+│                        AgentBench v0.5.1 System                          │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                          │
 │  ┌─────────────┐  ┌─────────────┐  ┌──────────────┐  ┌───────────────┐ │
@@ -85,7 +85,7 @@
 
 ### 2.1 Package Count: 8 to 15
 
-v0.3.0 expands from **8 packages** (v0.2.0) to **15 packages**, with 11 brand-new provider packages and a shared provider-utils SDK. New packages are marked with **[NEW]**.
+v0.5.1 runs with from **8 packages** (v0.2.0) to **17 packages**, with 11 brand-new provider packages and a shared provider-utils SDK. New packages are marked with **[NEW]**.
 
 ### 2.2 Dependency Graph
 
@@ -152,7 +152,7 @@ v0.3.0 expands from **8 packages** (v0.2.0) to **15 packages**, with 11 brand-ne
 
 ---
 
-## 3. Provider Plugin Architecture **[NEW in v0.3.0]**
+## 3. Provider Plugin Architecture **[Introduced in v0.3.0]**
 
 ### 3.1 Design Principles
 
@@ -382,7 +382,7 @@ interface TraceStep {
 
 ---
 
-## 5. Config System **[NEW in v0.3.0]**
+## 5. Config System **[Introduced in v0.3.0]**
 
 ### 5.1 defineConfig
 
@@ -444,7 +444,7 @@ export default defineConfig({
 
 ---
 
-## 6. Dataset Module **[NEW in v0.3.0]**
+## 6. Dataset Module **[Introduced in v0.3.0]**
 
 ### 6.1 Format Support
 
@@ -484,7 +484,7 @@ agentbench dataset diff my-dataset v1.0 v1.1
 
 ---
 
-## 7. GitHub Integration Architecture **[NEW in v0.3.0]**
+## 7. GitHub Integration Architecture **[Introduced in v0.3.0]**
 
 ### 7.1 Integration Flow
 
@@ -531,7 +531,7 @@ agentbench dataset diff my-dataset v1.0 v1.1
 
 ---
 
-## 8. VS Code Extension Architecture **[NEW in v0.3.0]**
+## 8. VS Code Extension Architecture **[Introduced in v0.3.0]**
 
 ### 8.1 Extension Structure
 

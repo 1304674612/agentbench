@@ -1,6 +1,6 @@
 {
   "name": "@agentbench/deepseek",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "AgentBench provider for DeepSeek \u2014 extends OpenAICompatibleProvider with reasoning model support",
   "type": "module",
   "main": "./dist/index.js",
