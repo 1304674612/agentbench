@@ -1,29 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { Runner, TimeoutError, type RunnerConfig, type RunContext } from './runner'
-import type { StorageAdapter } from '../storage/adapter'
-import type { AgentConfig, RunInput, Run, TraceStep } from '../types'
+import type { RunStorage } from '../storage/adapter'
+import type { Run, TraceStep } from '../types'
 
-function mockStorage(): StorageAdapter {
+function mockStorage(): RunStorage {
   const runs: Run[] = []
   const traceSteps: Array<Record<string, unknown>> = []
 
   return {
-    connect: vi.fn().mockResolvedValue(undefined),
-    disconnect: vi.fn().mockResolvedValue(undefined),
-    healthCheck: vi.fn().mockResolvedValue(true),
-    createProject: vi.fn().mockResolvedValue({}),
-    getProject: vi.fn().mockResolvedValue(null),
-    listProjects: vi.fn().mockResolvedValue([]),
-    updateProject: vi.fn().mockResolvedValue({}),
-    deleteProject: vi.fn().mockResolvedValue(undefined),
-    createTestSuite: vi.fn().mockResolvedValue({}),
-    getTestSuite: vi.fn().mockResolvedValue(null),
-    listTestSuites: vi.fn().mockResolvedValue([]),
-    createTestCase: vi.fn().mockResolvedValue({}),
-    getTestCase: vi.fn().mockResolvedValue(null),
-    listTestCases: vi.fn().mockResolvedValue([]),
-    updateTestCase: vi.fn().mockResolvedValue({}),
-    deleteTestCase: vi.fn().mockResolvedValue(undefined),
     createRun: vi.fn().mockImplementation(async (data) => {
       const run = {
         id: `run_${runs.length + 1}`,
@@ -63,21 +47,7 @@ function mockStorage(): StorageAdapter {
     createAssertionResult: vi.fn().mockResolvedValue({}),
     batchCreateAssertionResults: vi.fn().mockResolvedValue([]),
     getAssertionResults: vi.fn().mockResolvedValue([]),
-    createSnapshot: vi.fn().mockResolvedValue({}),
-    getSnapshot: vi.fn().mockResolvedValue(null),
-    listSnapshots: vi.fn().mockResolvedValue([]),
-    deleteSnapshot: vi.fn().mockResolvedValue(undefined),
-    createExperiment: vi.fn().mockResolvedValue({}),
-    getExperiment: vi.fn().mockResolvedValue(null),
-    listExperiments: vi.fn().mockResolvedValue([]),
-    updateExperiment: vi.fn().mockResolvedValue({}),
-    createDataset: vi.fn().mockResolvedValue({}),
-    getDataset: vi.fn().mockResolvedValue(null),
-    listDatasets: vi.fn().mockResolvedValue([]),
-    createDatasetItem: vi.fn().mockResolvedValue({}),
-    batchCreateDatasetItems: vi.fn().mockResolvedValue([]),
-    listDatasetItems: vi.fn().mockResolvedValue([]),
-  } satisfies StorageAdapter
+  } satisfies RunStorage
 }
 
 function buildConfig(overrides?: Partial<RunnerConfig>): RunnerConfig {
@@ -116,7 +86,7 @@ const successfulExecute = vi.fn().mockImplementation(async (ctx: RunContext) => 
 })
 
 describe('Runner', () => {
-  let storage: StorageAdapter
+  let storage: RunStorage
   let runner: Runner
 
   beforeEach(() => {
@@ -195,11 +165,14 @@ describe('Runner', () => {
       expect(result.metrics).toHaveProperty('toolCallCount')
     })
 
-    it('persists trace steps to storage', async () => {
+    it('persists trace steps to storage via batch insert', async () => {
       const config = buildConfig({ storage })
       await runner.run(config, successfulExecute)
 
-      expect(storage.createTraceStep).toHaveBeenCalled()
+      expect(storage.batchCreateTraceSteps).toHaveBeenCalled()
+      const batchArgs = (storage.batchCreateTraceSteps as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+      expect(Array.isArray(batchArgs)).toBe(true)
+      expect(batchArgs.length).toBeGreaterThan(0)
     })
 
     it('updates run status in storage', async () => {

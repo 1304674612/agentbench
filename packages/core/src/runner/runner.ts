@@ -2,12 +2,13 @@
  * Agent Runner — the core execution engine.
  * Runs an AI agent, captures the full trace, calculates metrics.
  */
-import type { StorageAdapter } from '../storage/adapter'
+import type { RunStorage, CreateTraceStepInput } from '../storage/adapter'
 import type { AgentConfig, RunInput, RunOptions, RunResult, RunMetrics, RunStatus } from '../types'
+import type { TraceStep } from '../types/trace'
 import { Tracer } from '../tracer/tracer'
 
 export interface RunnerConfig {
-  storage: StorageAdapter
+  storage: RunStorage
   agent: AgentConfig
   input: RunInput
   options?: Partial<RunOptions>
@@ -26,10 +27,52 @@ const DEFAULT_OPTIONS: RunOptions = {
   concurrency: 1,
 }
 
-export class Runner {
-  private storage: StorageAdapter
+// ── Serialization helpers ────────────────────────────────────────────────────
 
-  constructor(storage: StorageAdapter) {
+/**
+ * Map a domain TraceStep to a storage-layer CreateTraceStepInput.
+ *
+ * The storage layer uses `Record<string, unknown>` for flexible persistence
+ * (Postgres JSONB, file storage, etc.). This function explicitly converts
+ * typed domain fields to their serializable equivalents at the boundary
+ * between the core engine and the persistence layer.
+ */
+function mapTraceStepToInput(step: TraceStep, runId: string): CreateTraceStepInput {
+  return {
+    runId,
+    sequence: step.sequence,
+    type: step.type,
+    startedAt: step.startedAt,
+    endedAt: step.endedAt,
+    duration: step.duration,
+    llmProvider: step.llmProvider,
+    llmModel: step.llmModel,
+    llmRequest: step.llmRequest as Record<string, unknown>,
+    llmResponse: step.llmResponse as Record<string, unknown>,
+    toolName: step.toolName,
+    toolRequest: step.toolRequest as Record<string, unknown>,
+    toolResponse: step.toolResponse as Record<string, unknown>,
+    promptTokens: step.promptTokens,
+    completionTokens: step.completionTokens,
+    totalTokens: step.totalTokens,
+    cost: step.cost,
+    status: step.status,
+    error: step.error?.message,
+    metadata: step.metadata,
+  }
+}
+
+/**
+ * Convert typed RunMetrics to a plain record for storage.
+ */
+function metricsToRecord(metrics: RunMetrics): Record<string, unknown> {
+  return metrics as unknown as Record<string, unknown>
+}
+
+export class Runner {
+  private storage: RunStorage
+
+  constructor(storage: RunStorage) {
     this.storage = storage
   }
 
@@ -124,31 +167,12 @@ export class Runner {
       llmCallCount: stats.llmCalls,
     }
 
-    // Persist trace steps
+    // Persist trace steps in a single batch call (avoids N+1)
     const trace = tracer.buildTrace()
-    for (const step of trace.steps) {
-      await this.storage.createTraceStep({
-        runId: run.id,
-        sequence: step.sequence,
-        type: step.type,
-        startedAt: step.startedAt,
-        endedAt: step.endedAt,
-        duration: step.duration,
-        llmProvider: step.llmProvider,
-        llmModel: step.llmModel,
-        llmRequest: step.llmRequest as unknown as Record<string, unknown>,
-        llmResponse: step.llmResponse as unknown as Record<string, unknown>,
-        toolName: step.toolName,
-        toolRequest: step.toolRequest as unknown as Record<string, unknown>,
-        toolResponse: step.toolResponse as unknown as Record<string, unknown>,
-        promptTokens: step.promptTokens,
-        completionTokens: step.completionTokens,
-        totalTokens: step.totalTokens,
-        cost: step.cost,
-        status: step.status,
-        error: step.error?.message,
-        metadata: step.metadata,
-      })
+    if (trace.steps.length > 0) {
+      await this.storage.batchCreateTraceSteps(
+        trace.steps.map((step) => mapTraceStepToInput(step, run.id))
+      )
     }
 
     // Update run with final status
@@ -159,7 +183,7 @@ export class Runner {
 
     await this.storage.updateRun(run.id, {
       status,
-      metrics: metrics as unknown as Record<string, unknown>,
+      metrics: metricsToRecord(metrics),
       endedAt,
       duration: endedAt.getTime() - startedAt.getTime(),
       summary,

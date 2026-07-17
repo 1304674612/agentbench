@@ -19,6 +19,13 @@ import type {
   LLMJudgeConfig,
   RuleEvaluatorConfig,
 } from '../types/evaluator'
+import {
+  MAX_SCORE,
+  DEFAULT_PASS_THRESHOLD,
+  HYBRID_BLEND,
+  LLM_CONFIDENCE,
+  CONSENSUS_RATIOS,
+} from '../types/evaluator'
 import { evaluateRules, type RuleEvalContext, type RuleEvalResult } from './rule-evaluator'
 
 // ============================================================
@@ -68,6 +75,17 @@ export interface JudgePoolResult {
 }
 
 // ============================================================
+// Helper: compute consensus from ratio
+// ============================================================
+
+function classifyConsensus(ratio: number): JudgePoolResult['consensus'] {
+  if (ratio >= CONSENSUS_RATIOS.strong) return 'strong'
+  if (ratio >= CONSENSUS_RATIOS.moderate) return 'moderate'
+  if (ratio >= CONSENSUS_RATIOS.weak) return 'weak'
+  return 'none'
+}
+
+// ============================================================
 // Hybrid Judge
 // ============================================================
 
@@ -108,8 +126,8 @@ async function runRuleFirst(
   if (allPassed && config.rules.length > 0) {
     return {
       passed: true,
-      score: maxScore > 0 ? (totalScore / maxScore) * 10 : 10,
-      maxScore: 10,
+      score: maxScore > 0 ? (totalScore / maxScore) * MAX_SCORE : MAX_SCORE,
+      maxScore: MAX_SCORE,
       dimension: 'overall',
       ruleResults: results,
       reasoning: `All ${config.rules.length} rule(s) passed. LLM judge skipped.`,
@@ -134,18 +152,19 @@ async function runRuleFirst(
     )
 
     const llmAvg = judgeScores.reduce((s, r) => s + r.score, 0) / judgeScores.length
-    // Blend: 40% rules, 60% LLM
-    const ruleScore = maxScore > 0 ? (totalScore / maxScore) * 10 : 0
-    const blendedScore = 0.4 * ruleScore + 0.6 * llmAvg
+    // Blend rules and LLM scores
+    const ruleScore = maxScore > 0 ? (totalScore / maxScore) * MAX_SCORE : 0
+    const blend = HYBRID_BLEND.rule_first
+    const blendedScore = blend.rule * ruleScore + blend.llm * llmAvg
 
     return {
-      passed: blendedScore >= 6,
+      passed: blendedScore >= DEFAULT_PASS_THRESHOLD,
       score: Math.round(blendedScore * 100) / 100,
-      maxScore: 10,
+      maxScore: MAX_SCORE,
       dimension: 'overall',
       ruleResults: results,
       judgeScores,
-      reasoning: `Blended score: rules ${ruleScore.toFixed(1)}/10 (40%) + LLM ${llmAvg.toFixed(1)}/10 (60%) = ${blendedScore.toFixed(1)}/10`,
+      reasoning: `Blended score: rules ${ruleScore.toFixed(1)}/${MAX_SCORE} (${Math.round(blend.rule * 100)}%) + LLM ${llmAvg.toFixed(1)}/${MAX_SCORE} (${Math.round(blend.llm * 100)}%) = ${blendedScore.toFixed(1)}/${MAX_SCORE}`,
       duration: Date.now() - (startTime ?? Date.now()),
     }
   }
@@ -153,8 +172,8 @@ async function runRuleFirst(
   // No LLM available — use rules only
   return {
     passed: allPassed,
-    score: maxScore > 0 ? (totalScore / maxScore) * 10 : 0,
-    maxScore: 10,
+    score: maxScore > 0 ? (totalScore / maxScore) * MAX_SCORE : 0,
+    maxScore: MAX_SCORE,
     dimension: 'overall',
     ruleResults: results,
     reasoning: `Rule-based only: ${totalScore}/${maxScore} passed.`,
@@ -193,15 +212,15 @@ async function runLLMFirst(
 
     const llmAvg = judgeScores.reduce((s, r) => s + r.score, 0) / judgeScores.length
 
-    // If LLM is confident (score >= 7 or <= 3), skip rules
-    if (llmAvg >= 7 || llmAvg <= 3) {
+    // If LLM is confident, skip rules
+    if (llmAvg >= LLM_CONFIDENCE.highPass || llmAvg <= LLM_CONFIDENCE.highFail) {
       return {
-        passed: llmAvg >= 6,
+        passed: llmAvg >= DEFAULT_PASS_THRESHOLD,
         score: llmAvg,
-        maxScore: 10,
+        maxScore: MAX_SCORE,
         dimension: 'overall',
         judgeScores,
-        reasoning: `LLM judge confident (avg ${llmAvg.toFixed(1)}/10). Rules skipped.`,
+        reasoning: `LLM judge confident (avg ${llmAvg.toFixed(1)}/${MAX_SCORE}). Rules skipped.`,
         duration: Date.now() - (startTime ?? Date.now()),
       }
     }
@@ -210,21 +229,22 @@ async function runLLMFirst(
   // LLM uncertain or not available — use rules
   const { results, totalScore, maxScore } = evaluateRules(config.rules, context.ruleContext)
 
-  const ruleScore = maxScore > 0 ? (totalScore / maxScore) * 10 : 0
+  const ruleScore = maxScore > 0 ? (totalScore / maxScore) * MAX_SCORE : 0
   const llmAvg = judgeScores
     ? judgeScores.reduce((s, r) => s + r.score, 0) / judgeScores.length
     : ruleScore
 
-  const blendedScore = 0.6 * llmAvg + 0.4 * ruleScore
+  const blend = HYBRID_BLEND.llm_first
+  const blendedScore = blend.llm * llmAvg + blend.rule * ruleScore
 
   return {
-    passed: blendedScore >= 6,
+    passed: blendedScore >= DEFAULT_PASS_THRESHOLD,
     score: Math.round(blendedScore * 100) / 100,
-    maxScore: 10,
+    maxScore: MAX_SCORE,
     dimension: 'overall',
     ruleResults: results,
     judgeScores,
-    reasoning: `Blended score: LLM ${llmAvg.toFixed(1)}/10 (60%) + rules ${ruleScore.toFixed(1)}/10 (40%) = ${blendedScore.toFixed(1)}/10`,
+    reasoning: `Blended score: LLM ${llmAvg.toFixed(1)}/${MAX_SCORE} (${Math.round(blend.llm * 100)}%) + rules ${ruleScore.toFixed(1)}/${MAX_SCORE} (${Math.round(blend.rule * 100)}%) = ${blendedScore.toFixed(1)}/${MAX_SCORE}`,
     duration: Date.now() - (startTime ?? Date.now()),
   }
 }
@@ -237,7 +257,7 @@ async function runParallel(
 ): Promise<HybridJudgeResult> {
   // Run rules synchronously
   const { results, totalScore, maxScore } = evaluateRules(config.rules, context.ruleContext)
-  const ruleScore = maxScore > 0 ? (totalScore / maxScore) * 10 : 0
+  const ruleScore = maxScore > 0 ? (totalScore / maxScore) * MAX_SCORE : 0
 
   // Run LLM judge in parallel
   let judgeScores: JudgeScore[] | undefined
@@ -268,16 +288,17 @@ async function runParallel(
     : ruleScore
 
   // Equal weighting for parallel strategy
-  const blendedScore = 0.5 * ruleScore + 0.5 * llmAvg
+  const blend = HYBRID_BLEND.parallel
+  const blendedScore = blend.rule * ruleScore + blend.llm * llmAvg
 
   return {
-    passed: blendedScore >= 6,
+    passed: blendedScore >= DEFAULT_PASS_THRESHOLD,
     score: Math.round(blendedScore * 100) / 100,
-    maxScore: 10,
+    maxScore: MAX_SCORE,
     dimension: 'overall',
     ruleResults: results,
     judgeScores,
-    reasoning: `Parallel evaluation: rules ${ruleScore.toFixed(1)}/10, LLM ${llmAvg.toFixed(1)}/10 → blended ${blendedScore.toFixed(1)}/10`,
+    reasoning: `Parallel evaluation: rules ${ruleScore.toFixed(1)}/${MAX_SCORE}, LLM ${llmAvg.toFixed(1)}/${MAX_SCORE} → blended ${blendedScore.toFixed(1)}/${MAX_SCORE}`,
     duration: Date.now() - (startTime ?? Date.now()),
   }
 }
@@ -285,6 +306,22 @@ async function runParallel(
 // ============================================================
 // Judge Pool
 // ============================================================
+
+/** Default score when a judge is skipped (no LLM available). */
+const DEFAULT_SKIP_SCORE = 5
+
+/**
+ * Extract rule evaluator configs from an opaque judge config object.
+ * Supports both inline rule objects and `{ rules: [...] }` wrappers.
+ */
+function extractRuleConfigs(rawConfig: Record<string, unknown>): RuleEvaluatorConfig[] {
+  const wrapper = rawConfig as { rules?: RuleEvaluatorConfig[] }
+  if (wrapper.rules && Array.isArray(wrapper.rules) && wrapper.rules.length > 0) {
+    return [wrapper.rules[0]]
+  }
+  // Treat the config itself as a rule config
+  return [rawConfig as unknown as RuleEvaluatorConfig]
+}
 
 /**
  * Run a pool of judges with voting to reach consensus.
@@ -301,18 +338,16 @@ export async function runJudgePool(
         const {
           results: ruleResults,
           totalScore,
-          maxScore,
+          maxScore: ruleMaxScore,
           allPassed,
         } = evaluateRules(
-          [(judge.config as { rules?: RuleEvaluatorConfig[] }).rules?.[0] ?? judge.config].filter(
-            Boolean
-          ) as RuleEvaluatorConfig[],
+          extractRuleConfigs(judge.config),
           ruleContext
         )
         return {
           passed: allPassed,
-          score: maxScore > 0 ? (totalScore / maxScore) * 10 : 0,
-          maxScore: 10,
+          score: ruleMaxScore > 0 ? (totalScore / ruleMaxScore) * MAX_SCORE : 0,
+          maxScore: MAX_SCORE,
           dimension: 'overall' as const,
           ruleResults,
           reasoning: `Judge ${index + 1} (rule): ${allPassed ? 'passed' : 'failed'}`,
@@ -322,27 +357,28 @@ export async function runJudgePool(
       // LLM judge
       if (callLLM) {
         const { runLLMJudge } = await import('./llm-judge')
-        const llmConfig = judge.config as unknown as LLMJudgeConfig
+        // Extract LLM config fields safely from the opaque judge config
+        const rawConfig = judge.config as Record<string, unknown>
         const finalConfig: LLMJudgeConfig = {
-          provider: llmConfig.provider ?? 'openai',
-          model: llmConfig.model ?? 'gpt-4o',
-          dimensions: llmConfig.dimensions ?? ['correctness'],
+          provider: (rawConfig.provider as LLMJudgeConfig['provider']) ?? 'openai',
+          model: (rawConfig.model as string) ?? 'gpt-4o',
+          dimensions: (rawConfig.dimensions as JudgeDimension[]) ?? ['correctness'],
         }
         const judgeResult = await runLLMJudge('correctness', llmContext, finalConfig, callLLM)
         return {
-          passed: judgeResult.score >= 6,
+          passed: judgeResult.score >= DEFAULT_PASS_THRESHOLD,
           score: judgeResult.score,
-          maxScore: 10,
+          maxScore: MAX_SCORE,
           dimension: 'overall' as const,
           judgeScores: [judgeResult],
-          reasoning: `Judge ${index + 1} (LLM): ${judgeResult.score}/10`,
+          reasoning: `Judge ${index + 1} (LLM): ${judgeResult.score}/${MAX_SCORE}`,
         } satisfies HybridJudgeResult
       }
 
       return {
         passed: true,
-        score: 5,
-        maxScore: 10,
+        score: DEFAULT_SKIP_SCORE,
+        maxScore: MAX_SCORE,
         dimension: 'overall' as const,
         reasoning: `Judge ${index + 1}: skipped (no LLM available)`,
       } satisfies HybridJudgeResult
@@ -366,22 +402,13 @@ export async function runJudgePool(
       const weightedVotes = results.reduce((sum, r, i) => sum + (r.passed ? weights[i] : 0), 0)
       passed = weightedVotes >= totalWeight / 2
       const ratio = weightedVotes / totalWeight
-      consensus =
-        ratio >= 0.8 ? 'strong' : ratio >= 0.6 ? 'moderate' : ratio >= 0.4 ? 'weak' : 'none'
+      consensus = classifyConsensus(ratio)
       break
     }
     case 'majority':
     default:
       passed = votesPassed > total / 2
-      const passRatio = votesPassed / total
-      consensus =
-        passRatio >= 0.8
-          ? 'strong'
-          : passRatio >= 0.6
-            ? 'moderate'
-            : passRatio >= 0.4
-              ? 'weak'
-              : 'none'
+      consensus = classifyConsensus(votesPassed / total)
       break
   }
 
@@ -390,7 +417,7 @@ export async function runJudgePool(
   return {
     passed,
     score: Math.round(avgScore * 100) / 100,
-    maxScore: 10,
+    maxScore: MAX_SCORE,
     individualResults: results,
     reasoning: `${votesPassed}/${total} judges passed (${poolConfig.votingStrategy}), consensus: ${consensus}`,
     consensus,

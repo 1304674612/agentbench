@@ -1,7 +1,7 @@
 {
   "name": "@agentbench/provider-utils",
   "version": "0.5.0",
-  "description": "AgentBench Provider Plugin SDK — shared interfaces, base classes, token counting, cost calculation, and SSE streaming for building LLM providers",
+  "description": "AgentBench Provider Plugin SDK \u2014 shared interfaces, base classes, token counting, cost calculation, and SSE streaming for building LLM providers",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -24,7 +24,9 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@agentbench/typescript-config": "workspace:*",

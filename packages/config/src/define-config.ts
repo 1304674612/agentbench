@@ -14,7 +14,6 @@ import { defaults } from './defaults'
  * - `null` values in `source` **do** replace `target` values.
  */
 export function deepMerge<T extends Record<string, unknown>>(target: T, source: DeepPartial<T>): T {
-  // Cast to plain record types so we can index with string keys freely.
   const result = { ...target } as Record<string, unknown>
   const src = source as Record<string, unknown>
 
@@ -51,6 +50,29 @@ export function deepMerge<T extends Record<string, unknown>>(target: T, source: 
 type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Type-Safe Config Merge
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Merge user config into defaults, producing a fully-resolved AgentBenchConfig.
+ *
+ * The `as unknown as` casts here are intentional: both `defaults` (DeepPartial)
+ * and `userConfig` (AgentBenchUserConfig) are structurally compatible with
+ * `Record<string, unknown>` but don't extend it directly due to optional
+ * properties at all nesting levels. The deep merge guarantees the result
+ * satisfies `AgentBenchConfig` because every key from defaults is preserved.
+ */
+function mergeIntoDefaults(userConfig: AgentBenchUserConfig): AgentBenchConfig {
+  // Both types are plain data objects — the deep merge's runtime checks
+  // (typeof, !Array.isArray) ensure correct behavior regardless of static types.
+  const merged = deepMerge(
+    defaults as unknown as Record<string, unknown>,
+    userConfig as unknown as Record<string, unknown>
+  )
+  return merged as unknown as AgentBenchConfig
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Public API
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -65,10 +87,7 @@ type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } 
  * @returns A fully-populated `AgentBenchConfig` with all defaults applied.
  */
 export function resolveConfig(userConfig: AgentBenchUserConfig): AgentBenchConfig {
-  return deepMerge(
-    defaults as unknown as Record<string, unknown>,
-    userConfig as unknown as Record<string, unknown>
-  ) as unknown as AgentBenchConfig
+  return mergeIntoDefaults(userConfig)
 }
 
 /**

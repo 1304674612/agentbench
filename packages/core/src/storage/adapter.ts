@@ -1,6 +1,16 @@
 /**
- * Storage Adapter Interface — abstract data persistence layer.
- * Implementations: PostgresAdapter, MemoryAdapter, SQLiteAdapter.
+ * Storage Adapter Layer — abstract data persistence.
+ *
+ * The monolithic `StorageAdapter` interface has been decomposed into smaller,
+ * domain-specific interfaces following the Interface Segregation Principle.
+ * The combined `StorageAdapter` interface is retained for backward compatibility
+ * and for implementations that serve all domains (e.g. PostgresAdapter).
+ *
+ * Consumers should depend on the narrowest interface they need:
+ * - `Runner` → `RunStorage`
+ * - `SnapshotManager` → `SnapshotStorage`
+ * - `ExperimentEngine` → `ExperimentStorage`
+ * - `Dataset` module → `DatasetStorage`
  */
 import type {
   Project,
@@ -39,78 +49,6 @@ export interface ProjectQuery {
   search?: string
   limit?: number
   offset?: number
-}
-
-// ============================================================
-// Storage Adapter Interface
-// ============================================================
-
-export interface StorageAdapter {
-  // Connection
-  connect(): Promise<void>
-  disconnect(): Promise<void>
-  healthCheck(): Promise<boolean>
-
-  // Projects
-  createProject(data: CreateProjectInput): Promise<Project>
-  getProject(id: string): Promise<Project | null>
-  listProjects(query?: ProjectQuery): Promise<Project[]>
-  updateProject(id: string, data: Partial<CreateProjectInput>): Promise<Project>
-  deleteProject(id: string): Promise<void>
-
-  // Test Suites
-  createTestSuite(data: CreateTestSuiteInput): Promise<TestSuite>
-  getTestSuite(id: string): Promise<TestSuite | null>
-  listTestSuites(projectId: string): Promise<TestSuite[]>
-
-  // Test Cases
-  createTestCase(data: CreateTestCaseInput): Promise<TestCase>
-  getTestCase(id: string): Promise<TestCase | null>
-  listTestCases(suiteId: string): Promise<TestCase[]>
-  updateTestCase(id: string, data: Partial<CreateTestCaseInput>): Promise<TestCase>
-  deleteTestCase(id: string): Promise<void>
-
-  // Runs
-  createRun(data: CreateRunInput): Promise<Run>
-  getRun(id: string): Promise<Run | null>
-  listRuns(query?: RunQuery): Promise<RunSummary[]>
-  updateRun(id: string, data: UpdateRunInput): Promise<Run>
-  deleteRun(id: string): Promise<void>
-
-  // Trace Steps
-  createTraceStep(data: CreateTraceStepInput): Promise<TraceStep>
-  batchCreateTraceSteps(data: CreateTraceStepInput[]): Promise<TraceStep[]>
-  getTraceSteps(runId: string): Promise<TraceStep[]>
-
-  // Scores
-  createScore(data: CreateScoreInput): Promise<Score>
-  batchCreateScores(data: CreateScoreInput[]): Promise<Score[]>
-  getScores(runId: string): Promise<Score[]>
-
-  // Assertion Results
-  createAssertionResult(data: CreateAssertionResultInput): Promise<AssertionResult>
-  batchCreateAssertionResults(data: CreateAssertionResultInput[]): Promise<AssertionResult[]>
-  getAssertionResults(runId: string): Promise<AssertionResult[]>
-
-  // Snapshots
-  createSnapshot(data: CreateSnapshotInput): Promise<Snapshot>
-  getSnapshot(id: string): Promise<Snapshot | null>
-  listSnapshots(projectId: string): Promise<Snapshot[]>
-  deleteSnapshot(id: string): Promise<void>
-
-  // Experiments
-  createExperiment(data: CreateExperimentInput): Promise<Experiment>
-  getExperiment(id: string): Promise<Experiment | null>
-  listExperiments(projectId: string): Promise<Experiment[]>
-  updateExperiment(id: string, data: Partial<CreateExperimentInput>): Promise<Experiment>
-
-  // Datasets
-  createDataset(data: CreateDatasetInput): Promise<Dataset>
-  getDataset(id: string): Promise<Dataset | null>
-  listDatasets(projectId: string): Promise<Dataset[]>
-  createDatasetItem(data: CreateDatasetItemInput): Promise<DatasetItem>
-  batchCreateDatasetItems(data: CreateDatasetItemInput[]): Promise<DatasetItem[]>
-  listDatasetItems(datasetId: string): Promise<DatasetItem[]>
 }
 
 // ============================================================
@@ -240,3 +178,99 @@ export interface CreateDatasetItemInput {
   labels?: string[]
   metadata?: Record<string, unknown>
 }
+
+// ============================================================
+// Domain-Specific Storage Interfaces (ISP)
+// ============================================================
+
+/** Connection lifecycle. */
+export interface ConnectionManager {
+  connect(): Promise<void>
+  disconnect(): Promise<void>
+  healthCheck(): Promise<boolean>
+}
+
+/** Project and test suite/case management. */
+export interface ProjectStorage {
+  createProject(data: CreateProjectInput): Promise<Project>
+  getProject(id: string): Promise<Project | null>
+  listProjects(query?: ProjectQuery): Promise<Project[]>
+  updateProject(id: string, data: Partial<CreateProjectInput>): Promise<Project>
+  deleteProject(id: string): Promise<void>
+
+  createTestSuite(data: CreateTestSuiteInput): Promise<TestSuite>
+  getTestSuite(id: string): Promise<TestSuite | null>
+  listTestSuites(projectId: string): Promise<TestSuite[]>
+
+  createTestCase(data: CreateTestCaseInput): Promise<TestCase>
+  getTestCase(id: string): Promise<TestCase | null>
+  listTestCases(suiteId: string): Promise<TestCase[]>
+  updateTestCase(id: string, data: Partial<CreateTestCaseInput>): Promise<TestCase>
+  deleteTestCase(id: string): Promise<void>
+}
+
+/** Run execution, trace steps, scores, and assertion results. */
+export interface RunStorage {
+  createRun(data: CreateRunInput): Promise<Run>
+  getRun(id: string): Promise<Run | null>
+  listRuns(query?: RunQuery): Promise<RunSummary[]>
+  updateRun(id: string, data: UpdateRunInput): Promise<Run>
+  deleteRun(id: string): Promise<void>
+
+  createTraceStep(data: CreateTraceStepInput): Promise<TraceStep>
+  batchCreateTraceSteps(data: CreateTraceStepInput[]): Promise<TraceStep[]>
+  getTraceSteps(runId: string): Promise<TraceStep[]>
+
+  createScore(data: CreateScoreInput): Promise<Score>
+  batchCreateScores(data: CreateScoreInput[]): Promise<Score[]>
+  getScores(runId: string): Promise<Score[]>
+
+  createAssertionResult(data: CreateAssertionResultInput): Promise<AssertionResult>
+  batchCreateAssertionResults(data: CreateAssertionResultInput[]): Promise<AssertionResult[]>
+  getAssertionResults(runId: string): Promise<AssertionResult[]>
+}
+
+/** Snapshot persistence. */
+export interface SnapshotStorage {
+  createSnapshot(data: CreateSnapshotInput): Promise<Snapshot>
+  getSnapshot(id: string): Promise<Snapshot | null>
+  listSnapshots(projectId: string): Promise<Snapshot[]>
+  deleteSnapshot(id: string): Promise<void>
+}
+
+/** Experiment persistence. */
+export interface ExperimentStorage {
+  createExperiment(data: CreateExperimentInput): Promise<Experiment>
+  getExperiment(id: string): Promise<Experiment | null>
+  listExperiments(projectId: string): Promise<Experiment[]>
+  updateExperiment(id: string, data: Partial<CreateExperimentInput>): Promise<Experiment>
+}
+
+/** Dataset persistence. */
+export interface DatasetStorage {
+  createDataset(data: CreateDatasetInput): Promise<Dataset>
+  getDataset(id: string): Promise<Dataset | null>
+  listDatasets(projectId: string): Promise<Dataset[]>
+  createDatasetItem(data: CreateDatasetItemInput): Promise<DatasetItem>
+  batchCreateDatasetItems(data: CreateDatasetItemInput[]): Promise<DatasetItem[]>
+  listDatasetItems(datasetId: string): Promise<DatasetItem[]>
+}
+
+// ============================================================
+// Composite StorageAdapter (backward-compatible)
+// ============================================================
+
+/**
+ * Full storage adapter combining all domain interfaces.
+ * Retained for backward compatibility with existing adapter implementations.
+ *
+ * @deprecated Prefer depending on the narrow domain interface you need
+ *   (e.g. `RunStorage` for Runner, `SnapshotStorage` for SnapshotManager).
+ */
+export interface StorageAdapter
+  extends ConnectionManager,
+    ProjectStorage,
+    RunStorage,
+    SnapshotStorage,
+    ExperimentStorage,
+    DatasetStorage {}

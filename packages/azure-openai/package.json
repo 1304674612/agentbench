@@ -1,7 +1,7 @@
 {
   "name": "@agentbench/azure-openai",
   "version": "0.5.0",
-  "description": "AgentBench provider for Azure OpenAI — extends OpenAICompatibleProvider with Azure AD auth",
+  "description": "AgentBench provider for Azure OpenAI \u2014 extends OpenAICompatibleProvider with Azure AD auth",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -23,7 +23,10 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "peerDependencies": {
     "@agentbench/provider-utils": "workspace:*"
@@ -31,7 +34,8 @@
   "devDependencies": {
     "@agentbench/typescript-config": "workspace:*",
     "tsup": "^8.0.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "latest"
   },
   "keywords": [
     "agentbench",

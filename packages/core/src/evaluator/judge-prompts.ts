@@ -247,7 +247,7 @@ Tool Usage measures:
 Scoring guide:
 - 10: Perfect tool use, optimal selection, efficient calls, correct interpretation
 - 8-9: Excellent tool use, very good selection and efficiency
-- 7-8: Good tool use, minor inefficiencies
+- 6-7: Good tool use, minor inefficiencies
 - 5-6: Adequate tool use, some suboptimal choices or extra calls
 - 3-4: Poor tool use, wrong tools selected or redundant calls
 - 0-2: Failed to use tools appropriately or correctly

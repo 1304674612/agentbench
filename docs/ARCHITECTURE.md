@@ -236,7 +236,7 @@ At startup, AgentBench scans for available providers:
 
 ## 4. @agentbench/core -- Detailed Design
 
-### 4.1 Module Architecture (v0.3.0)
+### 4.1 Module Architecture (v0.5.0)
 
 ```
 @agentbench/core/src/
@@ -245,135 +245,88 @@ At startup, AgentBench scans for available providers:
 │   ├── index.ts
 │   ├── trace.ts                # ExecutionTrace, TraceStep
 │   ├── run.ts                  # Run, RunConfig, RunResult
-│   ├── evaluator.ts            # Evaluator, Score, JudgeConfig
+│   ├── evaluator.ts            # Evaluator, Score, JudgeConfig + scoring constants
 │   ├── assertion.ts            # Assertion, AssertionResult
 │   ├── snapshot.ts             # Snapshot
 │   ├── test.ts                 # TestCase, TestSuite
 │   ├── experiment.ts           # Experiment, Variant
 │   ├── coverage.ts             # CoverageReport
-│   ├── dataset.ts              # Dataset, DatasetItem [NEW]
-│   └── provider.ts             # Provider interface [UPDATED]
+│   ├── dataset.ts              # Dataset, DatasetItem
+│   └── provider.ts             # Provider interface
 │
 ├── runner/                     # Agent Runner Engine
 │   ├── index.ts
-│   ├── runner.ts
-│   ├── context.ts
-│   ├── sandbox.ts
-│   ├── timeout.ts
-│   └── concurrency.ts
+│   └── runner.ts               # execute, runBatch, timeout, RunContext
 │
 ├── tracer/                     # Execution Tracer
 │   ├── index.ts
-│   ├── tracer.ts
+│   ├── tracer.ts               # Tracer, traceLLMCall, recordResponse
 │   ├── interceptors/
-│   │   ├── base.ts
-│   │   ├── openai.ts
-│   │   ├── anthropic.ts
-│   │   └── generic.ts
-│   ├── stream-capture.ts       # SSE streaming capture [NEW]
-│   └── tool-capture.ts
+│   │   ├── openai.ts           # OpenAI SDK interceptor
+│   │   └── anthropic.ts        # Anthropic SDK interceptor
+│   └── stream-capture.ts       # SSE streaming capture
 │
 ├── evaluator/                  # Evaluation Engine
 │   ├── index.ts
 │   ├── rule-evaluator.ts       # 14 rule evaluators
 │   ├── llm-judge.ts            # LLM-as-Judge
-│   ├── hybrid-judge.ts
-│   ├── judge-pool.ts
-│   └── scoring/
-│       ├── correctness.ts
-│       ├── faithfulness.ts
-│       ├── safety.ts
-│       ├── relevance.ts
-│       ├── completeness.ts
-│       └── reasoning.ts
+│   ├── hybrid-judge.ts         # Hybrid judge + judge pool
+│   └── judge-prompts.ts        # Prompt templates for all 8 dimensions
 │
 ├── assertion/                  # Assertion Engine
 │   ├── index.ts
 │   ├── assert.ts               # Chainable assert builder
-│   ├── matchers/
-│   │   ├── tool-matchers.ts
-│   │   ├── token-matchers.ts
-│   │   ├── latency-matchers.ts
-│   │   ├── output-matchers.ts
-│   │   └── score-matchers.ts
-│   └── result.ts
+│   └── matchers/
+│       ├── tool-matchers.ts
+│       ├── token-matchers.ts
+│       ├── latency-matchers.ts
+│       ├── output-matchers.ts
+│       └── score-matchers.ts
 │
 ├── snapshot/                   # Snapshot Manager
 │   ├── index.ts
-│   ├── create.ts
-│   ├── restore.ts
-│   ├── compare.ts
-│   └── store.ts
+│   └── snapshot-manager.ts     # Create, list, restore, compare snapshots
 │
 ├── diff/                       # Diff Engine
 │   ├── index.ts
-│   ├── text-diff.ts
-│   ├── trace-diff.ts
-│   ├── metric-diff.ts
-│   └── renderer.ts
+│   └── diff-engine.ts          # Text, trace, and metric diffing
 │
 ├── replay/                     # Replay Engine
 │   ├── index.ts
-│   ├── replay.ts
-│   ├── deterministic.ts
-│   └── cross-model.ts
+│   └── replay-engine.ts        # Deterministic + cross-model replay
 │
 ├── coverage/                   # Coverage Engine
 │   ├── index.ts
-│   ├── prompt-coverage.ts
-│   ├── workflow-coverage.ts
-│   ├── tool-coverage.ts
-│   └── calculator.ts
+│   └── coverage-engine.ts      # Prompt, workflow, tool, edge-case coverage
 │
 ├── experiment/                 # Experiment Engine
 │   ├── index.ts
-│   ├── experiment.ts
-│   ├── variant.ts
-│   └── statistics.ts
+│   └── experiment-engine.ts    # A/B experiments with variants
 │
 ├── reporter/                   # Report Generation
 │   ├── index.ts
-│   ├── json-reporter.ts
-│   ├── html-reporter.ts
-│   ├── markdown-reporter.ts
-│   └── junit-reporter.ts
+│   └── report-generator.ts     # JSON, HTML, Markdown, JUnit formats
 │
-├── dataset/                    # Dataset Module [NEW]
+├── dataset/                    # Dataset Module
 │   ├── index.ts
-│   ├── loader.ts               # CSV, JSON, JSONL, HuggingFace, OpenAI Evals
-│   ├── splitter.ts             # Train/test/validation with stratification
-│   ├── validator.ts            # Schema validation, integrity checks
-│   ├── differ.ts               # Dataset version diffs
-│   └── exporter.ts             # Export to any supported format
-│
-├── provider/                   # Provider Registry [NEW]
-│   ├── index.ts
-│   ├── registry.ts             # Auto-discovery + registration
-│   ├── interface.ts            # AgentBenchProvider interface
-│   └── resolver.ts             # Resolves provider from config
-│
-├── config/                     # Config System [UPDATED]
-│   ├── index.ts
-│   ├── define-config.ts        # defineConfig() helper [NEW]
-│   ├── loader.ts               # Multi-source config loader
-│   ├── resolver.ts             # Priority resolution (CLI > file > env > default)
-│   └── schema.ts               # Zod schema for all config options
+│   └── dataset.ts              # CSV, JSON, JSONL import/export/validate/split/version
 │
 ├── storage/                    # Storage Abstraction Layer
 │   ├── index.ts
-│   ├── adapter.ts
-│   ├── postgres-adapter.ts
-│   ├── sqlite-adapter.ts
-│   ├── memory-adapter.ts
-│   └── file-adapter.ts
+│   ├── adapter.ts              # Interface (ISP-split: RunStorage, ProjectStorage, etc.)
+│   └── memory-adapter.ts       # In-memory implementation for testing
 │
 └── utils/
-    ├── token-counter.ts
-    ├── cost-calculator.ts
-    ├── latency.ts
-    ├── id-generator.ts
-    └── logger.ts
+    ├── index.ts
+    ├── token-counter.ts        # Token counting utilities
+    └── json-validator.ts       # JSON schema validation
 ```
+
+> **Note:** The config system lives in `@agentbench/config` (separate package), and provider
+> interfaces live in `@agentbench/provider-utils`. AgentBench's architecture follows a
+> flat-per-module pattern — each module has an `index.ts`, a main implementation file, and
+> a `.test.ts` file in the same directory. Complex sub-modules (e.g., evaluator scoring
+> dimensions) are consolidated into single files rather than deeply nested directories.
 
 ### 4.2 Key Interfaces
 

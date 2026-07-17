@@ -17,6 +17,8 @@
     "dev": "turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",
+    "test": "turbo test",
+    "test:coverage": "turbo test -- --coverage",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "check": "biome check .",

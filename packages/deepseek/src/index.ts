@@ -14,6 +14,8 @@ import type {
   ProviderCapabilities,
   ProviderConfig,
   ChatCompletionResult,
+  ChatMessage,
+  ToolCall,
 } from '@agentbench/provider-utils'
 
 const DEEPSEEK_MODELS = ['deepseek-chat', 'deepseek-reasoner']
@@ -58,8 +60,8 @@ export class DeepSeekProvider extends OpenAICompatibleProvider {
           ...(message?.reasoning_content
             ? { reasoning_content: message.reasoning_content as string }
             : {}),
-          ...(message?.tool_calls ? { tool_calls: message.tool_calls as unknown[] } : {}),
-        } as any,
+          ...(message?.tool_calls ? { tool_calls: message.tool_calls as ToolCall[] } : {}),
+        } as ChatMessage & { reasoning_content?: string },
         finishReason:
           (c.finish_reason as ChatCompletionResult['choices'][0]['finishReason']) ?? null,
       })),

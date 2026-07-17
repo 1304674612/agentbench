@@ -238,8 +238,6 @@ describe('resolveConfig', () => {
 
 // ─── resolveConfigPath ────────────────────────────────────────────────────────
 
-const { existsSync: existsSyncActual } = await vi.importActual<typeof import('node:fs')>('node:fs')
-
 describe('resolveConfigPath', () => {
   beforeEach(() => {
     vi.resetModules()
