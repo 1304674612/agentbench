@@ -421,9 +421,12 @@ model Run {
   snapshots        Snapshot[]
 
   @@index([projectId])
+  @@index([projectId, createdAt])
+  @@index([projectId, status])
   @@index([testCaseId])
   @@index([datasetId])
   @@index([userId])
+  @@index([userId, createdAt])
   @@index([status])
   @@index([createdAt])
   @@map("runs")
@@ -505,6 +508,7 @@ model Score {
   run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
 
   @@index([runId])
+  @@index([runId, evaluator])
   @@index([evaluator])
   @@map("scores")
 }

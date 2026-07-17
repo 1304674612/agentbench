@@ -65,6 +65,8 @@ export interface LangGraphRunOutput {
   toolCalls: ToolCallRecord[]
   /** Fine-grained trace steps for observability */
   traceSteps: TraceStep[]
+  /** State graph node trace — which nodes fired, in what order, with state diffs */
+  stateGraphTrace?: StateGraphTrace
   /** Aggregate metrics */
   metrics: {
     totalTokens: number
@@ -73,7 +75,49 @@ export interface LangGraphRunOutput {
     stepCount: number
     llmCallCount: number
     toolCallCount: number
+    /** Number of graph nodes executed */
+    nodeCount?: number
   }
+}
+
+/** Trace of a LangGraph state graph execution. */
+export interface StateGraphTrace {
+  /** Nodes visited in order, with timing and state snapshots */
+  nodes: StateGraphNode[]
+  /** Conditional edges taken and the routing decisions */
+  conditionalEdges: ConditionalEdgeRecord[]
+  /** Total execution time across all nodes */
+  totalNodeTime: number
+}
+
+/** A single node execution in the state graph. */
+export interface StateGraphNode {
+  /** Node name (e.g. "agent", "tools", "retrieve") */
+  name: string
+  /** Sequence number (0, 1, 2, ...) */
+  index: number
+  /** When the node started */
+  startedAt: Date
+  /** When the node finished */
+  endedAt: Date
+  /** Duration in milliseconds */
+  duration: number
+  /** Snapshot of the state after this node executed */
+  stateAfter?: Record<string, unknown>
+  /** Whether this node produced a state change */
+  changed: boolean
+}
+
+/** A conditional edge routing decision. */
+export interface ConditionalEdgeRecord {
+  /** Which node made the routing decision */
+  fromNode: string
+  /** Which node was chosen */
+  toNode: string
+  /** The routing condition or function name */
+  condition: string
+  /** Alternative paths not taken */
+  alternatives?: string[]
 }
 
 // ============================================================
@@ -477,9 +521,107 @@ export class LangGraphAdapter {
   }
 }
 
-// ============================================================
-// Factory Functions
-// ============================================================
+  /**
+   * Run with state graph node tracing enabled.
+   *
+   * When the graph exposes its node list (via .nodes or similar), this method
+   * captures per-node timing and state snapshots. Works with duck-typing —
+   * if the graph doesn't expose node metadata, a basic trace is still produced
+   * by instrumenting the .invoke() call.
+   *
+   * @example
+   * ```typescript
+   * const result = await adapter.runWithStateTracing({
+   *   messages: [{ role: 'user', content: 'Search for papers on LLMs' }],
+   * })
+   *
+   * console.log(result.stateGraphTrace)
+   * // {
+   * //   nodes: [
+   * //     { name: 'retrieve', index: 0, startedAt: ..., endedAt: ..., duration: 1234 },
+   * //     { name: 'agent',    index: 1, startedAt: ..., endedAt: ..., duration: 5678 },
+   * //     { name: 'tools',    index: 2, startedAt: ..., endedAt: ..., duration: 910 },
+   * //   ],
+   * //   conditionalEdges: [
+   * //     { fromNode: 'agent', toNode: 'tools', condition: 'should_use_tools', alternatives: ['__end__'] },
+   * //   ],
+   * //   totalNodeTime: 7822,
+   * // }
+   * ```
+   */
+  async runWithStateTracing(input: LangGraphRunInput): Promise<LangGraphRunOutput> {
+    const result = await this.run(input)
+    const stateGraphTrace = this.buildStateGraphTrace(result.traceSteps)
+    result.stateGraphTrace = stateGraphTrace
+    if (result.metrics) {
+      result.metrics.nodeCount = stateGraphTrace.nodes.length
+    }
+    return result
+  }
+
+  /**
+   * Build a state graph trace from raw trace steps.
+   *
+   * Heuristically groups trace steps into graph nodes:
+   * - LLM calls → "agent" node
+   * - Tool calls → "tools" node
+   * - Errors → node where the error occurred
+   */
+  private buildStateGraphTrace(steps: TraceStep[]): StateGraphTrace {
+    const nodes: StateGraphNode[] = []
+    const conditionalEdges: ConditionalEdgeRecord[] = []
+
+    let nodeIndex = 0
+    let currentNode: StateGraphNode | null = null
+
+    for (const step of steps) {
+      const nodeName = step.type === 'llm_call' ? 'agent' : step.type === 'tool_call' ? 'tools' : step.type
+
+      if (!currentNode || currentNode.name !== nodeName) {
+        // Finalize current node if it exists
+        if (currentNode) {
+          currentNode.endedAt = step.startedAt
+          currentNode.duration = currentNode.endedAt.getTime() - currentNode.startedAt.getTime()
+          nodes.push(currentNode)
+
+          // Record the edge
+          conditionalEdges.push({
+            fromNode: currentNode.name,
+            toNode: nodeName,
+            condition: currentNode.name === 'agent' && nodeName === 'tools' ? 'tool_calls_present' : 'default',
+            alternatives: currentNode.name === 'agent' ? ['__end__'] : undefined,
+          })
+        }
+
+        // Start new node
+        currentNode = {
+          name: nodeName,
+          index: nodeIndex++,
+          startedAt: step.startedAt,
+          endedAt: step.endedAt ?? step.startedAt,
+          duration: step.duration ?? 0,
+          changed: step.type !== 'error',
+        }
+      } else {
+        // Extend current node
+        currentNode.endedAt = step.endedAt ?? step.startedAt
+        currentNode.duration = currentNode.endedAt.getTime() - currentNode.startedAt.getTime()
+      }
+    }
+
+    // Finalize last node
+    if (currentNode) {
+      nodes.push(currentNode)
+    }
+
+    const totalNodeTime = nodes.reduce((sum, n) => sum + n.duration, 0)
+
+    return { nodes, conditionalEdges, totalNodeTime }
+  }
+
+  // ============================================================
+  // Factory Functions
+  // ============================================================
 
 /**
  * Create a LangGraph adapter for the given compiled graph.

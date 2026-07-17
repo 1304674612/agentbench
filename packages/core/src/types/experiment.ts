@@ -95,9 +95,22 @@ export interface VariantResult {
 }
 
 export interface ExperimentStatistics {
-  test: 't_test' | 'bootstrap' | 'mann_whitney'
+  test: 't_test' | 'bootstrap' | 'mann_whitney' | 'full'
   confidenceLevel: number
   significantDifference: boolean
   winner?: string
   summary: string
+  /** Mann-Whitney U p-value (non-parametric) */
+  mannWhitneyPValue?: number
+  /** Bootstrap confidence interval */
+  bootstrapCI?: { lower: number; upper: number }
+  /** Recommended sample size for 80% power */
+  recommendedSampleSize?: number
+  /** Bonferroni-corrected p-values when testing multiple metrics */
+  correctedPValues?: Array<{
+    metric: string
+    originalP: number
+    correctedP: number
+    significant: boolean
+  }>
 }
